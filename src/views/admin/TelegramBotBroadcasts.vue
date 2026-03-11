@@ -1,24 +1,38 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { adminAPI } from '@/api/admin'
 import type { AdminTelegramBroadcast } from '@/api/types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { formatDate } from '@/utils/format'
-import { Loader2, Send } from 'lucide-vue-next'
+import { formatDate, toRFC3339 } from '@/utils/format'
+import { confirmAction } from '@/utils/confirm'
+import { notifyError, notifySuccess } from '@/utils/notify'
+import { Loader2, Send, Trash2 } from 'lucide-vue-next'
 
 const { t } = useI18n()
 
 const loading = ref(false)
 const items = ref<AdminTelegramBroadcast[]>([])
+const deletingId = ref<number | null>(null)
 const pagination = ref({
   page: 1,
   page_size: 20,
   total: 0,
   total_page: 1,
 })
+const filters = reactive({
+  keyword: '',
+  recipientType: '__all__',
+  status: '__all__',
+  createdFrom: '',
+  createdTo: '',
+})
+
+const normalizeFilterValue = (value: string) => (value === '__all__' ? '' : value)
 
 const fetchBroadcasts = async (page = 1) => {
   loading.value = true
@@ -26,6 +40,11 @@ const fetchBroadcasts = async (page = 1) => {
     const res = await adminAPI.getTelegramBroadcasts({
       page,
       page_size: pagination.value.page_size,
+      keyword: filters.keyword || undefined,
+      recipient_type: normalizeFilterValue(filters.recipientType) || undefined,
+      status: normalizeFilterValue(filters.status) || undefined,
+      created_from: toRFC3339(filters.createdFrom),
+      created_to: toRFC3339(filters.createdTo),
     })
     items.value = res.data?.data || []
     pagination.value = res.data?.pagination || pagination.value
@@ -52,6 +71,46 @@ const changePage = (page: number) => {
   fetchBroadcasts(page)
 }
 
+const handleSearch = () => {
+  fetchBroadcasts(1)
+}
+
+const resetFilters = () => {
+  filters.keyword = ''
+  filters.recipientType = '__all__'
+  filters.status = '__all__'
+  filters.createdFrom = ''
+  filters.createdTo = ''
+  fetchBroadcasts(1)
+}
+
+const canDelete = (item: AdminTelegramBroadcast) => {
+  const normalized = String(item.status || '').trim().toLowerCase()
+  return normalized === 'completed' || normalized === 'failed'
+}
+
+const handleDelete = async (item: AdminTelegramBroadcast) => {
+  if (!canDelete(item)) return
+  const confirmed = await confirmAction({
+    description: t('telegramBot.broadcasts.deleteConfirm', { title: item.title }),
+    confirmText: t('telegramBot.broadcasts.delete'),
+    variant: 'destructive',
+  })
+  if (!confirmed) return
+
+  deletingId.value = item.id
+  try {
+    await adminAPI.deleteTelegramBroadcast(item.id)
+    notifySuccess(t('telegramBot.broadcasts.deleteSuccess'))
+    const nextPage = items.value.length === 1 && pagination.value.page > 1 ? pagination.value.page - 1 : pagination.value.page
+    await fetchBroadcasts(nextPage)
+  } catch (err: any) {
+    notifyError(err?.response?.data?.message || err?.message || t('telegramBot.broadcasts.deleteFailed'))
+  } finally {
+    deletingId.value = null
+  }
+}
+
 onMounted(() => {
   fetchBroadcasts()
 })
@@ -73,7 +132,46 @@ onMounted(() => {
     </div>
 
     <Card>
-      <CardContent class="p-0">
+      <CardContent class="space-y-4 p-4">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="w-full md:w-56">
+            <Input v-model="filters.keyword" :placeholder="t('telegramBot.broadcasts.filterTitleKeyword')" @keyup.enter="handleSearch" />
+          </div>
+          <div class="w-full md:w-40">
+            <Select v-model="filters.recipientType">
+              <SelectTrigger class="w-full">
+                <SelectValue :placeholder="t('telegramBot.broadcasts.filterRecipientTypeAll')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">{{ t('telegramBot.broadcasts.filterRecipientTypeAll') }}</SelectItem>
+                <SelectItem value="all">{{ t('telegramBot.broadcasts.recipientTypeAll') }}</SelectItem>
+                <SelectItem value="specific">{{ t('telegramBot.broadcasts.recipientTypeSpecific') }}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div class="w-full md:w-40">
+            <Select v-model="filters.status">
+              <SelectTrigger class="w-full">
+                <SelectValue :placeholder="t('telegramBot.broadcasts.filterStatusAll')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">{{ t('telegramBot.broadcasts.filterStatusAll') }}</SelectItem>
+                <SelectItem value="pending">{{ t('telegramBot.broadcasts.statusPending') }}</SelectItem>
+                <SelectItem value="running">{{ t('telegramBot.broadcasts.statusRunning') }}</SelectItem>
+                <SelectItem value="completed">{{ t('telegramBot.broadcasts.statusCompleted') }}</SelectItem>
+                <SelectItem value="failed">{{ t('telegramBot.broadcasts.statusFailed') }}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div class="w-full md:w-48">
+            <Input v-model="filters.createdFrom" type="datetime-local" />
+          </div>
+          <div class="w-full md:w-48">
+            <Input v-model="filters.createdTo" type="datetime-local" />
+          </div>
+          <Button size="sm" @click="handleSearch">{{ t('telegramBot.broadcasts.search') }}</Button>
+          <Button variant="outline" size="sm" @click="resetFilters">{{ t('telegramBot.broadcasts.resetFilters') }}</Button>
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
@@ -86,16 +184,17 @@ onMounted(() => {
               <TableHead>{{ t('telegramBot.broadcasts.tableFailedCount') }}</TableHead>
               <TableHead>{{ t('telegramBot.broadcasts.tableCreatedAt') }}</TableHead>
               <TableHead>{{ t('telegramBot.broadcasts.tableCompletedAt') }}</TableHead>
+              <TableHead class="text-right">{{ t('telegramBot.broadcasts.tableActions') }}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             <TableRow v-if="loading">
-              <TableCell :colspan="9" class="py-10 text-center text-muted-foreground">
+              <TableCell :colspan="10" class="py-10 text-center text-muted-foreground">
                 <Loader2 class="mx-auto h-5 w-5 animate-spin" />
               </TableCell>
             </TableRow>
             <TableRow v-else-if="items.length === 0">
-              <TableCell :colspan="9" class="py-10 text-center text-muted-foreground">
+              <TableCell :colspan="10" class="py-10 text-center text-muted-foreground">
                 {{ t('telegramBot.broadcasts.empty') }}
               </TableCell>
             </TableRow>
@@ -114,6 +213,17 @@ onMounted(() => {
               <TableCell>{{ item.failed_count }}</TableCell>
               <TableCell>{{ formatDate(item.created_at) || '-' }}</TableCell>
               <TableCell>{{ formatDate(item.completed_at || '') || '-' }}</TableCell>
+              <TableCell class="text-right">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  :disabled="!canDelete(item) || deletingId === item.id"
+                  @click="handleDelete(item)"
+                >
+                  <Trash2 class="mr-2 h-4 w-4" />
+                  {{ deletingId === item.id ? t('admin.common.loading') : t('telegramBot.broadcasts.delete') }}
+                </Button>
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>

@@ -28,8 +28,19 @@ interface MenuItem {
   action: { type: string; value: string }
 }
 
+interface HelpItem {
+  key: string
+  enabled: boolean
+  order: number
+  summary: LocalizedText
+  title: LocalizedText
+  content: LocalizedText
+  show_support_link: boolean
+}
+
 const menuActionTypes = ['builtin', 'url', 'command'] as const
 const menuItemsMaxCount = 20
+const helpItemsMaxCount = 12
 
 const createMenuItem = (): MenuItem => ({
   key: '',
@@ -37,6 +48,16 @@ const createMenuItem = (): MenuItem => ({
   order: 0,
   label: emptyLocalized(),
   action: { type: 'builtin', value: '' },
+})
+
+const createHelpItem = (): HelpItem => ({
+  key: '',
+  enabled: true,
+  order: 0,
+  summary: emptyLocalized(),
+  title: emptyLocalized(),
+  content: emptyLocalized(),
+  show_support_link: false,
 })
 
 const currentLang = ref<SupportedLanguage>('zh-CN')
@@ -64,6 +85,14 @@ const form = ref({
   welcome: {
     enabled: false,
     message: emptyLocalized(),
+  },
+  help: {
+    enabled: true,
+    title: emptyLocalized(),
+    intro: emptyLocalized(),
+    center_hint: emptyLocalized(),
+    support_hint: emptyLocalized(),
+    items: [] as HelpItem[],
   },
   menu: {
     items: [] as MenuItem[],
@@ -104,6 +133,18 @@ const fetchConfig = async () => {
       if (welcome) {
         form.value.welcome.enabled = (welcome.enabled as boolean) ?? false
         form.value.welcome.message = parseLocalized(welcome.message)
+      }
+
+      const help = data.help as Record<string, unknown> | undefined
+      if (help) {
+        form.value.help.enabled = (help.enabled as boolean) ?? true
+        form.value.help.title = parseLocalized(help.title)
+        form.value.help.intro = parseLocalized(help.intro)
+        form.value.help.center_hint = parseLocalized(help.center_hint)
+        form.value.help.support_hint = parseLocalized(help.support_hint)
+        if (Array.isArray(help.items)) {
+          form.value.help.items = (help.items as unknown[]).map(parseHelpItem)
+        }
       }
 
       const menu = data.menu as Record<string, unknown> | undefined
@@ -159,6 +200,25 @@ const addMenuItem = () => {
   form.value.menu.items.push(createMenuItem())
 }
 
+const addHelpItem = () => {
+  if (form.value.help.items.length >= helpItemsMaxCount) {
+    notifyError(t('telegramBot.settings.helpMaxHint', { max: helpItemsMaxCount }))
+    return
+  }
+  form.value.help.items.push(createHelpItem())
+}
+
+const removeHelpItem = (index: number) => {
+  form.value.help.items.splice(index, 1)
+}
+
+const moveHelpItem = (index: number, dir: 'up' | 'down') => {
+  const items = form.value.help.items
+  const target = dir === 'up' ? index - 1 : index + 1
+  if (target < 0 || target >= items.length) return
+  ;[items[index], items[target]] = [items[target]!, items[index]!]
+}
+
 const removeMenuItem = (index: number) => {
   form.value.menu.items.splice(index, 1)
 }
@@ -183,6 +243,20 @@ const parseMenuItem = (raw: unknown): MenuItem => {
     if (typeof action.type === 'string') item.action.type = action.type
     if (typeof action.value === 'string') item.action.value = action.value
   }
+  return item
+}
+
+const parseHelpItem = (raw: unknown): HelpItem => {
+  const item = createHelpItem()
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return item
+  const obj = raw as Record<string, unknown>
+  if (typeof obj.key === 'string') item.key = obj.key
+  if (typeof obj.enabled === 'boolean') item.enabled = obj.enabled
+  if (typeof obj.order === 'number') item.order = obj.order
+  if (typeof obj.show_support_link === 'boolean') item.show_support_link = obj.show_support_link
+  item.summary = parseLocalized(obj.summary)
+  item.title = parseLocalized(obj.title)
+  item.content = parseLocalized(obj.content)
   return item
 }
 
@@ -310,6 +384,108 @@ onMounted(() => {
         <div class="space-y-2">
           <Label>{{ t('telegramBot.settings.welcomeMessage') }}</Label>
           <Textarea v-model="form.welcome.message[currentLang]" :placeholder="t('telegramBot.settings.welcomeMessagePlaceholder')" rows="3" />
+        </div>
+      </CardContent>
+    </Card>
+
+    <!-- 帮助中心 -->
+    <Card>
+      <CardHeader>
+        <div class="flex items-center justify-between">
+          <div>
+            <CardTitle>{{ t('telegramBot.settings.helpTitle') }}</CardTitle>
+            <CardDescription>{{ t('telegramBot.settings.helpDesc') }}</CardDescription>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="rounded bg-muted px-2 py-1 text-xs text-muted-foreground">{{ currentLang }}</span>
+            <Button type="button" size="sm" variant="outline" @click="addHelpItem">
+              <Plus class="h-4 w-4 mr-1" />
+              {{ t('telegramBot.settings.helpAdd') }}
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent class="space-y-4">
+        <div class="flex items-center gap-2">
+          <input id="help-enabled" v-model="form.help.enabled" type="checkbox" class="h-4 w-4 accent-primary" />
+          <Label for="help-enabled">{{ t('telegramBot.settings.helpEnabled') }}</Label>
+        </div>
+        <div class="space-y-2">
+          <Label>{{ t('telegramBot.settings.helpCenterTitle') }}</Label>
+          <Input v-model="form.help.title[currentLang]" :placeholder="t('telegramBot.settings.helpCenterTitlePlaceholder')" />
+        </div>
+        <div class="space-y-2">
+          <Label>{{ t('telegramBot.settings.helpIntro') }}</Label>
+          <Textarea v-model="form.help.intro[currentLang]" :placeholder="t('telegramBot.settings.helpIntroPlaceholder')" rows="2" />
+        </div>
+        <div class="space-y-2">
+          <Label>{{ t('telegramBot.settings.helpCenterHint') }}</Label>
+          <Textarea v-model="form.help.center_hint[currentLang]" :placeholder="t('telegramBot.settings.helpCenterHintPlaceholder')" rows="2" />
+        </div>
+        <div class="space-y-2">
+          <Label>{{ t('telegramBot.settings.helpSupportHint') }}</Label>
+          <Textarea v-model="form.help.support_hint[currentLang]" :placeholder="t('telegramBot.settings.helpSupportHintPlaceholder')" rows="2" />
+        </div>
+        <div v-if="form.help.items.length === 0" class="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+          {{ t('telegramBot.settings.helpEmpty') }}
+        </div>
+        <div
+          v-for="(item, index) in form.help.items"
+          :key="`help-${index}`"
+          class="rounded-lg border border-border p-4 space-y-3"
+        >
+          <div class="flex flex-wrap items-center gap-2">
+            <input
+              :id="`help-enabled-${index}`"
+              v-model="item.enabled"
+              type="checkbox"
+              class="h-4 w-4 accent-primary"
+            />
+            <Input
+              v-model="item.key"
+              :placeholder="t('telegramBot.settings.helpKeyPlaceholder')"
+              class="flex-1 min-w-[120px]"
+            />
+            <Button
+              type="button" size="icon" variant="ghost"
+              :disabled="index === 0"
+              @click="moveHelpItem(index, 'up')"
+            >
+              <ArrowUp class="h-4 w-4" />
+            </Button>
+            <Button
+              type="button" size="icon" variant="ghost"
+              :disabled="index === form.help.items.length - 1"
+              @click="moveHelpItem(index, 'down')"
+            >
+              <ArrowDown class="h-4 w-4" />
+            </Button>
+            <Button type="button" size="icon" variant="ghost" @click="removeHelpItem(index)">
+              <Trash2 class="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+          <div class="space-y-1">
+            <Label>{{ t('telegramBot.settings.helpSummary') }}</Label>
+            <Input v-model="item.summary[currentLang]" :placeholder="t('telegramBot.settings.helpSummaryPlaceholder')" />
+          </div>
+          <div class="space-y-1">
+            <Label>{{ t('telegramBot.settings.helpItemTitle') }}</Label>
+            <Input v-model="item.title[currentLang]" :placeholder="t('telegramBot.settings.helpItemTitlePlaceholder')" />
+          </div>
+          <div class="space-y-1">
+            <Label>{{ t('telegramBot.settings.helpContent') }}</Label>
+            <Textarea v-model="item.content[currentLang]" :placeholder="t('telegramBot.settings.helpContentPlaceholder')" rows="4" />
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <Label>{{ t('telegramBot.settings.helpOrder') }}</Label>
+              <Input v-model.number="item.order" type="number" />
+            </div>
+            <div class="flex items-center gap-2 pt-6">
+              <input :id="`help-support-link-${index}`" v-model="item.show_support_link" type="checkbox" class="h-4 w-4 accent-primary" />
+              <Label :for="`help-support-link-${index}`">{{ t('telegramBot.settings.helpShowSupportLink') }}</Label>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

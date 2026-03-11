@@ -423,6 +423,7 @@ export const adminAPI = {
     attachment_name?: string
     message_html: string
   }) => api.post<ApiResponse<AdminTelegramBroadcast>>('/admin/telegram-bot/broadcasts', data),
+  deleteTelegramBroadcast: (id: number) => api.delete<ApiResponse>(`/admin/telegram-bot/broadcasts/${id}`),
   getTelegramBroadcastUsers: (params?: Record<string, unknown>) =>
     api.get<ApiResponse<AdminTelegramBroadcastUser[]>>('/admin/telegram-bot/users', { params }),
 }
