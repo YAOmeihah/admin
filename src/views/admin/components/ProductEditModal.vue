@@ -918,6 +918,7 @@ watch(
                   <div>
                     <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.products.form.skuSort') }}</label>
                     <Input v-model.number="sku.sort_order" type="number" :placeholder="t('admin.products.form.skuSortPlaceholder')" />
+                    <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.products.form.skuSortTip') }}</p>
                   </div>
                   <div class="flex items-end">
                     <label class="inline-flex items-center gap-2 text-sm text-muted-foreground">
