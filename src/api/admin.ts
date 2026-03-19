@@ -259,6 +259,7 @@ export const adminAPI = {
   getProduct: (id: number) => api.get<ApiResponse<AdminProduct>>(`/admin/products/${id}`),
   createProduct: (data: Partial<AdminProduct>) => api.post<ApiResponse<AdminProduct>>('/admin/products', data),
   updateProduct: (id: number, data: Partial<AdminProduct>) => api.put<ApiResponse<AdminProduct>>(`/admin/products/${id}`, data),
+  patchProduct: (id: number, data: { is_active?: boolean; sort_order?: number; category_id?: number }) => api.patch<ApiResponse<AdminProduct>>(`/admin/products/${id}`, data),
   deleteProduct: (id: number) => api.delete<ApiResponse>(`/admin/products/${id}`),
   getCategories: (params?: Record<string, unknown>) => api.get<ApiResponse<AdminCategory[]>>('/admin/categories', { params }),
   createCategory: (data: Partial<AdminCategory>) => api.post<ApiResponse<AdminCategory>>('/admin/categories', data),

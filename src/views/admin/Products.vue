@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -16,7 +16,7 @@ import { notifyError } from '@/utils/notify'
 import TableSkeleton from '@/components/TableSkeleton.vue'
 import { confirmAction } from '@/utils/confirm'
 import ProductEditModal from './components/ProductEditModal.vue'
-import { buildAdminCategoryPath, createAdminCategoryMap, flattenAdminCategories } from '@/utils/category'
+import { buildAdminCategoryPath, createAdminCategoryMap, createAdminCategoryChildCountMap, flattenAdminCategories, isAdminProductCategorySelectable } from '@/utils/category'
 
 const { t } = useI18n()
 const loading = ref(false)
@@ -28,10 +28,14 @@ const router = useRouter()
 
 const showModal = ref(false)
 const editingProductId = ref<number | null>(null)
+const editingSortId = ref<number | null>(null)
+const editingSortValue = ref('')
+const editingCategoryId = ref<number | null>(null)
 
 const products = ref<AdminProduct[]>([])
 const categories = ref<AdminCategory[]>([])
 const categoryMap = ref(new Map<number, AdminCategory>())
+const categoryChildCountMap = ref(new Map<number, number>())
 const orderedCategories = ref<AdminCategory[]>([])
 const pagination = reactive({
   page: 1,
@@ -160,10 +164,12 @@ const fetchCategories = async () => {
     const res = await adminAPI.getCategories({ type: 'product' })
     categories.value = res.data.data || []
     categoryMap.value = createAdminCategoryMap(categories.value)
+    categoryChildCountMap.value = createAdminCategoryChildCountMap(categories.value)
     orderedCategories.value = flattenAdminCategories(categories.value).map((item) => item.category)
   } catch (err) {
     categories.value = []
     categoryMap.value = new Map()
+    categoryChildCountMap.value = new Map()
     orderedCategories.value = []
   }
 }
@@ -172,6 +178,11 @@ const getProductCategoryLabel = (category?: AdminCategory) => {
   if (!category) return ''
   return buildAdminCategoryPath(category, categoryMap.value, (item) => getLocalizedText(item.name))
 }
+
+const categoryOptions = computed(() => flattenAdminCategories(categories.value).map((item) => ({
+  ...item,
+  selectable: isAdminProductCategorySelectable(item.category, categoryChildCountMap.value),
+})))
 
 const fetchSiteCurrency = async () => {
   try {
@@ -240,6 +251,69 @@ const handleDelete = async (product: AdminProduct) => {
   } catch (err: any) {
     if (isNotifiedError(err)) return
     notifyError(t('admin.products.errors.deleteFailed', { message: err?.message || '' }))
+  }
+}
+
+const toggleStatus = async (product: AdminProduct) => {
+  const newStatus = !product.is_active
+  try {
+    product.is_active = newStatus
+    await adminAPI.patchProduct(product.id, { is_active: newStatus })
+  } catch (err: any) {
+    product.is_active = !newStatus
+    if (isNotifiedError(err)) return
+    notifyError(t('admin.products.errors.updateFailed', { message: err?.message || '' }))
+  }
+}
+
+const startEditSort = (product: AdminProduct) => {
+  editingSortId.value = product.id
+  editingSortValue.value = String(product.sort_order || 0)
+  nextTick(() => {
+    const input = document.getElementById(`sort-input-${product.id}`) as HTMLInputElement | null
+    input?.focus()
+    input?.select()
+  })
+}
+
+const saveSort = async (product: AdminProduct) => {
+  const newValue = Math.max(Math.floor(Number(editingSortValue.value) || 0), 0)
+  editingSortId.value = null
+  if (newValue === (product.sort_order || 0)) return
+  const oldValue = product.sort_order || 0
+  try {
+    product.sort_order = newValue
+    await adminAPI.patchProduct(product.id, { sort_order: newValue })
+  } catch (err: any) {
+    product.sort_order = oldValue
+    if (isNotifiedError(err)) return
+    notifyError(t('admin.products.errors.updateFailed', { message: err?.message || '' }))
+  }
+}
+
+const cancelEditSort = () => {
+  editingSortId.value = null
+}
+
+const startEditCategory = (product: AdminProduct) => {
+  editingCategoryId.value = product.id
+}
+
+const saveCategory = async (product: AdminProduct, newCategoryId: unknown) => {
+  editingCategoryId.value = null
+  const numId = Number(newCategoryId)
+  if (!numId || numId === product.category_id) return
+  const oldCategoryId = product.category_id
+  const oldCategory = product.category
+  try {
+    product.category_id = numId
+    product.category = orderedCategories.value.find((c) => c.id === numId)
+    await adminAPI.patchProduct(product.id, { category_id: numId })
+  } catch (err: any) {
+    product.category_id = oldCategoryId
+    product.category = oldCategory
+    if (isNotifiedError(err)) return
+    notifyError(t('admin.products.errors.updateFailed', { message: err?.message || '' }))
   }
 }
 
@@ -390,16 +464,65 @@ watch(
             </TableCell>
             <TableCell class="px-6 py-4 font-mono text-foreground">{{ formatPrice(product.price_amount, siteCurrency) }}</TableCell>
             <TableCell class="px-6 py-4">
-              <span v-if="product.category" class="rounded-full border border-border px-2 py-1 text-xs text-muted-foreground">
-                {{ getProductCategoryLabel(product.category) }}
+              <div v-if="editingCategoryId === product.id" class="min-w-[140px]">
+                <Select
+                  :modelValue="String(product.category_id || '')"
+                  @update:modelValue="(val) => saveCategory(product, val)"
+                >
+                  <SelectTrigger class="h-7 w-full text-xs">
+                    <SelectValue :placeholder="t('admin.products.uncategorized')" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem
+                      v-for="item in categoryOptions"
+                      :key="item.category.id"
+                      :value="String(item.category.id)"
+                      :disabled="!item.selectable"
+                      :class="item.depth > 0 ? 'pl-6' : ''"
+                    >
+                      {{ item.depth > 0 ? getLocalizedText(item.category.name) : getProductCategoryLabel(item.category) }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <span
+                v-else
+                class="cursor-pointer rounded-full border border-border px-2 py-1 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                :title="t('admin.common.clickToEdit')"
+                @click="startEditCategory(product)"
+              >
+                {{ product.category ? getProductCategoryLabel(product.category) : t('admin.products.uncategorized') }}
               </span>
-              <span v-else class="text-xs text-muted-foreground">{{ t('admin.products.uncategorized') }}</span>
             </TableCell>
             <TableCell class="px-6 py-4">
-              <span class="rounded-full border border-border px-2 py-1 text-xs text-muted-foreground">{{ product.sort_order || 0 }}</span>
+              <div v-if="editingSortId === product.id" class="flex items-center gap-1">
+                <Input
+                  :id="`sort-input-${product.id}`"
+                  v-model="editingSortValue"
+                  type="number"
+                  min="0"
+                  class="h-7 w-20 text-xs"
+                  @keydown.enter="saveSort(product)"
+                  @keydown.escape="cancelEditSort"
+                  @blur="saveSort(product)"
+                />
+              </div>
+              <span
+                v-else
+                class="cursor-pointer rounded-full border border-border px-2 py-1 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                :title="t('admin.common.clickToEdit')"
+                @click="startEditSort(product)"
+              >
+                {{ product.sort_order || 0 }}
+              </span>
             </TableCell>
             <TableCell class="px-6 py-4">
-              <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="product.is_active ? 'text-emerald-700 border-emerald-200 bg-emerald-50' : 'text-muted-foreground border-border bg-muted/30'">
+              <span
+                class="inline-flex cursor-pointer rounded-full border px-2.5 py-1 text-xs transition-colors"
+                :class="product.is_active ? 'text-emerald-700 border-emerald-200 bg-emerald-50 hover:bg-emerald-100' : 'text-muted-foreground border-border bg-muted/30 hover:bg-muted/50'"
+                :title="product.is_active ? t('admin.products.status.clickToDeactivate') : t('admin.products.status.clickToActivate')"
+                @click="toggleStatus(product)"
+              >
                 {{ product.is_active ? t('admin.products.status.active') : t('admin.products.status.inactive') }}
               </span>
             </TableCell>

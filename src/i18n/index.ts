@@ -437,6 +437,7 @@ const messages = {
         notice: '提示',
         uploadFailed: '上传失败',
         noImage: '无图',
+        clickToEdit: '点击编辑',
         discountTypes: {
           percent: '百分比',
           fixed: '固定金额',
@@ -1056,6 +1057,8 @@ const messages = {
         status: {
           active: '上架',
           inactive: '下架',
+          clickToActivate: '点击上架',
+          clickToDeactivate: '点击下架',
         },
         actions: {
           edit: '编辑',
@@ -1169,6 +1172,7 @@ const messages = {
         errors: {
           operationFailed: '操作失败：{message}',
           deleteFailed: '删除失败：{message}',
+          updateFailed: '更新失败：{message}',
           uploadFailed: '图片上传失败',
           skuCodeRequired: '第 {index} 个 SKU 编码不能为空',
           skuCodeDuplicate: 'SKU 编码重复：{code}',
@@ -2993,6 +2997,7 @@ const messages = {
         notice: '提示',
         uploadFailed: '上傳失敗',
         noImage: '無圖',
+        clickToEdit: '點擊編輯',
         discountTypes: {
           percent: '百分比',
           fixed: '固定金額',
@@ -3612,6 +3617,8 @@ const messages = {
         status: {
           active: '上架',
           inactive: '下架',
+          clickToActivate: '點擊上架',
+          clickToDeactivate: '點擊下架',
         },
         actions: {
           edit: '編輯',
@@ -3725,6 +3732,7 @@ const messages = {
         errors: {
           operationFailed: '操作失敗：{message}',
           deleteFailed: '刪除失敗：{message}',
+          updateFailed: '更新失敗：{message}',
           uploadFailed: '圖片上傳失敗',
           skuCodeRequired: '第 {index} 個 SKU 編碼不能為空',
           skuCodeDuplicate: 'SKU 編碼重複：{code}',
@@ -5549,6 +5557,7 @@ const messages = {
         notice: 'Notice',
         uploadFailed: 'Upload failed',
         noImage: 'NO IMG',
+        clickToEdit: 'Click to edit',
         discountTypes: {
           percent: 'Percent',
           fixed: 'Fixed amount',
@@ -6168,6 +6177,8 @@ const messages = {
         status: {
           active: 'Active',
           inactive: 'Inactive',
+          clickToActivate: 'Click to activate',
+          clickToDeactivate: 'Click to deactivate',
         },
         actions: {
           edit: 'Edit',
@@ -6281,6 +6292,7 @@ const messages = {
         errors: {
           operationFailed: 'Operation failed: {message}',
           deleteFailed: 'Delete failed: {message}',
+          updateFailed: 'Update failed: {message}',
           uploadFailed: 'Image upload failed',
           skuCodeRequired: 'SKU code is required for item #{index}',
           skuCodeDuplicate: 'Duplicate SKU code: {code}',
