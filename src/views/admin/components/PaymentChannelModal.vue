@@ -701,17 +701,17 @@ const closeModal = () => {
 
 <template>
   <Dialog :open="modelValue" @update:open="(value) => { if (!value) closeModal() }">
-    <DialogScrollContent class="w-full max-w-3xl" @interact-outside="(e) => e.preventDefault()">
+    <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-3xl p-4 sm:p-6" @interact-outside="(e) => e.preventDefault()">
       <DialogHeader>
         <DialogTitle>{{ isEditing ? t('admin.paymentChannels.modal.editTitle') : t('admin.paymentChannels.modal.createTitle') }}</DialogTitle>
       </DialogHeader>
       <form class="space-y-4" @submit.prevent="handleSubmit">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 [&>*]:min-w-0">
+          <div class="min-w-0">
             <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.name') }}</label>
             <Input v-model="form.name" required :placeholder="t('admin.paymentChannels.modal.namePlaceholder')" />
           </div>
-          <div>
+          <div class="min-w-0">
             <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.providerType') }}</label>
             <Select v-model="form.provider_type">
               <SelectTrigger class="h-9 w-full">
@@ -725,7 +725,7 @@ const closeModal = () => {
               </SelectContent>
             </Select>
           </div>
-          <div v-if="form.provider_type !== 'tokenpay' && form.provider_type !== 'epusdt'">
+          <div v-if="form.provider_type !== 'tokenpay' && form.provider_type !== 'epusdt'" class="min-w-0">
             <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.channelType') }}</label>
             <Select v-model="form.channel_type">
               <SelectTrigger class="h-9 w-full">
@@ -738,7 +738,7 @@ const closeModal = () => {
               </SelectContent>
             </Select>
           </div>
-          <div>
+          <div class="min-w-0">
             <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.interactionMode') }}</label>
             <Select v-model="form.interaction_mode">
               <SelectTrigger class="h-9 w-full">
@@ -751,28 +751,28 @@ const closeModal = () => {
               </SelectContent>
             </Select>
           </div>
-          <div>
+          <div class="min-w-0">
             <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.sortOrder') }}</label>
             <Input v-model.number="form.sort_order" type="number" placeholder="10" />
           </div>
-          <div>
+          <div class="min-w-0">
             <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.feeRate') }}</label>
             <Input v-model="form.fee_rate" type="number" step="0.01" min="0" max="100" :placeholder="t('admin.paymentChannels.modal.feeRatePlaceholder')" />
           </div>
-          <div>
+          <div class="min-w-0">
             <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.fixedFee') }}</label>
             <Input v-model="form.fixed_fee" type="number" step="0.01" min="0" :placeholder="t('admin.paymentChannels.modal.fixedFeePlaceholder')" />
           </div>
-          <div class="flex items-center gap-2 mt-6">
+          <div class="mt-2 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:items-center">
             <input v-model="form.is_active" type="checkbox" class="h-4 w-4 accent-primary" />
             <span class="text-xs text-muted-foreground">{{ t('admin.common.enabled') }}</span>
           </div>
         </div>
 
-        <div v-if="form.provider_type === 'epay'" class="rounded-xl border border-border bg-muted/20 p-4">
+        <div v-if="form.provider_type === 'epay'" class="min-w-0 rounded-xl border border-border bg-muted/20 p-4 overflow-hidden">
           <div class="text-sm font-semibold text-foreground mb-3">{{ t('admin.paymentChannels.modal.epaySection') }}</div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 [&>*]:min-w-0">
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epayVersion') }}</label>
               <Select v-model="epayConfig.epay_version">
                 <SelectTrigger class="h-9 w-full">
@@ -784,31 +784,31 @@ const closeModal = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.gatewayUrl') }}</label>
               <Input v-model="epayConfig.gateway_url" :placeholder="t('admin.paymentChannels.modal.gatewayUrlPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.merchantId') }}</label>
               <Input v-model="epayConfig.merchant_id" :placeholder="t('admin.paymentChannels.modal.merchantIdPlaceholder')" />
             </div>
-            <div v-if="epayConfig.epay_version === 'v1'">
+            <div v-if="epayConfig.epay_version === 'v1'" class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.merchantKey') }}</label>
               <Input v-model="epayConfig.merchant_key" :placeholder="t('admin.paymentChannels.modal.merchantKeyPlaceholder')" />
             </div>
-            <div v-else class="md:col-span-2">
+            <div v-else class="min-w-0 md:col-span-2">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.privateKey') }}</label>
               <Textarea v-model="epayConfig.private_key" rows="4" :placeholder="t('admin.paymentChannels.modal.privateKeyPlaceholder')" />
             </div>
-            <div v-if="epayConfig.epay_version === 'v2'" class="md:col-span-2">
+            <div v-if="epayConfig.epay_version === 'v2'" class="min-w-0 md:col-span-2">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.platformPublicKey') }}</label>
               <Textarea v-model="epayConfig.platform_public_key" rows="4" :placeholder="t('admin.paymentChannels.modal.platformPublicKeyPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.notifyUrl') }}</label>
               <Input v-model="epayConfig.notify_url" :placeholder="t('admin.paymentChannels.modal.notifyUrlPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.returnUrl') }}</label>
               <Input v-model="epayConfig.return_url" :placeholder="t('admin.paymentChannels.modal.returnUrlPlaceholder')" />
             </div>
@@ -816,38 +816,38 @@ const closeModal = () => {
           <div class="mt-3 text-xs text-muted-foreground">{{ t('admin.paymentChannels.modal.epayHint') }}</div>
         </div>
 
-        <div v-if="form.provider_type === 'official' && form.channel_type === 'paypal'" class="rounded-xl border border-border bg-muted/20 p-4">
+        <div v-if="form.provider_type === 'official' && form.channel_type === 'paypal'" class="min-w-0 rounded-xl border border-border bg-muted/20 p-4 overflow-hidden">
           <div class="text-sm font-semibold text-foreground mb-3">{{ t('admin.paymentChannels.modal.paypalSection') }}</div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 [&>*]:min-w-0">
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.paypalClientId') }}</label>
               <Input v-model="paypalConfig.client_id" :placeholder="t('admin.paymentChannels.modal.paypalClientIdPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.paypalClientSecret') }}</label>
               <Input v-model="paypalConfig.client_secret" :placeholder="t('admin.paymentChannels.modal.paypalClientSecretPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.paypalBaseUrl') }}</label>
               <Input v-model="paypalConfig.base_url" :placeholder="t('admin.paymentChannels.modal.paypalBaseUrlPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.returnUrl') }}</label>
               <Input v-model="paypalConfig.return_url" :placeholder="t('admin.paymentChannels.modal.returnUrlPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.paypalCancelUrl') }}</label>
               <Input v-model="paypalConfig.cancel_url" :placeholder="t('admin.paymentChannels.modal.paypalCancelUrlPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.paypalWebhookId') }}</label>
               <Input v-model="paypalConfig.webhook_id" :placeholder="t('admin.paymentChannels.modal.paypalWebhookIdPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.paypalBrandName') }}</label>
               <Input v-model="paypalConfig.brand_name" :placeholder="t('admin.paymentChannels.modal.paypalBrandNamePlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.paypalLocale') }}</label>
               <Input v-model="paypalConfig.locale" :placeholder="t('admin.paymentChannels.modal.paypalLocalePlaceholder')" />
             </div>
@@ -855,34 +855,34 @@ const closeModal = () => {
           <div class="mt-3 text-xs text-muted-foreground">{{ t('admin.paymentChannels.modal.paypalHint') }}</div>
         </div>
 
-        <div v-if="form.provider_type === 'official' && form.channel_type === 'stripe'" class="rounded-xl border border-border bg-muted/20 p-4">
+        <div v-if="form.provider_type === 'official' && form.channel_type === 'stripe'" class="min-w-0 rounded-xl border border-border bg-muted/20 p-4 overflow-hidden">
           <div class="text-sm font-semibold text-foreground mb-3">{{ t('admin.paymentChannels.modal.stripeSection') }}</div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="md:col-span-2">
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 [&>*]:min-w-0">
+            <div class="min-w-0 md:col-span-2">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.stripeSecretKey') }}</label>
               <Input v-model="stripeConfig.secret_key" :placeholder="t('admin.paymentChannels.modal.stripeSecretKeyPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.stripePublishableKey') }}</label>
               <Input v-model="stripeConfig.publishable_key" :placeholder="t('admin.paymentChannels.modal.stripePublishableKeyPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.stripeWebhookSecret') }}</label>
               <Input v-model="stripeConfig.webhook_secret" :placeholder="t('admin.paymentChannels.modal.stripeWebhookSecretPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.stripeSuccessUrl') }}</label>
               <Input v-model="stripeConfig.success_url" :placeholder="t('admin.paymentChannels.modal.stripeSuccessUrlPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.stripeCancelUrl') }}</label>
               <Input v-model="stripeConfig.cancel_url" :placeholder="t('admin.paymentChannels.modal.stripeCancelUrlPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.stripeApiBaseUrl') }}</label>
               <Input v-model="stripeConfig.api_base_url" :placeholder="t('admin.paymentChannels.modal.stripeApiBaseUrlPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.stripePaymentMethodTypes') }}</label>
               <Input v-model="stripeConfig.payment_method_types" :placeholder="t('admin.paymentChannels.modal.stripePaymentMethodTypesPlaceholder')" />
             </div>
@@ -890,46 +890,46 @@ const closeModal = () => {
           <div class="mt-3 text-xs text-muted-foreground">{{ t('admin.paymentChannels.modal.stripeHint') }}</div>
         </div>
 
-        <div v-if="form.provider_type === 'official' && form.channel_type === 'wechat'" class="rounded-xl border border-border bg-muted/20 p-4">
+        <div v-if="form.provider_type === 'official' && form.channel_type === 'wechat'" class="min-w-0 rounded-xl border border-border bg-muted/20 p-4 overflow-hidden">
           <div class="text-sm font-semibold text-foreground mb-3">{{ t('admin.paymentChannels.modal.wechatSection') }}</div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 [&>*]:min-w-0">
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.wechatAppId') }}</label>
               <Input v-model="wechatConfig.appid" :placeholder="t('admin.paymentChannels.modal.wechatAppIdPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.wechatMerchantId') }}</label>
               <Input v-model="wechatConfig.mchid" :placeholder="t('admin.paymentChannels.modal.wechatMerchantIdPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.wechatMerchantSerialNo') }}</label>
               <Input v-model="wechatConfig.merchant_serial_no" :placeholder="t('admin.paymentChannels.modal.wechatMerchantSerialNoPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.wechatApiV3Key') }}</label>
               <Input v-model="wechatConfig.api_v3_key" :placeholder="t('admin.paymentChannels.modal.wechatApiV3KeyPlaceholder')" />
             </div>
-            <div class="md:col-span-2">
+            <div class="min-w-0 md:col-span-2">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.wechatMerchantPrivateKey') }}</label>
               <Textarea v-model="wechatConfig.merchant_private_key" rows="4" :placeholder="t('admin.paymentChannels.modal.wechatMerchantPrivateKeyPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.wechatNotifyUrl') }}</label>
               <Input v-model="wechatConfig.notify_url" :placeholder="t('admin.paymentChannels.modal.wechatNotifyUrlPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.wechatH5RedirectUrl') }}</label>
               <Input v-model="wechatConfig.h5_redirect_url" :placeholder="t('admin.paymentChannels.modal.wechatH5RedirectUrlPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.wechatH5Type') }}</label>
               <Input v-model="wechatConfig.h5_type" :placeholder="t('admin.paymentChannels.modal.wechatH5TypePlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.wechatH5WapUrl') }}</label>
               <Input v-model="wechatConfig.h5_wap_url" :placeholder="t('admin.paymentChannels.modal.wechatH5WapUrlPlaceholder')" />
             </div>
-            <div class="md:col-span-2">
+            <div class="min-w-0 md:col-span-2">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.wechatH5WapName') }}</label>
               <Input v-model="wechatConfig.h5_wap_name" :placeholder="t('admin.paymentChannels.modal.wechatH5WapNamePlaceholder')" />
             </div>
@@ -937,42 +937,42 @@ const closeModal = () => {
           <div class="mt-3 text-xs text-muted-foreground">{{ t('admin.paymentChannels.modal.wechatHint') }}</div>
         </div>
 
-        <div v-if="form.provider_type === 'official' && form.channel_type === 'alipay'" class="rounded-xl border border-border bg-muted/20 p-4">
+        <div v-if="form.provider_type === 'official' && form.channel_type === 'alipay'" class="min-w-0 rounded-xl border border-border bg-muted/20 p-4 overflow-hidden">
           <div class="text-sm font-semibold text-foreground mb-3">{{ t('admin.paymentChannels.modal.alipaySection') }}</div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 [&>*]:min-w-0">
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.alipayAppId') }}</label>
               <Input v-model="alipayConfig.app_id" :placeholder="t('admin.paymentChannels.modal.alipayAppIdPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.alipaySignType') }}</label>
               <Input v-model="alipayConfig.sign_type" :placeholder="t('admin.paymentChannels.modal.alipaySignTypePlaceholder')" />
             </div>
-            <div class="md:col-span-2">
+            <div class="min-w-0 md:col-span-2">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.alipayPrivateKey') }}</label>
               <Textarea v-model="alipayConfig.private_key" rows="4" :placeholder="t('admin.paymentChannels.modal.alipayPrivateKeyPlaceholder')" />
             </div>
-            <div class="md:col-span-2">
+            <div class="min-w-0 md:col-span-2">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.alipayPublicKey') }}</label>
               <Textarea v-model="alipayConfig.alipay_public_key" rows="4" :placeholder="t('admin.paymentChannels.modal.alipayPublicKeyPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.alipayGatewayUrl') }}</label>
               <Input v-model="alipayConfig.gateway_url" :placeholder="t('admin.paymentChannels.modal.alipayGatewayUrlPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.alipayNotifyUrl') }}</label>
               <Input v-model="alipayConfig.notify_url" :placeholder="t('admin.paymentChannels.modal.alipayNotifyUrlPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.alipayReturnUrl') }}</label>
               <Input v-model="alipayConfig.return_url" :placeholder="t('admin.paymentChannels.modal.alipayReturnUrlPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.alipayAppCertSn') }}</label>
               <Input v-model="alipayConfig.app_cert_sn" :placeholder="t('admin.paymentChannels.modal.alipayAppCertSnPlaceholder')" />
             </div>
-            <div class="md:col-span-2">
+            <div class="min-w-0 md:col-span-2">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.alipayRootCertSn') }}</label>
               <Input v-model="alipayConfig.alipay_root_cert_sn" :placeholder="t('admin.paymentChannels.modal.alipayRootCertSnPlaceholder')" />
             </div>
@@ -980,30 +980,30 @@ const closeModal = () => {
           <div class="mt-3 text-xs text-muted-foreground">{{ t('admin.paymentChannels.modal.alipayHint') }}</div>
         </div>
 
-        <div v-if="form.provider_type === 'epusdt'" class="rounded-xl border border-border bg-muted/20 p-4">
+        <div v-if="form.provider_type === 'epusdt'" class="min-w-0 rounded-xl border border-border bg-muted/20 p-4 overflow-hidden">
           <div class="text-sm font-semibold text-foreground mb-3">{{ t('admin.paymentChannels.modal.epusdtSection') }}</div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="md:col-span-2">
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 [&>*]:min-w-0">
+            <div class="min-w-0 md:col-span-2">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epusdtGatewayUrl') }}</label>
               <Input v-model="epusdtConfig.gateway_url" :placeholder="t('admin.paymentChannels.modal.epusdtGatewayUrlPlaceholder')" />
             </div>
-            <div class="md:col-span-2">
+            <div class="min-w-0 md:col-span-2">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epusdtAuthToken') }}</label>
               <Input v-model="epusdtConfig.auth_token" :placeholder="t('admin.paymentChannels.modal.epusdtAuthTokenPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epusdtTradeType') }}</label>
               <Input v-model="epusdtConfig.trade_type" :placeholder="t('admin.paymentChannels.modal.epusdtTradeTypePlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epusdtFiat') }}</label>
               <Input v-model="epusdtConfig.fiat" :placeholder="t('admin.paymentChannels.modal.epusdtFiatPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epusdtNotifyUrl') }}</label>
               <Input v-model="epusdtConfig.notify_url" :placeholder="t('admin.paymentChannels.modal.epusdtNotifyUrlPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epusdtReturnUrl') }}</label>
               <Input v-model="epusdtConfig.return_url" :placeholder="t('admin.paymentChannels.modal.epusdtReturnUrlPlaceholder')" />
             </div>
@@ -1011,30 +1011,30 @@ const closeModal = () => {
           <div class="mt-3 text-xs text-muted-foreground">{{ t('admin.paymentChannels.modal.epusdtHint') }}</div>
         </div>
 
-        <div v-if="form.provider_type === 'tokenpay'" class="rounded-xl border border-border bg-muted/20 p-4">
+        <div v-if="form.provider_type === 'tokenpay'" class="min-w-0 rounded-xl border border-border bg-muted/20 p-4 overflow-hidden">
           <div class="text-sm font-semibold text-foreground mb-3">{{ t('admin.paymentChannels.modal.tokenpaySection') }}</div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="md:col-span-2">
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 [&>*]:min-w-0">
+            <div class="min-w-0 md:col-span-2">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.tokenpayGatewayUrl') }}</label>
               <Input v-model="tokenpayConfig.gateway_url" :placeholder="t('admin.paymentChannels.modal.tokenpayGatewayUrlPlaceholder')" />
             </div>
-            <div class="md:col-span-2">
+            <div class="min-w-0 md:col-span-2">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.tokenpayNotifySecret') }}</label>
               <Input v-model="tokenpayConfig.notify_secret" :placeholder="t('admin.paymentChannels.modal.tokenpayNotifySecretPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.tokenpayCurrency') }}</label>
               <Input v-model="tokenpayConfig.currency" :placeholder="t('admin.paymentChannels.modal.tokenpayCurrencyPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.tokenpayBaseCurrency') }}</label>
               <Input v-model="tokenpayConfig.base_currency" :placeholder="t('admin.paymentChannels.modal.tokenpayBaseCurrencyPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.tokenpayNotifyUrl') }}</label>
               <Input v-model="tokenpayConfig.notify_url" :placeholder="t('admin.paymentChannels.modal.tokenpayNotifyUrlPlaceholder')" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.tokenpayRedirectUrl') }}</label>
               <Input v-model="tokenpayConfig.redirect_url" :placeholder="t('admin.paymentChannels.modal.tokenpayRedirectUrlPlaceholder')" />
             </div>
@@ -1043,7 +1043,7 @@ const closeModal = () => {
         </div>
 
         <div>
-          <div class="flex items-center justify-between mb-1.5">
+          <div class="mb-1.5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <label class="block text-xs font-medium text-muted-foreground">{{ t('admin.paymentChannels.modal.configJson') }}</label>
             <button type="button" class="text-xs text-muted-foreground hover:text-foreground" @click="showAdvanced = !showAdvanced">
               {{ showAdvanced ? t('admin.paymentChannels.modal.advancedHide') : t('admin.paymentChannels.modal.advancedShow') }}
@@ -1056,9 +1056,9 @@ const closeModal = () => {
           {{ error }}
         </div>
 
-        <div class="flex justify-end gap-3">
-          <Button type="button" variant="outline" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
-          <Button type="submit">{{ t('admin.common.save') }}</Button>
+        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Button class="w-full sm:w-auto" type="button" variant="outline" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
+          <Button class="w-full sm:w-auto" type="submit">{{ t('admin.common.save') }}</Button>
         </div>
       </form>
     </DialogScrollContent>

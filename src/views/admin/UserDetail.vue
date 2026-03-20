@@ -389,7 +389,7 @@ watch(
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex items-center gap-3">
         <router-link :to="`${adminPath}/users`" class="text-muted-foreground hover:text-foreground transition-colors">
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -398,11 +398,11 @@ watch(
         </router-link>
         <h1 class="text-2xl font-semibold">{{ t('admin.userDetail.title') }}</h1>
       </div>
-      <div class="flex items-center gap-2">
-        <Button as-child size="sm" variant="outline">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <Button as-child size="sm" variant="outline" class="w-full sm:w-auto">
           <router-link :to="orderListLink">{{ t('admin.userDetail.actions.orders') }}</router-link>
         </Button>
-        <Button as-child size="sm" variant="outline">
+        <Button as-child size="sm" variant="outline" class="w-full sm:w-auto">
           <router-link :to="paymentListLink">{{ t('admin.userDetail.actions.payments') }}</router-link>
         </Button>
       </div>
@@ -425,13 +425,13 @@ watch(
       <Card class="rounded-lg border-border bg-background shadow-none">
         <CardContent class="p-3">
           <div class="text-xs text-muted-foreground">{{ t('admin.userDetail.fields.email') }}</div>
-          <div class="text-sm text-foreground">{{ user?.email || '-' }}</div>
+          <div class="text-sm text-foreground break-all">{{ user?.email || '-' }}</div>
         </CardContent>
       </Card>
       <Card class="rounded-lg border-border bg-background shadow-none">
         <CardContent class="p-3">
           <div class="text-xs text-muted-foreground">{{ t('admin.userDetail.fields.nickname') }}</div>
-          <div class="text-sm text-foreground">{{ user?.display_name || '-' }}</div>
+          <div class="text-sm text-foreground break-words">{{ user?.display_name || '-' }}</div>
         </CardContent>
       </Card>
       <Card class="rounded-lg border-border bg-background shadow-none">
@@ -536,11 +536,11 @@ watch(
       </CardContent>
     </Card>
 
-    <div class="flex w-fit gap-2 rounded-xl border border-border bg-card p-1">
+    <div class="flex w-full gap-2 overflow-x-auto rounded-xl border border-border bg-card p-1 sm:w-fit">
       <button
         v-for="tab in tabs"
         :key="tab.key"
-        class="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+        class="shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
         :class="activeTab === tab.key ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'"
         @click="changeTab(tab.key)"
       >
@@ -549,11 +549,11 @@ watch(
     </div>
 
     <div v-if="activeTab === 'orders'" class="rounded-xl border border-border bg-card overflow-x-auto">
-      <Table>
+      <Table class="min-w-[720px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-6 py-3">{{ t('admin.userDetail.orders.id') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.userDetail.orders.orderNo') }}</TableHead>
+            <TableHead class="px-6 py-3 min-w-[220px]">{{ t('admin.userDetail.orders.orderNo') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.userDetail.orders.status') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.userDetail.orders.amount') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.userDetail.orders.createdAt') }}</TableHead>
@@ -570,7 +570,7 @@ watch(
             <TableCell class="px-6 py-4">
               <IdCell :value="order.id" />
             </TableCell>
-            <TableCell class="px-6 py-4 text-foreground font-mono">{{ order.order_no }}</TableCell>
+            <TableCell class="min-w-[220px] px-6 py-4 text-foreground font-mono break-all">{{ order.order_no }}</TableCell>
             <TableCell class="px-6 py-4 text-xs">
               <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="orderStatusClass(order.status)">
                 {{ orderStatusLabel(order.status) }}
@@ -629,11 +629,11 @@ watch(
     </div>
 
     <div v-if="activeTab === 'payments'" class="rounded-xl border border-border bg-card overflow-x-auto">
-      <Table>
+      <Table class="min-w-[760px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-6 py-3">{{ t('admin.userDetail.payments.id') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.userDetail.payments.orderId') }}</TableHead>
+            <TableHead class="px-6 py-3 min-w-[220px]">{{ t('admin.userDetail.payments.orderId') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.userDetail.payments.status') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.userDetail.payments.amount') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.userDetail.payments.createdAt') }}</TableHead>
@@ -650,7 +650,7 @@ watch(
             <TableCell class="px-6 py-4">
               <IdCell :value="payment.id" />
             </TableCell>
-            <TableCell class="px-6 py-4 text-foreground font-mono">
+            <TableCell class="min-w-[220px] px-6 py-4 text-foreground font-mono">
               <router-link
                 v-if="payment.order_id"
                 :to="orderLink(payment.order_id)"
@@ -658,7 +658,7 @@ watch(
               >
                 #{{ payment.order_id }}
               </router-link>
-              <span v-else-if="payment.recharge_no">{{ payment.recharge_no }}</span>
+              <span v-else-if="payment.recharge_no" class="break-all">{{ payment.recharge_no }}</span>
               <span v-else>-</span>
               <div v-if="payment.recharge_no" class="mt-1 text-xs text-muted-foreground">
                 {{ t('admin.payments.rechargeStatus') }}:
@@ -724,13 +724,13 @@ watch(
     </div>
 
     <div v-if="activeTab === 'coupons'" class="rounded-xl border border-border bg-card overflow-x-auto">
-      <Table>
+      <Table class="min-w-[900px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-6 py-3">{{ t('admin.userDetail.coupons.id') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.userDetail.coupons.coupon') }}</TableHead>
+            <TableHead class="px-6 py-3 min-w-[180px]">{{ t('admin.userDetail.coupons.coupon') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.userDetail.coupons.type') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.userDetail.coupons.products') }}</TableHead>
+            <TableHead class="px-6 py-3 min-w-[220px]">{{ t('admin.userDetail.coupons.products') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.userDetail.coupons.orderId') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.userDetail.coupons.discount') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.userDetail.coupons.createdAt') }}</TableHead>
@@ -747,12 +747,12 @@ watch(
             <TableCell class="px-6 py-4">
               <IdCell :value="usage.id" />
             </TableCell>
-            <TableCell class="px-6 py-4">
+            <TableCell class="min-w-[180px] px-6 py-4">
               <div class="text-foreground font-mono">{{ usage.coupon_code || '-' }}</div>
               <div class="text-xs text-muted-foreground">#{{ usage.coupon_id }}</div>
             </TableCell>
             <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ formatCouponType(usage.coupon_type) }}</TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ formatScopeProducts(usage.scope_products) }}</TableCell>
+            <TableCell class="min-w-[220px] px-6 py-4 text-xs text-muted-foreground break-words">{{ formatScopeProducts(usage.scope_products) }}</TableCell>
             <TableCell class="px-6 py-4 text-foreground font-mono">
               <router-link
                 v-if="usage.order_id"
@@ -853,7 +853,7 @@ watch(
             <Input v-model="walletAdjustForm.remark" :placeholder="t('admin.userDetail.wallet.remarkPlaceholder')" />
           </div>
           <div class="flex items-end">
-            <Button type="submit" :disabled="walletSubmitting">
+            <Button type="submit" class="w-full md:w-auto" :disabled="walletSubmitting">
               {{ walletSubmitting ? t('admin.userDetail.wallet.adjusting') : t('admin.userDetail.wallet.adjustSubmit') }}
             </Button>
           </div>
@@ -867,7 +867,7 @@ watch(
       </div>
 
       <div class="rounded-xl border border-border bg-card overflow-x-auto">
-        <Table>
+        <Table class="min-w-[920px]">
           <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
             <TableRow>
               <TableHead class="px-6 py-3">{{ t('admin.userDetail.wallet.table.id') }}</TableHead>
@@ -875,7 +875,7 @@ watch(
               <TableHead class="px-6 py-3">{{ t('admin.userDetail.wallet.table.direction') }}</TableHead>
               <TableHead class="px-6 py-3">{{ t('admin.userDetail.wallet.table.amount') }}</TableHead>
               <TableHead class="px-6 py-3">{{ t('admin.userDetail.wallet.table.balanceAfter') }}</TableHead>
-              <TableHead class="px-6 py-3">{{ t('admin.userDetail.wallet.table.remark') }}</TableHead>
+              <TableHead class="px-6 py-3 min-w-[220px]">{{ t('admin.userDetail.wallet.table.remark') }}</TableHead>
               <TableHead class="px-6 py-3">{{ t('admin.userDetail.wallet.table.createdAt') }}</TableHead>
             </TableRow>
           </TableHeader>
@@ -898,7 +898,7 @@ watch(
               </TableCell>
               <TableCell class="px-6 py-4 text-xs font-mono text-foreground">{{ formatMoney(item.amount, item.currency) }}</TableCell>
               <TableCell class="px-6 py-4 text-xs font-mono text-foreground">{{ formatMoney(item.balance_after, item.currency) }}</TableCell>
-              <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ item.remark || '-' }}</TableCell>
+              <TableCell class="min-w-[220px] px-6 py-4 text-xs text-muted-foreground break-words">{{ item.remark || '-' }}</TableCell>
               <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ formatDate(item.created_at) }}</TableCell>
             </TableRow>
           </TableBody>

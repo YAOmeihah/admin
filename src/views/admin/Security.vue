@@ -87,7 +87,7 @@ const changePassword = async () => {
           </div>
         </div>
         <div class="flex justify-end">
-          <Button :disabled="loading" @click="changePassword">
+          <Button class="w-full sm:w-auto" :disabled="loading" @click="changePassword">
             <span v-if="loading" class="h-3 w-3 animate-spin rounded-full border-2 border-primary/30 border-t-primary"></span>
             {{ t('admin.settings.actions.changePassword') }}
           </Button>

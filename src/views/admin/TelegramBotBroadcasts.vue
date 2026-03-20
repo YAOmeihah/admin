@@ -118,12 +118,12 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h2 class="text-2xl font-bold tracking-tight">{{ t('telegramBot.broadcasts.title') }}</h2>
         <p class="text-muted-foreground">{{ t('telegramBot.broadcasts.subtitle') }}</p>
       </div>
-      <Button as-child>
+      <Button class="w-full sm:w-auto" as-child>
         <RouterLink to="/telegram-bot/broadcasts/create">
           <Send class="h-4 w-4 mr-2" />
           {{ t('telegramBot.broadcasts.create') }}
@@ -132,7 +132,7 @@ onMounted(() => {
     </div>
 
     <Card>
-      <CardContent class="space-y-4 p-4 overflow-x-auto">
+      <CardContent class="space-y-4 p-4">
         <div class="flex flex-wrap items-center gap-3">
           <div class="w-full md:w-56">
             <Input v-model="filters.keyword" :placeholder="t('telegramBot.broadcasts.filterTitleKeyword')" @keyup.enter="handleSearch" />
@@ -169,64 +169,66 @@ onMounted(() => {
           <div class="w-full md:w-48">
             <Input v-model="filters.createdTo" type="datetime-local" />
           </div>
-          <Button size="sm" @click="handleSearch">{{ t('telegramBot.broadcasts.search') }}</Button>
-          <Button variant="outline" size="sm" @click="resetFilters">{{ t('telegramBot.broadcasts.resetFilters') }}</Button>
+          <Button size="sm" class="w-full sm:w-auto" @click="handleSearch">{{ t('telegramBot.broadcasts.search') }}</Button>
+          <Button variant="outline" size="sm" class="w-full sm:w-auto" @click="resetFilters">{{ t('telegramBot.broadcasts.resetFilters') }}</Button>
         </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>{{ t('telegramBot.broadcasts.tableTitle') }}</TableHead>
-              <TableHead>{{ t('telegramBot.broadcasts.tableRecipientType') }}</TableHead>
-              <TableHead>{{ t('telegramBot.broadcasts.tableStatus') }}</TableHead>
-              <TableHead>{{ t('telegramBot.broadcasts.tableRecipientCount') }}</TableHead>
-              <TableHead>{{ t('telegramBot.broadcasts.tableSuccessCount') }}</TableHead>
-              <TableHead>{{ t('telegramBot.broadcasts.tableFailedCount') }}</TableHead>
-              <TableHead>{{ t('telegramBot.broadcasts.tableCreatedAt') }}</TableHead>
-              <TableHead>{{ t('telegramBot.broadcasts.tableCompletedAt') }}</TableHead>
-              <TableHead class="text-right">{{ t('telegramBot.broadcasts.tableActions') }}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow v-if="loading">
-              <TableCell :colspan="10" class="py-10 text-center text-muted-foreground">
-                <Loader2 class="mx-auto h-5 w-5 animate-spin" />
-              </TableCell>
-            </TableRow>
-            <TableRow v-else-if="items.length === 0">
-              <TableCell :colspan="10" class="py-10 text-center text-muted-foreground">
-                {{ t('telegramBot.broadcasts.empty') }}
-              </TableCell>
-            </TableRow>
-            <TableRow v-for="item in items" :key="item.id">
-              <TableCell>{{ item.id }}</TableCell>
-              <TableCell>
-                <div class="space-y-1">
-                  <div class="font-medium">{{ item.title }}</div>
-                  <div v-if="item.last_error" class="line-clamp-2 text-xs text-destructive">{{ item.last_error }}</div>
-                </div>
-              </TableCell>
-              <TableCell>{{ formatRecipientType(item.recipient_type) }}</TableCell>
-              <TableCell>{{ formatStatus(item.status) }}</TableCell>
-              <TableCell>{{ item.recipient_count }}</TableCell>
-              <TableCell>{{ item.success_count }}</TableCell>
-              <TableCell>{{ item.failed_count }}</TableCell>
-              <TableCell>{{ formatDate(item.created_at) || '-' }}</TableCell>
-              <TableCell>{{ formatDate(item.completed_at || '') || '-' }}</TableCell>
-              <TableCell class="text-right">
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  :disabled="!canDelete(item) || deletingId === item.id"
-                  @click="handleDelete(item)"
-                >
-                  <Trash2 class="mr-2 h-4 w-4" />
-                  {{ deletingId === item.id ? t('admin.common.loading') : t('telegramBot.broadcasts.delete') }}
-                </Button>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+        <div class="overflow-x-auto">
+          <Table class="min-w-[1160px]">
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead class="min-w-[280px]">{{ t('telegramBot.broadcasts.tableTitle') }}</TableHead>
+                <TableHead class="min-w-[140px]">{{ t('telegramBot.broadcasts.tableRecipientType') }}</TableHead>
+                <TableHead class="min-w-[140px]">{{ t('telegramBot.broadcasts.tableStatus') }}</TableHead>
+                <TableHead>{{ t('telegramBot.broadcasts.tableRecipientCount') }}</TableHead>
+                <TableHead>{{ t('telegramBot.broadcasts.tableSuccessCount') }}</TableHead>
+                <TableHead>{{ t('telegramBot.broadcasts.tableFailedCount') }}</TableHead>
+                <TableHead class="min-w-[180px]">{{ t('telegramBot.broadcasts.tableCreatedAt') }}</TableHead>
+                <TableHead class="min-w-[180px]">{{ t('telegramBot.broadcasts.tableCompletedAt') }}</TableHead>
+                <TableHead class="min-w-[180px] text-right">{{ t('telegramBot.broadcasts.tableActions') }}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow v-if="loading">
+                <TableCell :colspan="10" class="py-10 text-center text-muted-foreground">
+                  <Loader2 class="mx-auto h-5 w-5 animate-spin" />
+                </TableCell>
+              </TableRow>
+              <TableRow v-else-if="items.length === 0">
+                <TableCell :colspan="10" class="py-10 text-center text-muted-foreground">
+                  {{ t('telegramBot.broadcasts.empty') }}
+                </TableCell>
+              </TableRow>
+              <TableRow v-for="item in items" :key="item.id">
+                <TableCell>{{ item.id }}</TableCell>
+                <TableCell class="min-w-[280px]">
+                  <div class="space-y-1">
+                    <div class="break-words font-medium">{{ item.title }}</div>
+                    <div v-if="item.last_error" class="break-words text-xs text-destructive">{{ item.last_error }}</div>
+                  </div>
+                </TableCell>
+                <TableCell class="min-w-[140px]">{{ formatRecipientType(item.recipient_type) }}</TableCell>
+                <TableCell class="min-w-[140px]">{{ formatStatus(item.status) }}</TableCell>
+                <TableCell>{{ item.recipient_count }}</TableCell>
+                <TableCell>{{ item.success_count }}</TableCell>
+                <TableCell>{{ item.failed_count }}</TableCell>
+                <TableCell class="min-w-[180px]">{{ formatDate(item.created_at) || '-' }}</TableCell>
+                <TableCell class="min-w-[180px]">{{ formatDate(item.completed_at || '') || '-' }}</TableCell>
+                <TableCell class="min-w-[180px] text-right">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    :disabled="!canDelete(item) || deletingId === item.id"
+                    @click="handleDelete(item)"
+                  >
+                    <Trash2 class="mr-2 h-4 w-4" />
+                    {{ deletingId === item.id ? t('admin.common.loading') : t('telegramBot.broadcasts.delete') }}
+                  </Button>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
 

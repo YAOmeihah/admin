@@ -255,9 +255,9 @@ defineExpose({ save, submitting })
         </div>
 
         <div class="rounded-xl border border-border">
-          <div class="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-3">
+          <div class="flex flex-col gap-2 border-b border-border bg-muted/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-sm font-semibold">{{ t('admin.settings.notification.templates.title') }}</h3>
-            <span class="rounded bg-muted px-2 py-1 text-xs text-muted-foreground">{{ currentLang }}</span>
+            <span class="w-fit rounded bg-muted px-2 py-1 text-xs text-muted-foreground">{{ currentLang }}</span>
           </div>
           <div class="space-y-4 p-4">
             <div class="rounded-lg border border-border bg-muted/10 p-4">

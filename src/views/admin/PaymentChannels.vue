@@ -179,15 +179,15 @@ watch(
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('admin.paymentChannels.title') }}</h1>
-      <Button class="gap-2" @click="openCreateModal">
+      <Button class="w-full gap-2 sm:w-auto" @click="openCreateModal">
         <span>{{ t('admin.paymentChannels.create') }}</span>
       </Button>
     </div>
 
     <div class="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <div class="w-full md:w-56">
           <Select v-model="filters.providerType" @update:modelValue="handleSearch">
             <SelectTrigger class="h-9 w-full">
@@ -221,23 +221,23 @@ watch(
             </SelectContent>
           </Select>
         </div>
-        <div class="flex-1"></div>
-        <Button size="sm" variant="outline" @click="refresh">{{ t('admin.common.refresh') }}</Button>
+        <div class="hidden flex-1 sm:block"></div>
+        <Button size="sm" variant="outline" class="w-full sm:w-auto" @click="refresh">{{ t('admin.common.refresh') }}</Button>
       </div>
     </div>
 
-    <div class="rounded-xl border border-border bg-card">
-      <Table>
+    <div class="rounded-xl border border-border bg-card overflow-x-auto">
+      <Table class="min-w-[980px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-6 py-3">{{ t('admin.paymentChannels.table.id') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.paymentChannels.table.name') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.paymentChannels.table.type') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.paymentChannels.table.interaction') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.paymentChannels.table.feeRate') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.paymentChannels.table.status') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.paymentChannels.table.sort') }}</TableHead>
-            <TableHead class="px-6 py-3 text-right">{{ t('admin.paymentChannels.table.action') }}</TableHead>
+            <TableHead class="min-w-[220px] px-6 py-3">{{ t('admin.paymentChannels.table.name') }}</TableHead>
+            <TableHead class="min-w-[220px] px-6 py-3">{{ t('admin.paymentChannels.table.type') }}</TableHead>
+            <TableHead class="min-w-[140px] px-6 py-3">{{ t('admin.paymentChannels.table.interaction') }}</TableHead>
+            <TableHead class="min-w-[120px] px-6 py-3">{{ t('admin.paymentChannels.table.feeRate') }}</TableHead>
+            <TableHead class="min-w-[120px] px-6 py-3">{{ t('admin.paymentChannels.table.status') }}</TableHead>
+            <TableHead class="min-w-[120px] px-6 py-3">{{ t('admin.paymentChannels.table.sort') }}</TableHead>
+            <TableHead class="min-w-[160px] px-6 py-3 text-right">{{ t('admin.paymentChannels.table.action') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody class="divide-y divide-border">
@@ -253,23 +253,23 @@ watch(
             <TableCell class="px-6 py-4">
               <IdCell :value="channel.id" />
             </TableCell>
-            <TableCell class="px-6 py-4">
-              <div class="font-medium text-foreground">{{ channel.name }}</div>
+            <TableCell class="min-w-[220px] px-6 py-4">
+              <div class="break-words font-medium text-foreground">{{ channel.name }}</div>
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">
-              <div>{{ providerTypeLabel(channel.provider_type) }}</div>
-              <div class="text-muted-foreground">{{ channelTypeLabel(channel.channel_type) }}</div>
+            <TableCell class="min-w-[220px] px-6 py-4 text-xs text-muted-foreground">
+              <div class="break-words">{{ providerTypeLabel(channel.provider_type) }}</div>
+              <div class="break-words text-muted-foreground">{{ channelTypeLabel(channel.channel_type) }}</div>
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ interactionModeLabel(channel.interaction_mode) }}</TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ formatFeeRate(channel) }}</TableCell>
-            <TableCell class="px-6 py-4">
+            <TableCell class="min-w-[140px] px-6 py-4 text-xs text-muted-foreground">{{ interactionModeLabel(channel.interaction_mode) }}</TableCell>
+            <TableCell class="min-w-[120px] px-6 py-4 text-xs text-muted-foreground">{{ formatFeeRate(channel) }}</TableCell>
+            <TableCell class="min-w-[120px] px-6 py-4">
               <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="channel.is_active ? 'text-emerald-700 border-emerald-200 bg-emerald-50' : 'text-muted-foreground border-border bg-muted/30'">
                 {{ channel.is_active ? t('admin.common.enabled') : t('admin.common.disabled') }}
               </span>
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ channel.sort_order }}</TableCell>
-            <TableCell class="px-6 py-4 text-right">
-              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <TableCell class="min-w-[120px] px-6 py-4 text-xs text-muted-foreground">{{ channel.sort_order }}</TableCell>
+            <TableCell class="min-w-[160px] px-6 py-4 text-right">
+              <div class="flex flex-wrap items-center justify-end gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 <Button size="sm" variant="outline" @click="openEditModal(channel)">
                   {{ t('admin.common.edit') }}
                 </Button>

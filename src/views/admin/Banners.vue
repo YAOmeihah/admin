@@ -330,9 +330,9 @@ watch(
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('admin.banners.title') }}</h1>
-      <Button @click="openCreateModal">{{ t('admin.banners.create') }}</Button>
+      <Button class="w-full sm:w-auto" @click="openCreateModal">{{ t('admin.banners.create') }}</Button>
     </div>
 
     <div class="rounded-xl border border-border bg-card p-4 shadow-sm">
@@ -360,17 +360,17 @@ watch(
     </div>
 
     <div class="rounded-xl border border-border bg-card overflow-x-auto">
-      <Table>
+      <Table class="min-w-[1120px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-6 py-3">{{ t('admin.banners.table.id') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.banners.table.image') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.banners.table.name') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.banners.table.position') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.banners.table.linkType') }}</TableHead>
+            <TableHead class="min-w-[160px] px-6 py-3">{{ t('admin.banners.table.image') }}</TableHead>
+            <TableHead class="min-w-[260px] px-6 py-3">{{ t('admin.banners.table.name') }}</TableHead>
+            <TableHead class="min-w-[160px] px-6 py-3">{{ t('admin.banners.table.position') }}</TableHead>
+            <TableHead class="min-w-[160px] px-6 py-3">{{ t('admin.banners.table.linkType') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.banners.table.sort') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.banners.table.status') }}</TableHead>
-            <TableHead class="px-6 py-3 text-right">{{ t('admin.banners.table.action') }}</TableHead>
+            <TableHead class="min-w-[120px] px-6 py-3">{{ t('admin.banners.table.status') }}</TableHead>
+            <TableHead class="min-w-[180px] px-6 py-3 text-right">{{ t('admin.banners.table.action') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody class="divide-y divide-border">
@@ -386,22 +386,22 @@ watch(
             <TableCell class="px-6 py-4">
               <IdCell :value="banner.id" />
             </TableCell>
-            <TableCell class="px-6 py-4">
-              <img v-if="banner.image" :src="getImageUrl(banner.image)" class="h-14 w-28 rounded object-cover" />
+            <TableCell class="min-w-[160px] px-6 py-4">
+              <img v-if="banner.image" :src="getImageUrl(banner.image)" class="h-14 w-28 shrink-0 rounded object-cover" />
             </TableCell>
-            <TableCell class="px-6 py-4">
-              <div class="font-medium text-foreground">{{ banner.name }}</div>
-              <div class="text-xs text-muted-foreground">{{ getLocalizedText(banner.title) }}</div>
+            <TableCell class="min-w-[260px] px-6 py-4">
+              <div class="break-words font-medium text-foreground">{{ banner.name }}</div>
+              <div class="break-words text-xs text-muted-foreground">{{ getLocalizedText(banner.title) }}</div>
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ getPositionLabel(banner.position) }}</TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ getLinkTypeLabel(banner.link_type) }}</TableCell>
+            <TableCell class="min-w-[160px] px-6 py-4 text-xs text-muted-foreground break-words">{{ getPositionLabel(banner.position) }}</TableCell>
+            <TableCell class="min-w-[160px] px-6 py-4 text-xs text-muted-foreground break-words">{{ getLinkTypeLabel(banner.link_type) }}</TableCell>
             <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ banner.sort_order || 0 }}</TableCell>
-            <TableCell class="px-6 py-4">
+            <TableCell class="min-w-[120px] px-6 py-4">
               <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="banner.is_active ? 'text-emerald-700 border-emerald-200 bg-emerald-50' : 'text-muted-foreground border-border bg-muted/30'">
                 {{ banner.is_active ? t('admin.common.enabled') : t('admin.common.disabled') }}
               </span>
             </TableCell>
-            <TableCell class="px-6 py-4 text-right">
+            <TableCell class="min-w-[180px] px-6 py-4 text-right">
               <div class="flex flex-wrap items-center justify-end gap-2">
                 <Button size="sm" variant="outline" @click="openEditModal(banner)">{{ t('admin.banners.actions.edit') }}</Button>
                 <Button size="sm" variant="destructive" @click="handleDelete(banner)">{{ t('admin.banners.actions.delete') }}</Button>
@@ -429,19 +429,19 @@ watch(
     </div>
 
     <Dialog v-model:open="showModal" @update:open="(value) => { if (!value) closeModal() }">
-      <DialogScrollContent class="w-full max-w-4xl" @interact-outside="(e) => e.preventDefault()">
+      <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-4xl p-4 sm:p-6" @interact-outside="(e) => e.preventDefault()">
         <DialogHeader>
           <DialogTitle>{{ isEditing ? t('admin.banners.modal.editTitle') : t('admin.banners.modal.createTitle') }}</DialogTitle>
         </DialogHeader>
 
         <form class="space-y-6" @submit.prevent="handleSubmit">
           <div class="border-b border-border">
-            <div class="flex flex-wrap gap-4">
+            <div class="flex gap-4 overflow-x-auto pb-1">
               <button
                 v-for="lang in languages"
                 :key="lang.code"
                 type="button"
-                class="border-b-2 px-4 py-2 text-sm font-medium"
+                class="shrink-0 border-b-2 px-4 py-2 text-sm font-medium"
                 :class="currentLang === lang.code ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'"
                 @click="currentLang = lang.code"
               >
@@ -530,7 +530,7 @@ watch(
               <Input v-model.number="form.sort_order" type="number" placeholder="0" />
             </div>
 
-            <div class="flex items-center gap-6">
+            <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
               <label class="inline-flex items-center gap-2 text-sm text-muted-foreground">
                 <input v-model="form.is_active" type="checkbox" class="h-4 w-4 accent-primary" />
                 {{ t('admin.banners.form.activeNow') }}
@@ -542,13 +542,12 @@ watch(
             </div>
           </div>
 
-          <div class="flex justify-end gap-3 border-t border-border pt-6">
-            <Button type="button" variant="outline" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
-            <Button type="submit" :disabled="submitting">{{ isEditing ? t('admin.banners.actions.saveChanges') : t('admin.banners.actions.createNow') }}</Button>
+          <div class="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:justify-end">
+            <Button type="button" variant="outline" class="w-full sm:w-auto" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
+            <Button type="submit" class="w-full sm:w-auto" :disabled="submitting">{{ isEditing ? t('admin.banners.actions.saveChanges') : t('admin.banners.actions.createNow') }}</Button>
           </div>
         </form>
       </DialogScrollContent>
     </Dialog>
   </div>
 </template>
-

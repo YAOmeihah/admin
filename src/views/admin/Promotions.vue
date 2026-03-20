@@ -433,9 +433,9 @@ watch(
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('admin.promotions.title') }}</h1>
-      <Button size="sm" class="gap-2" @click="openCreateModal">
+      <Button size="sm" class="w-full gap-2 sm:w-auto" @click="openCreateModal">
         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
@@ -444,8 +444,8 @@ watch(
     </div>
 
     <div class="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <div class="flex flex-wrap items-center gap-3">
-        <div class="w-full md:w-72 flex items-center gap-2">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <div class="flex w-full flex-col gap-2 md:w-72 sm:flex-row sm:items-center">
           <Input
             v-model="productKeyword"
             :placeholder="t('admin.promotions.filterScopeSearchPlaceholder')"
@@ -453,6 +453,7 @@ watch(
           />
           <Button
             size="sm"
+            class="w-full sm:w-auto"
             variant="outline"
             :disabled="productOptionsLoading"
             @click="handleSearchProducts"
@@ -485,24 +486,24 @@ watch(
             </SelectContent>
           </Select>
         </div>
-        <div class="flex-1"></div>
-        <Button size="sm" @click="refresh">{{ t('admin.common.refresh') }}</Button>
+        <div class="hidden flex-1 sm:block"></div>
+        <Button size="sm" class="w-full sm:w-auto" @click="refresh">{{ t('admin.common.refresh') }}</Button>
       </div>
     </div>
 
-    <div class="rounded-xl border border-border bg-card">
-      <Table>
+    <div class="rounded-xl border border-border bg-card overflow-x-auto">
+      <Table class="min-w-[1120px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-6 py-3">{{ t('admin.promotions.table.id') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.promotions.table.name') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.promotions.table.type') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.promotions.table.value') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.promotions.table.scope') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.promotions.table.minAmount') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.promotions.table.period') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.promotions.table.status') }}</TableHead>
-            <TableHead class="px-6 py-3 text-right">{{ t('admin.promotions.table.action') }}</TableHead>
+            <TableHead class="min-w-[220px] px-6 py-3">{{ t('admin.promotions.table.name') }}</TableHead>
+            <TableHead class="min-w-[120px] px-6 py-3">{{ t('admin.promotions.table.type') }}</TableHead>
+            <TableHead class="min-w-[120px] px-6 py-3">{{ t('admin.promotions.table.value') }}</TableHead>
+            <TableHead class="min-w-[220px] px-6 py-3">{{ t('admin.promotions.table.scope') }}</TableHead>
+            <TableHead class="min-w-[140px] px-6 py-3">{{ t('admin.promotions.table.minAmount') }}</TableHead>
+            <TableHead class="min-w-[220px] px-6 py-3">{{ t('admin.promotions.table.period') }}</TableHead>
+            <TableHead class="min-w-[120px] px-6 py-3">{{ t('admin.promotions.table.status') }}</TableHead>
+            <TableHead class="min-w-[160px] px-6 py-3 text-right">{{ t('admin.promotions.table.action') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody class="divide-y divide-border">
@@ -518,16 +519,20 @@ watch(
             <TableCell class="px-6 py-4">
               <IdCell :value="promo.id" />
             </TableCell>
-            <TableCell class="px-6 py-4 text-foreground font-medium">{{ promo.name }}</TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ discountTypeLabel(promo.type) }}</TableCell>
-            <TableCell class="px-6 py-4 text-foreground font-mono">{{ promo.value }}</TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ formatPromotionScope(promo.scope_ref_id) }}</TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ promo.min_amount || '-' }}</TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">
-              <div>{{ t('admin.promotions.period.startsAt') }}：{{ formatDate(promo.starts_at) || '-' }}</div>
-              <div>{{ t('admin.promotions.period.endsAt') }}：{{ formatDate(promo.ends_at) || '-' }}</div>
+            <TableCell class="min-w-[220px] px-6 py-4">
+              <div class="break-words font-medium text-foreground">{{ promo.name }}</div>
             </TableCell>
-            <TableCell class="px-6 py-4">
+            <TableCell class="min-w-[120px] px-6 py-4 text-xs text-muted-foreground">{{ discountTypeLabel(promo.type) }}</TableCell>
+            <TableCell class="min-w-[120px] px-6 py-4 text-foreground font-mono">{{ promo.value }}</TableCell>
+            <TableCell class="min-w-[220px] px-6 py-4 text-xs text-muted-foreground">
+              <div class="break-words">{{ formatPromotionScope(promo.scope_ref_id) }}</div>
+            </TableCell>
+            <TableCell class="min-w-[140px] px-6 py-4 text-xs text-muted-foreground">{{ promo.min_amount || '-' }}</TableCell>
+            <TableCell class="min-w-[220px] px-6 py-4 text-xs text-muted-foreground">
+              <div class="break-words">{{ t('admin.promotions.period.startsAt') }}：{{ formatDate(promo.starts_at) || '-' }}</div>
+              <div class="break-words">{{ t('admin.promotions.period.endsAt') }}：{{ formatDate(promo.ends_at) || '-' }}</div>
+            </TableCell>
+            <TableCell class="min-w-[120px] px-6 py-4">
               <span
                 class="inline-flex rounded-full border px-2.5 py-1 text-xs"
                 :class="promo.is_active ? 'text-emerald-700 border-emerald-200 bg-emerald-50' : 'text-muted-foreground border-border bg-muted/30'"
@@ -535,7 +540,7 @@ watch(
                 {{ promo.is_active ? t('admin.common.enabled') : t('admin.common.disabled') }}
               </span>
             </TableCell>
-            <TableCell class="px-6 py-4 text-right">
+            <TableCell class="min-w-[160px] px-6 py-4 text-right">
               <div class="flex items-center justify-end gap-2">
                 <Button size="sm" variant="outline" @click="openEditModal(promo)">{{ t('admin.promotions.actions.edit') }}</Button>
                 <Button size="sm" variant="destructive" @click="handleDelete(promo)">{{ t('admin.promotions.actions.delete') }}</Button>
@@ -547,35 +552,35 @@ watch(
 
       <div
         v-if="pagination.total_page > 1"
-        class="flex flex-wrap items-center justify-between gap-3 border-t border-border px-6 py-4"
+        class="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
       >
         <div class="flex items-center gap-3">
           <span class="text-xs text-muted-foreground">
             {{ t('admin.common.pageInfo', { total: pagination.total, page: pagination.page, totalPage: pagination.total_page }) }}
           </span>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="flex items-center gap-2">
+        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+          <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             <Input
               v-model="jumpPage"
               type="number"
               min="1"
               :max="pagination.total_page"
-              class="h-8 w-20"
+              class="h-8 w-full sm:w-20"
               :placeholder="t('admin.common.jumpPlaceholder')"
             />
-            <Button variant="outline" size="sm" class="h-8" @click="jumpToPage">
+            <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" @click="jumpToPage">
               {{ t('admin.common.jumpTo') }}
             </Button>
           </div>
-          <div class="flex items-center gap-2">
-            <Button variant="outline" size="sm" class="h-8" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">
+          <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+            <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">
               {{ t('admin.common.prevPage') }}
             </Button>
             <Button
               variant="outline"
               size="sm"
-              class="h-8"
+              class="h-8 w-full sm:w-auto"
               :disabled="pagination.page >= pagination.total_page"
               @click="changePage(pagination.page + 1)"
             >
@@ -587,7 +592,7 @@ watch(
     </div>
 
     <Dialog v-model:open="showModal" @update:open="(value) => { if (!value) closeModal() }">
-      <DialogScrollContent class="w-full max-w-3xl" @interact-outside="(e) => e.preventDefault()">
+      <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-3xl p-4 sm:p-6" @interact-outside="(e) => e.preventDefault()">
         <DialogHeader>
           <DialogTitle>{{ isEditing ? t('admin.promotions.modal.editTitle') : t('admin.promotions.modal.title') }}</DialogTitle>
         </DialogHeader>
@@ -630,13 +635,14 @@ watch(
             <div class="md:col-span-2">
               <label class="mb-1.5 block text-xs font-medium text-muted-foreground">{{ t('admin.promotions.modal.scope') }} *</label>
               <div class="space-y-2">
-                <div class="flex items-center gap-2">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
                   <Input
                     v-model="productKeyword"
                     :placeholder="t('admin.promotions.modal.scopeSearchPlaceholder')"
                     @keyup.enter="handleSearchProducts"
                   />
                   <Button
+                    class="w-full sm:w-auto"
                     type="button"
                     size="sm"
                     variant="outline"
@@ -672,7 +678,7 @@ watch(
               <label class="mb-1.5 block text-xs font-medium text-muted-foreground">{{ t('admin.promotions.modal.endsAt') }}</label>
               <Input v-model="form.ends_at" type="datetime-local" />
             </div>
-            <div class="flex items-center gap-2 md:col-span-2">
+            <div class="flex flex-col gap-2 md:col-span-2 sm:flex-row sm:items-center">
               <input v-model="form.is_active" type="checkbox" class="h-4 w-4 accent-primary" />
               <span class="text-xs text-muted-foreground">{{ t('admin.common.enabled') }}</span>
             </div>
@@ -682,9 +688,9 @@ watch(
             {{ error }}
           </div>
 
-          <div class="flex justify-end gap-3">
-            <Button type="button" variant="outline" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
-            <Button type="submit" :disabled="submitting">{{ t('admin.common.save') }}</Button>
+          <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button class="w-full sm:w-auto" type="button" variant="outline" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
+            <Button class="w-full sm:w-auto" type="submit" :disabled="submitting">{{ t('admin.common.save') }}</Button>
           </div>
         </form>
       </DialogScrollContent>

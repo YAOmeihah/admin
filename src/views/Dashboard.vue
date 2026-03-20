@@ -319,13 +319,13 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex flex-wrap items-start justify-between gap-3">
+    <div class="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
       <div>
         <h1 class="text-2xl font-semibold tracking-tight">{{ t('admin.dashboard.title') }}</h1>
         <p class="mt-1 text-sm text-muted-foreground">{{ t('admin.dashboard.subtitle') }}</p>
       </div>
-      <div class="flex flex-wrap items-center gap-2">
-        <div class="w-[150px]">
+      <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+        <div class="w-full sm:w-[150px]">
           <Select v-model="filters.range" @update:modelValue="handleRangeChange">
             <SelectTrigger class="h-9">
               <SelectValue :placeholder="t('admin.dashboard.filters.range')" />
@@ -341,7 +341,7 @@ onMounted(() => {
           v-if="isCustomRange"
           v-model="filters.from"
           type="date"
-          class="h-9 w-[150px]"
+          class="h-9 w-full sm:w-[150px]"
           :placeholder="t('admin.dashboard.filters.from')"
           @update:modelValue="handleCustomRangeChange"
         />
@@ -349,11 +349,11 @@ onMounted(() => {
           v-if="isCustomRange"
           v-model="filters.to"
           type="date"
-          class="h-9 w-[150px]"
+          class="h-9 w-full sm:w-[150px]"
           :placeholder="t('admin.dashboard.filters.to')"
           @update:modelValue="handleCustomRangeChange"
         />
-        <Button size="sm" variant="outline" class="h-9" :disabled="loadingOverview || loadingTrends || loadingRankings" @click="refreshDashboard">
+        <Button size="sm" variant="outline" class="h-9 w-full sm:w-auto" :disabled="loadingOverview || loadingTrends || loadingRankings" @click="refreshDashboard">
           {{ t('admin.dashboard.actions.refreshNow') }}
         </Button>
       </div>
@@ -363,10 +363,12 @@ onMounted(() => {
       {{ dashboardError }}
     </div>
 
-    <DashboardAd slot-code="dashboard_top_banner" layout="banner" />
+    <div class="min-w-0">
+      <DashboardAd slot-code="dashboard_top_banner" layout="banner" />
+    </div>
 
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <Card>
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 [&>*]:min-w-0">
+      <Card class="min-w-0">
         <CardHeader class="pb-2">
           <CardTitle class="text-xs font-medium text-muted-foreground">{{ t('admin.dashboard.kpi.ordersTotal') }}</CardTitle>
         </CardHeader>
@@ -376,7 +378,7 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card class="min-w-0">
         <CardHeader class="pb-2">
           <CardTitle class="text-xs font-medium text-muted-foreground">{{ t('admin.dashboard.kpi.gmvPaid') }}</CardTitle>
         </CardHeader>
@@ -386,7 +388,7 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card class="min-w-0">
         <CardHeader class="pb-2">
           <CardTitle class="text-xs font-medium text-muted-foreground">{{ t('admin.dashboard.kpi.pendingOrders') }}</CardTitle>
         </CardHeader>
@@ -396,7 +398,7 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card class="min-w-0">
         <CardHeader class="pb-2">
           <CardTitle class="text-xs font-medium text-muted-foreground">{{ t('admin.dashboard.kpi.newUsers') }}</CardTitle>
         </CardHeader>
@@ -406,7 +408,7 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card class="min-w-0">
         <CardHeader class="pb-2">
           <CardTitle class="text-xs font-medium text-muted-foreground">{{ t('admin.dashboard.kpi.lowStockProducts') }}</CardTitle>
         </CardHeader>
@@ -416,7 +418,7 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card class="min-w-0">
         <CardHeader class="pb-2">
           <CardTitle class="text-xs font-medium text-muted-foreground">{{ t('admin.dashboard.kpi.autoAvailableSecrets') }}</CardTitle>
         </CardHeader>
@@ -426,7 +428,7 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card class="min-w-0">
         <CardHeader class="pb-2">
           <CardTitle class="text-xs font-medium text-muted-foreground">{{ t('admin.dashboard.kpi.paymentsSuccess') }}</CardTitle>
         </CardHeader>
@@ -436,7 +438,7 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card class="min-w-0">
         <CardHeader class="pb-2">
           <CardTitle class="text-xs font-medium text-muted-foreground">{{ t('admin.dashboard.period') }}</CardTitle>
         </CardHeader>
@@ -446,11 +448,13 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <DashboardAd slot-code="dashboard_kpi_card" layout="card" />
+      <div class="min-w-0">
+        <DashboardAd slot-code="dashboard_kpi_card" layout="card" />
+      </div>
     </div>
 
-    <div class="grid gap-4 xl:grid-cols-2">
-      <Card>
+    <div class="grid gap-4 xl:grid-cols-2 [&>*]:min-w-0">
+      <Card class="min-w-0">
         <CardHeader class="pb-2">
           <CardTitle class="text-sm">{{ t('admin.dashboard.trends.orderTitle') }}</CardTitle>
         </CardHeader>
@@ -458,7 +462,7 @@ onMounted(() => {
           <div v-if="loadingTrends" class="text-sm text-muted-foreground">{{ t('admin.common.loading') }}</div>
           <div v-else-if="trendPoints.length === 0" class="text-sm text-muted-foreground">{{ t('admin.dashboard.emptyTrend') }}</div>
           <div v-else class="space-y-3">
-            <div class="flex items-center gap-4 text-xs text-muted-foreground">
+            <div class="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-primary"></span>{{ t('admin.dashboard.trends.ordersTotal') }}</span>
               <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-emerald-500"></span>{{ t('admin.dashboard.trends.ordersPaid') }}</span>
             </div>
@@ -477,7 +481,7 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card class="min-w-0">
         <CardHeader class="pb-2">
           <CardTitle class="text-sm">{{ t('admin.dashboard.trends.paymentTitle') }}</CardTitle>
         </CardHeader>
@@ -485,7 +489,7 @@ onMounted(() => {
           <div v-if="loadingTrends" class="text-sm text-muted-foreground">{{ t('admin.common.loading') }}</div>
           <div v-else-if="trendPoints.length === 0" class="text-sm text-muted-foreground">{{ t('admin.dashboard.emptyTrend') }}</div>
           <div v-else class="space-y-3">
-            <div class="flex items-center gap-4 text-xs text-muted-foreground">
+            <div class="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-sky-500"></span>{{ t('admin.dashboard.trends.paymentsSuccess') }}</span>
               <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-rose-500"></span>{{ t('admin.dashboard.trends.paymentsFailed') }}</span>
             </div>
@@ -505,8 +509,8 @@ onMounted(() => {
       </Card>
     </div>
 
-    <div class="grid gap-4 xl:grid-cols-3">
-      <Card>
+    <div class="grid gap-4 xl:grid-cols-3 [&>*]:min-w-0">
+      <Card class="min-w-0">
         <CardHeader class="pb-2">
           <CardTitle class="text-sm">{{ t('admin.dashboard.funnel.title') }}</CardTitle>
         </CardHeader>
@@ -536,7 +540,7 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card class="min-w-0">
         <CardHeader class="pb-2">
           <CardTitle class="text-sm">{{ t('admin.dashboard.rankings.topProductsTitle') }}</CardTitle>
         </CardHeader>
@@ -544,9 +548,9 @@ onMounted(() => {
           <div v-if="loadingRankings" class="text-sm text-muted-foreground">{{ t('admin.common.loading') }}</div>
           <div v-else-if="!rankings || rankings.top_products.length === 0" class="text-sm text-muted-foreground">{{ t('admin.dashboard.rankings.empty') }}</div>
           <div v-else class="space-y-2">
-            <div v-for="item in rankings.top_products" :key="item.product_id" class="rounded-lg border border-border px-3 py-2">
-              <div class="line-clamp-1 text-sm font-medium">{{ item.title }}</div>
-              <div class="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+            <div v-for="item in rankings.top_products" :key="item.product_id" class="min-w-0 rounded-lg border border-border px-3 py-2">
+              <div class="line-clamp-1 min-w-0 text-sm font-medium">{{ item.title }}</div>
+              <div class="mt-1 flex flex-col gap-1 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
                 <span>{{ t('admin.dashboard.rankings.paidOrders') }}: {{ item.paid_orders }}</span>
                 <span>{{ t('admin.dashboard.rankings.quantity') }}: {{ item.quantity }}</span>
               </div>
@@ -556,7 +560,7 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card class="min-w-0">
         <CardHeader class="pb-2">
           <CardTitle class="text-sm">{{ t('admin.dashboard.rankings.topChannelsTitle') }}</CardTitle>
         </CardHeader>
@@ -564,13 +568,13 @@ onMounted(() => {
           <div v-if="loadingRankings" class="text-sm text-muted-foreground">{{ t('admin.common.loading') }}</div>
           <div v-else-if="!rankings || rankings.top_channels.length === 0" class="text-sm text-muted-foreground">{{ t('admin.dashboard.rankings.empty') }}</div>
           <div v-else class="space-y-2">
-            <div v-for="item in rankings.top_channels" :key="`${item.channel_id}-${item.channel_type}`" class="rounded-lg border border-border px-3 py-2">
-              <div class="line-clamp-1 text-sm font-medium">{{ channelLabel(item) }}</div>
-              <div class="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+            <div v-for="item in rankings.top_channels" :key="`${item.channel_id}-${item.channel_type}`" class="min-w-0 rounded-lg border border-border px-3 py-2">
+              <div class="line-clamp-1 min-w-0 text-sm font-medium">{{ channelLabel(item) }}</div>
+              <div class="mt-1 flex flex-col gap-1 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
                 <span>{{ t('admin.dashboard.rankings.successCount') }}: {{ item.success_count }}</span>
                 <span>{{ t('admin.dashboard.rankings.failedCount') }}: {{ item.failed_count }}</span>
               </div>
-              <div class="mt-1 flex items-center justify-between text-xs">
+              <div class="mt-1 flex flex-col gap-1 text-xs sm:flex-row sm:items-center sm:justify-between">
                 <span class="font-semibold text-foreground">{{ t('admin.dashboard.rankings.successAmount') }}: {{ formatMoney(item.success_amount, overview?.currency) }}</span>
                 <span class="text-muted-foreground">{{ t('admin.dashboard.rankings.successRate') }}: {{ item.success_rate }}%</span>
               </div>
@@ -580,10 +584,12 @@ onMounted(() => {
       </Card>
     </div>
 
-    <DashboardAd slot-code="dashboard_sponsored" layout="compact" />
+    <div class="min-w-0">
+      <DashboardAd slot-code="dashboard_sponsored" layout="compact" />
+    </div>
 
-    <div class="grid gap-4 xl:grid-cols-2">
-      <Card>
+    <div class="grid gap-4 xl:grid-cols-2 [&>*]:min-w-0">
+      <Card class="min-w-0">
         <CardHeader class="pb-2">
           <CardTitle class="text-sm">{{ t('admin.dashboard.alerts.title') }}</CardTitle>
         </CardHeader>
@@ -605,7 +611,7 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card class="min-w-0">
         <CardHeader class="pb-2">
           <CardTitle class="text-sm">{{ t('admin.dashboard.quickActions.title') }}</CardTitle>
         </CardHeader>

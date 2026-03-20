@@ -238,12 +238,12 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('admin.users.title') }}</h1>
     </div>
 
     <div class="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <div class="w-full md:w-64">
           <Input v-model="filters.keyword" :placeholder="t('admin.users.filterKeyword')" @update:modelValue="debouncedSearch" />
         </div>
@@ -259,7 +259,7 @@ onMounted(() => {
           </SelectContent>
         </Select>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex w-full flex-col gap-2 md:w-auto md:flex-row md:flex-wrap md:items-center">
           <span class="text-xs text-muted-foreground whitespace-nowrap">{{ t('admin.users.filterCreatedRange') }}</span>
           <Input
             v-model="filters.createdFrom"
@@ -268,7 +268,7 @@ onMounted(() => {
             :placeholder="t('admin.users.filterCreatedFrom')"
             @update:modelValue="handleSearch"
           />
-          <span class="text-muted-foreground">-</span>
+          <span class="hidden text-muted-foreground md:inline">-</span>
           <Input
             v-model="filters.createdTo"
             type="date"
@@ -277,7 +277,7 @@ onMounted(() => {
             @update:modelValue="handleSearch"
           />
         </div>
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex w-full flex-col gap-2 md:w-auto md:flex-row md:flex-wrap md:items-center">
           <span class="text-xs text-muted-foreground whitespace-nowrap">{{ t('admin.users.filterLastLoginRange') }}</span>
           <Input
             v-model="filters.lastLoginFrom"
@@ -286,7 +286,7 @@ onMounted(() => {
             :placeholder="t('admin.users.filterLastLoginFrom')"
             @update:modelValue="handleSearch"
           />
-          <span class="text-muted-foreground">-</span>
+          <span class="hidden text-muted-foreground md:inline">-</span>
           <Input
             v-model="filters.lastLoginTo"
             type="date"
@@ -295,29 +295,31 @@ onMounted(() => {
             @update:modelValue="handleSearch"
           />
         </div>
-        <div class="flex-1"></div>
-        <Button size="sm" variant="outline" @click="resetFilters">{{ t('admin.common.reset') }}</Button>
-        <Button size="sm" @click="refresh">{{ t('admin.common.refresh') }}</Button>
+        <div class="hidden flex-1 sm:block"></div>
+        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <Button size="sm" variant="outline" class="w-full sm:w-auto" @click="resetFilters">{{ t('admin.common.reset') }}</Button>
+          <Button size="sm" class="w-full sm:w-auto" @click="refresh">{{ t('admin.common.refresh') }}</Button>
+        </div>
       </div>
     </div>
 
     <div class="rounded-xl border border-border bg-card overflow-x-auto">
-      <Table>
+      <Table class="min-w-[1320px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-6 py-3">
               <input type="checkbox" :checked="allSelected" class="h-4 w-4 accent-primary" @change="toggleSelectAll" />
             </TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.users.table.id') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.users.table.email') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.users.table.nickname') }}</TableHead>
+            <TableHead class="px-6 py-3 min-w-[260px]">{{ t('admin.users.table.email') }}</TableHead>
+            <TableHead class="px-6 py-3 min-w-[220px]">{{ t('admin.users.table.nickname') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.users.table.status') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.users.table.locale') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.users.table.walletBalance') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.users.table.memberLevel') }}</TableHead>
+            <TableHead class="px-6 py-3 min-w-[180px]">{{ t('admin.users.table.memberLevel') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.users.table.createdAt') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.users.table.lastLoginAt') }}</TableHead>
-            <TableHead class="px-6 py-3 text-right">{{ t('admin.users.table.action') }}</TableHead>
+            <TableHead class="px-6 py-3 min-w-[180px] text-right">{{ t('admin.users.table.action') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody class="divide-y divide-border">
@@ -336,8 +338,8 @@ onMounted(() => {
             <TableCell class="px-6 py-4">
               <IdCell :value="user.id" />
             </TableCell>
-            <TableCell class="px-6 py-4 text-foreground">{{ user.email }}</TableCell>
-            <TableCell class="px-6 py-4 text-muted-foreground">{{ user.display_name || '-' }}</TableCell>
+            <TableCell class="min-w-[260px] px-6 py-4 text-foreground break-all">{{ user.email }}</TableCell>
+            <TableCell class="min-w-[220px] px-6 py-4 text-muted-foreground break-words">{{ user.display_name || '-' }}</TableCell>
             <TableCell class="px-6 py-4 text-xs">
               <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="statusClass(user.status)">
                 {{ statusLabel(user.status) }}
@@ -345,10 +347,10 @@ onMounted(() => {
             </TableCell>
             <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ formatLocale(user.locale) }}</TableCell>
             <TableCell class="px-6 py-4 text-xs font-mono text-foreground">{{ formatMoney(user.wallet_balance, siteCurrency) }}</TableCell>
-            <TableCell class="px-6 py-4 text-xs text-foreground">{{ getMemberLevelLabel(user) }}</TableCell>
+            <TableCell class="min-w-[180px] px-6 py-4 text-xs text-foreground break-words">{{ getMemberLevelLabel(user) }}</TableCell>
             <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ formatDate(user.created_at) }}</TableCell>
             <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ formatDate(user.last_login_at) }}</TableCell>
-            <TableCell class="px-6 py-4 text-right">
+            <TableCell class="min-w-[180px] px-6 py-4 text-right">
               <div class="flex flex-wrap items-center justify-end gap-2">
                 <Button as-child size="sm" variant="outline">
                   <router-link :to="userDetailLink(user.id)">{{ t('admin.users.actions.detail') }}</router-link>
@@ -422,7 +424,7 @@ onMounted(() => {
     </div>
 
     <Dialog v-model:open="showModal" @update:open="(value) => { if (!value) closeModal() }">
-      <DialogScrollContent class="w-full max-w-xl">
+      <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-xl p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>{{ t('admin.users.modal.editTitle') }}</DialogTitle>
         </DialogHeader>
@@ -474,9 +476,9 @@ onMounted(() => {
             {{ error }}
           </div>
 
-          <div class="flex justify-end gap-3">
-            <Button type="button" variant="outline" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
-            <Button type="submit" :disabled="submitting">{{ t('admin.common.save') }}</Button>
+          <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button class="w-full sm:w-auto" type="button" variant="outline" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
+            <Button class="w-full sm:w-auto" type="submit" :disabled="submitting">{{ t('admin.common.save') }}</Button>
           </div>
         </form>
       </DialogScrollContent>

@@ -342,13 +342,13 @@ watch(
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('admin.products.title') }}</h1>
-      <Button @click="openCreateModal">{{ t('admin.products.create') }}</Button>
+      <Button class="w-full sm:w-auto" @click="openCreateModal">{{ t('admin.products.create') }}</Button>
     </div>
 
     <div class="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <div class="relative w-full md:w-80">
           <div class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -377,20 +377,20 @@ watch(
             </SelectContent>
           </Select>
         </div>
-        <Button variant="outline" size="sm" class="h-9" @click="resetFilters">
+        <Button variant="outline" size="sm" class="h-9 w-full sm:w-auto" @click="resetFilters">
           {{ t('admin.common.reset') }}
         </Button>
       </div>
     </div>
 
     <div class="rounded-xl border border-border bg-card overflow-x-auto">
-      <Table>
+      <Table class="min-w-[920px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-6 py-3">{{ t('admin.products.table.id') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.products.table.name') }}</TableHead>
+            <TableHead class="px-6 py-3 min-w-[320px]">{{ t('admin.products.table.name') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.products.table.price') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.products.table.category') }}</TableHead>
+            <TableHead class="px-6 py-3 min-w-[220px]">{{ t('admin.products.table.category') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.products.table.sort') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.products.table.status') }}</TableHead>
             <TableHead class="px-6 py-3 text-right">{{ t('admin.products.table.action') }}</TableHead>
@@ -410,14 +410,14 @@ watch(
               <IdCell :value="product.id" />
             </TableCell>
             <TableCell class="px-6 py-4">
-              <div class="flex items-center gap-4">
-                <div class="h-12 w-12 overflow-hidden rounded-lg border border-border bg-muted/40 flex items-center justify-center text-xs text-muted-foreground">
+              <div class="flex min-w-[320px] items-center gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-muted/40 text-xs text-muted-foreground">
                   <img v-if="getFirstImageUrl(product.images)" :src="getFirstImageUrl(product.images)" class="h-full w-full object-cover" />
                   <span v-else>{{ t('admin.common.noImage') }}</span>
                 </div>
-                <div>
-                  <div class="font-medium text-foreground">{{ getLocalizedText(product.title) }}</div>
-                  <div class="text-xs text-muted-foreground font-mono">{{ product.slug }}</div>
+                <div class="min-w-0 flex-1">
+                  <div class="font-medium text-foreground break-words">{{ getLocalizedText(product.title) }}</div>
+                  <div class="text-xs text-muted-foreground font-mono break-all">{{ product.slug }}</div>
                   <div class="mt-2 flex flex-wrap gap-2">
                     <span class="rounded-full border px-2 py-0.5 text-[11px]" :class="purchaseTypeBadgeClass(product)">
                       {{ product.purchase_type === 'guest' ? t('admin.products.purchaseType.guest') : t('admin.products.purchaseType.member') }}
@@ -463,7 +463,7 @@ watch(
               </div>
             </TableCell>
             <TableCell class="px-6 py-4 font-mono text-foreground">{{ formatPrice(product.price_amount, siteCurrency) }}</TableCell>
-            <TableCell class="px-6 py-4">
+            <TableCell class="px-6 py-4 min-w-[220px]">
               <div v-if="editingCategoryId === product.id" class="min-w-[140px]">
                 <Select
                   :modelValue="String(product.category_id || '')"
@@ -487,7 +487,7 @@ watch(
               </div>
               <span
                 v-else
-                class="cursor-pointer rounded-full border border-border px-2 py-1 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                class="inline-flex max-w-full cursor-pointer rounded-full border border-border px-2 py-1 text-xs leading-5 text-muted-foreground transition-colors hover:border-primary hover:text-primary break-words"
                 :title="t('admin.common.clickToEdit')"
                 @click="startEditCategory(product)"
               >
@@ -538,35 +538,35 @@ watch(
 
       <div
         v-if="pagination.total_page > 1"
-        class="flex flex-wrap items-center justify-between gap-3 border-t border-border px-6 py-4"
+        class="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
       >
         <div class="flex items-center gap-3">
           <span class="text-xs text-muted-foreground">
             {{ t('admin.common.pageInfo', { total: pagination.total, page: pagination.page, totalPage: pagination.total_page }) }}
           </span>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="flex items-center gap-2">
+        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+          <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             <Input
               v-model="jumpPage"
               type="number"
               min="1"
               :max="pagination.total_page"
-              class="h-8 w-20"
+              class="h-8 w-full sm:w-20"
               :placeholder="t('admin.common.jumpPlaceholder')"
             />
-            <Button variant="outline" size="sm" class="h-8" @click="jumpToPage">
+            <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" @click="jumpToPage">
               {{ t('admin.common.jumpTo') }}
             </Button>
           </div>
-          <div class="flex items-center gap-2">
-            <Button variant="outline" size="sm" class="h-8" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">
+          <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+            <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">
               {{ t('admin.common.prevPage') }}
             </Button>
             <Button
               variant="outline"
               size="sm"
-              class="h-8"
+              class="h-8 w-full sm:w-auto"
               :disabled="pagination.page >= pagination.total_page"
               @click="changePage(pagination.page + 1)"
             >

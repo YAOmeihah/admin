@@ -31,24 +31,24 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex flex-wrap items-center justify-between gap-4">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <h2 class="text-2xl font-bold tracking-tight">{{ t('telegramBot.settings.title') }}</h2>
         <p class="text-muted-foreground">{{ t('telegramBot.settings.subtitle') }}</p>
       </div>
-      <div class="flex flex-wrap items-center gap-3">
-        <div class="flex rounded-lg border border-border bg-card p-1">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div class="flex max-w-full overflow-x-auto rounded-lg border border-border bg-card p-1">
           <button
             v-for="lang in languages"
             :key="lang.code"
-            class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
+            class="shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
             :class="currentLang === lang.code ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'"
             @click="currentLang = lang.code"
           >
             {{ lang.name }}
           </button>
         </div>
-        <Button :disabled="saving || loading" @click="saveConfig">
+        <Button class="w-full sm:w-auto" :disabled="saving || loading" @click="saveConfig">
           <Loader2 v-if="saving" class="mr-2 h-4 w-4 animate-spin" />
           <Save v-else class="mr-2 h-4 w-4" />
           {{ t('telegramBot.settings.save') }}
@@ -62,8 +62,8 @@ onMounted(() => {
         <CardDescription>{{ t('telegramBot.settings.globalDesc') }}</CardDescription>
       </CardHeader>
       <CardContent class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="flex items-center gap-2">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div class="flex flex-col gap-3 rounded-lg border border-border bg-muted/10 px-4 py-3 sm:flex-row sm:items-center">
             <input id="bot-enabled" v-model="form.enabled" type="checkbox" class="h-4 w-4 accent-primary" />
             <Label for="bot-enabled">{{ t('telegramBot.settings.enabled') }}</Label>
           </div>
@@ -86,7 +86,7 @@ onMounted(() => {
 
     <Card>
       <CardHeader>
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle>{{ t('telegramBot.settings.basicInfo') }}</CardTitle>
             <CardDescription>{{ t('telegramBot.settings.basicInfoDesc') }}</CardDescription>
@@ -129,7 +129,7 @@ onMounted(() => {
 
     <Card>
       <CardHeader>
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle>{{ t('telegramBot.settings.welcomeTitle') }}</CardTitle>
             <CardDescription>{{ t('telegramBot.settings.welcomeDesc') }}</CardDescription>
@@ -138,7 +138,7 @@ onMounted(() => {
         </div>
       </CardHeader>
       <CardContent class="space-y-4">
-        <div class="flex items-center gap-2">
+        <div class="flex flex-col gap-3 rounded-lg border border-border bg-muted/10 px-4 py-3 sm:flex-row sm:items-center">
           <input id="welcome-enabled" v-model="form.welcome.enabled" type="checkbox" class="h-4 w-4 accent-primary" />
           <Label for="welcome-enabled">{{ t('telegramBot.settings.welcomeEnabled') }}</Label>
         </div>

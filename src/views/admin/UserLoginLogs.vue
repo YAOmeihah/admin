@@ -118,12 +118,12 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('admin.userLoginLogs.title') }}</h1>
     </div>
 
     <div class="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <div class="w-full md:w-32">
           <Input
             v-model="filters.userId"
@@ -174,7 +174,7 @@ onMounted(() => {
             </SelectContent>
           </Select>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex w-full flex-col gap-2 md:w-auto md:flex-row md:flex-wrap md:items-center">
           <span class="text-xs text-muted-foreground whitespace-nowrap">{{ t('admin.userLoginLogs.filterCreatedFrom') }}</span>
           <Input
             v-model="filters.createdFrom"
@@ -182,7 +182,7 @@ onMounted(() => {
             class="h-9 w-full md:w-auto"
             @update:modelValue="handleSearch"
           />
-          <span class="text-muted-foreground">-</span>
+          <span class="hidden text-muted-foreground md:inline">-</span>
           <Input
             v-model="filters.createdTo"
             type="datetime-local"
@@ -190,22 +190,22 @@ onMounted(() => {
             @update:modelValue="handleSearch"
           />
         </div>
-        <div class="flex-1"></div>
-        <Button size="sm" variant="outline" @click="refresh">{{ t('admin.common.refresh') }}</Button>
+        <div class="hidden flex-1 sm:block"></div>
+        <Button size="sm" variant="outline" class="w-full sm:w-auto" @click="refresh">{{ t('admin.common.refresh') }}</Button>
       </div>
     </div>
 
-    <div class="rounded-xl border border-border bg-card">
-      <Table>
+    <div class="rounded-xl border border-border bg-card overflow-x-auto">
+      <Table class="min-w-[1040px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-6 py-3">{{ t('admin.userLoginLogs.table.id') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.userLoginLogs.table.user') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.userLoginLogs.table.status') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.userLoginLogs.table.failReason') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.userLoginLogs.table.clientIp') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.userLoginLogs.table.loginSource') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.userLoginLogs.table.createdAt') }}</TableHead>
+            <TableHead class="min-w-[260px] px-6 py-3">{{ t('admin.userLoginLogs.table.user') }}</TableHead>
+            <TableHead class="min-w-[120px] px-6 py-3">{{ t('admin.userLoginLogs.table.status') }}</TableHead>
+            <TableHead class="min-w-[180px] px-6 py-3">{{ t('admin.userLoginLogs.table.failReason') }}</TableHead>
+            <TableHead class="min-w-[140px] px-6 py-3">{{ t('admin.userLoginLogs.table.clientIp') }}</TableHead>
+            <TableHead class="min-w-[140px] px-6 py-3">{{ t('admin.userLoginLogs.table.loginSource') }}</TableHead>
+            <TableHead class="min-w-[180px] px-6 py-3">{{ t('admin.userLoginLogs.table.createdAt') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody class="divide-y divide-border">
@@ -219,7 +219,7 @@ onMounted(() => {
           </TableRow>
           <TableRow v-for="item in logs" :key="item.id" class="hover:bg-muted/30">
             <TableCell class="px-6 py-4"><IdCell :value="item.id" /></TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">
+            <TableCell class="min-w-[260px] px-6 py-4 text-xs text-muted-foreground">
               <div>
                 {{ t('admin.userLoginLogs.userIdLabel') }}:
                 <a v-if="item.user_id" :href="userDetailLink(item.user_id)" target="_blank" rel="noopener" class="text-primary underline-offset-4 hover:underline">
@@ -227,39 +227,39 @@ onMounted(() => {
                 </a>
                 <span v-else>-</span>
               </div>
-              <div class="mt-1 text-foreground">{{ item.email || '-' }}</div>
+              <div class="mt-1 break-all text-foreground">{{ item.email || '-' }}</div>
             </TableCell>
-            <TableCell class="px-6 py-4">
+            <TableCell class="min-w-[120px] px-6 py-4">
               <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="statusClass(item.status)">
                 {{ statusLabel(item.status) }}
               </span>
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ failReasonLabel(item.fail_reason) }}</TableCell>
-            <TableCell class="px-6 py-4 font-mono text-xs text-foreground">{{ item.client_ip || '-' }}</TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ item.login_source || '-' }}</TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ formatDate(item.created_at) }}</TableCell>
+            <TableCell class="min-w-[180px] px-6 py-4 text-xs text-muted-foreground">{{ failReasonLabel(item.fail_reason) }}</TableCell>
+            <TableCell class="min-w-[140px] px-6 py-4 font-mono text-xs text-foreground break-all">{{ item.client_ip || '-' }}</TableCell>
+            <TableCell class="min-w-[140px] px-6 py-4 text-xs text-muted-foreground break-words">{{ item.login_source || '-' }}</TableCell>
+            <TableCell class="min-w-[180px] px-6 py-4 text-xs text-muted-foreground">{{ formatDate(item.created_at) }}</TableCell>
           </TableRow>
         </TableBody>
       </Table>
 
-      <div v-if="pagination.total_page > 1" class="flex flex-wrap items-center justify-between gap-3 border-t border-border px-6 py-4">
+      <div v-if="pagination.total_page > 1" class="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
         <span class="text-xs text-muted-foreground">
           {{ t('admin.common.pageInfo', { total: pagination.total, page: pagination.page, totalPage: pagination.total_page }) }}
         </span>
-        <div class="flex items-center gap-2">
+        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
           <Input
             v-model="jumpPage"
             type="number"
             min="1"
             :max="pagination.total_page"
-            class="h-8 w-20"
+            class="h-8 w-full sm:w-20"
             :placeholder="t('admin.common.jumpPlaceholder')"
           />
-          <Button variant="outline" size="sm" class="h-8" @click="jumpToPage">{{ t('admin.common.jumpTo') }}</Button>
-          <Button variant="outline" size="sm" class="h-8" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">
+          <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" @click="jumpToPage">{{ t('admin.common.jumpTo') }}</Button>
+          <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">
             {{ t('admin.common.prevPage') }}
           </Button>
-          <Button variant="outline" size="sm" class="h-8" :disabled="pagination.page >= pagination.total_page" @click="changePage(pagination.page + 1)">
+          <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" :disabled="pagination.page >= pagination.total_page" @click="changePage(pagination.page + 1)">
             {{ t('admin.common.nextPage') }}
           </Button>
         </div>

@@ -667,18 +667,18 @@ watch(
 
 <template>
   <Dialog :open="modelValue" @update:open="(value) => { if (!value) closeModal() }">
-    <DialogScrollContent class="w-full max-w-5xl" @interact-outside="(e) => e.preventDefault()">
+    <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-5xl p-4 sm:p-6" @interact-outside="(e) => e.preventDefault()">
       <DialogHeader>
         <DialogTitle>{{ isEditing ? t('admin.products.modal.editTitle') : t('admin.products.modal.createTitle') }}</DialogTitle>
       </DialogHeader>
       <form class="space-y-6" @submit.prevent="handleSubmit">
         <div class="border-b border-border">
-          <div class="flex gap-4">
+          <div class="flex gap-2 overflow-x-auto pb-1 sm:gap-4">
             <button
               v-for="lang in languages"
               :key="lang.code"
               type="button"
-              class="border-b-2 px-4 py-2 text-sm font-medium"
+              class="shrink-0 border-b-2 px-3 py-2 text-sm font-medium sm:px-4"
               :class="currentLang === lang.code ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'"
               @click="currentLang = lang.code"
             >
@@ -914,7 +914,7 @@ watch(
                   <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.products.form.skuManualStock') }}</label>
                   <Input v-model.number="sku.manual_stock_total" type="number" min="-1" :placeholder="t('admin.products.form.skuManualStockPlaceholder')" />
                 </div>
-                <div :class="form.fulfillment_type === 'manual' ? 'md:col-span-1' : 'md:col-span-2'" class="grid grid-cols-2 gap-3">
+                <div :class="form.fulfillment_type === 'manual' ? 'md:col-span-1' : 'md:col-span-2'" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.products.form.skuSort') }}</label>
                     <Input v-model.number="sku.sort_order" type="number" :placeholder="t('admin.products.form.skuSortPlaceholder')" />
@@ -988,7 +988,7 @@ watch(
             <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.products.form.contentTip') }}</p>
           </div>
 
-          <div class="col-span-2">
+          <div class="col-span-1 md:col-span-2">
             <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.products.form.tags') }}</label>
             <div class="flex flex-wrap gap-2 mb-2">
               <span v-for="(tag, index) in form.tags" :key="index" class="rounded-lg border border-border px-3 py-1 text-xs text-muted-foreground flex items-center gap-1">
@@ -996,25 +996,27 @@ watch(
                 <button type="button" class="hover:text-foreground" @click="removeTag(index)">x</button>
               </span>
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-col gap-2 sm:flex-row">
               <Input v-model="newTag" :placeholder="t('admin.products.form.tagsPlaceholder')" @keydown.enter.prevent="addTag" />
-              <Button type="button" variant="outline" @click="addTag">{{ t('admin.products.actions.addTag') }}</Button>
+              <Button type="button" variant="outline" class="w-full sm:w-auto" @click="addTag">{{ t('admin.products.actions.addTag') }}</Button>
             </div>
           </div>
 
-          <div class="col-span-2 flex flex-wrap items-center gap-6 pt-4 border-t border-border">
+          <div class="col-span-1 md:col-span-2 flex flex-col items-start gap-4 border-t border-border pt-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
             <label class="inline-flex items-center gap-2">
               <input id="is_affiliate_enabled" v-model="form.is_affiliate_enabled" type="checkbox" class="h-4 w-4 accent-primary" />
               <span class="text-sm text-muted-foreground select-none">{{ t('admin.products.form.affiliateEnabled') }}</span>
             </label>
-            <input id="is_active" v-model="form.is_active" type="checkbox" class="h-4 w-4 accent-primary" />
-            <label for="is_active" class="text-sm text-muted-foreground select-none">{{ t('admin.products.form.activeNow') }}</label>
+            <label class="inline-flex items-center gap-2">
+              <input id="is_active" v-model="form.is_active" type="checkbox" class="h-4 w-4 accent-primary" />
+              <span class="text-sm text-muted-foreground select-none">{{ t('admin.products.form.activeNow') }}</span>
+            </label>
           </div>
         </div>
 
-        <div class="flex justify-end gap-3 border-t border-border pt-6">
-          <Button type="button" variant="outline" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
-          <Button type="submit" :disabled="submitting">
+        <div class="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:justify-end">
+          <Button type="button" variant="outline" class="w-full sm:w-auto" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
+          <Button type="submit" class="w-full sm:w-auto" :disabled="submitting">
             {{ submitting ? t('admin.products.actions.submitting') : isEditing ? t('admin.products.actions.saveChanges') : t('admin.products.actions.createNow') }}
           </Button>
         </div>

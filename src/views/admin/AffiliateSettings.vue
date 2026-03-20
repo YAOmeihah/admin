@@ -98,7 +98,7 @@ onMounted(fetchSettings)
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('admin.settings.affiliate.title') }}</h1>
     </div>
 
@@ -107,7 +107,7 @@ onMounted(fetchSettings)
         <p class="text-sm text-muted-foreground">{{ t('admin.settings.affiliate.subtitle') }}</p>
       </div>
       <div class="space-y-6 p-6">
-        <div class="flex items-center gap-3 rounded-lg border border-border bg-muted/20 px-4 py-3">
+        <div class="flex flex-col gap-3 rounded-lg border border-border bg-muted/20 px-4 py-3 sm:flex-row sm:items-center">
           <input id="affiliate-enabled" v-model="form.enabled" type="checkbox" class="h-4 w-4 accent-primary" />
           <label for="affiliate-enabled" class="text-sm font-medium">{{ t('admin.settings.affiliate.enabled') }}</label>
         </div>
@@ -141,7 +141,7 @@ onMounted(fetchSettings)
         </div>
 
         <div class="flex justify-end pt-2">
-          <Button @click="saveSettings" :disabled="loading">
+          <Button class="w-full sm:w-auto" @click="saveSettings" :disabled="loading">
             {{ t('admin.settings.actions.save') }}
           </Button>
         </div>

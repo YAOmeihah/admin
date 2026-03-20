@@ -84,12 +84,12 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h2 class="text-2xl font-bold tracking-tight">{{ t('telegramBot.status.title') }}</h2>
         <p class="text-muted-foreground">{{ t('telegramBot.status.subtitle') }}</p>
       </div>
-      <Button variant="outline" size="sm" :disabled="loading" @click="fetchRuntimeStatus">
+      <Button variant="outline" size="sm" class="w-full sm:w-auto" :disabled="loading" @click="fetchRuntimeStatus">
         <RefreshCw class="h-4 w-4 mr-2" :class="{ 'animate-spin': loading }" />
         {{ t('telegramBot.overview.refreshStatus') }}
       </Button>
@@ -97,12 +97,12 @@ onMounted(() => {
 
     <Card>
       <CardHeader>
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle>{{ t('telegramBot.status.connectionStatus') }}</CardTitle>
             <CardDescription>{{ t('telegramBot.status.connectionStatusDesc') }}</CardDescription>
           </div>
-          <Badge :variant="isConnected ? 'default' : 'secondary'">
+          <Badge :variant="isConnected ? 'default' : 'secondary'" class="w-fit">
             <component :is="isConnected ? Wifi : WifiOff" class="h-3 w-3 mr-1" />
             {{ isConnected ? t('telegramBot.overview.connected') : t('telegramBot.overview.notConnected') }}
           </Badge>

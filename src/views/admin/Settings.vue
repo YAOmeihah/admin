@@ -650,35 +650,35 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex flex-wrap items-center justify-between gap-4">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <h1 class="text-2xl font-semibold">{{ t('admin.settings.title') }}</h1>
         <p class="mt-1 text-sm text-muted-foreground">{{ t('admin.settings.subtitle') }}</p>
       </div>
-      <div class="flex flex-wrap items-center gap-3">
-        <div class="flex rounded-lg border border-border bg-card p-1">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div class="flex max-w-full overflow-x-auto rounded-lg border border-border bg-card p-1">
           <button
             v-for="lang in languages"
             :key="lang.code"
-            class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
+            class="shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
             :class="currentLang === lang.code ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'"
             @click="currentLang = lang.code"
           >
             {{ lang.name }}
           </button>
         </div>
-        <Button size="sm" :disabled="loading || smtpTabRef?.submitting || smtpTabRef?.smtpTesting || captchaTabRef?.submitting || notificationTabRef?.submitting" @click="saveSettings">
+        <Button size="sm" class="w-full sm:w-auto" :disabled="loading || smtpTabRef?.submitting || smtpTabRef?.smtpTesting || captchaTabRef?.submitting || notificationTabRef?.submitting" @click="saveSettings">
           <span v-if="loading" class="h-3 w-3 animate-spin rounded-full border-2 border-primary/30 border-t-primary"></span>
           {{ loading ? t('admin.settings.actions.saving') : t('admin.settings.actions.save') }}
         </Button>
       </div>
     </div>
 
-    <div class="flex gap-6 border-b border-border">
+    <div class="flex gap-6 overflow-x-auto border-b border-border pb-1">
       <button
         v-for="tab in tabs"
         :key="tab.value"
-        class="relative top-[1px] border-b-2 pb-3 text-sm font-medium transition-colors"
+        class="relative top-[1px] shrink-0 whitespace-nowrap border-b-2 pb-3 text-sm font-medium transition-colors"
         :class="currentTab === tab.value ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'"
         @click="currentTab = tab.value"
       >
@@ -710,7 +710,7 @@ onMounted(() => {
       </div>
 
       <div class="rounded-xl border border-border bg-card">
-        <div class="flex items-center justify-between border-b border-border bg-muted/40 px-6 py-4">
+        <div class="flex flex-col gap-3 border-b border-border bg-muted/40 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 class="text-lg font-semibold">{{ t('admin.settings.seo.title') }}</h2>
             <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.seo.subtitle', { lang: getCurrentLangName() }) }}</p>
@@ -751,12 +751,12 @@ onMounted(() => {
       </div>
 
       <div class="rounded-xl border border-border bg-card">
-        <div class="flex items-center justify-between border-b border-border bg-muted/40 px-6 py-4">
+        <div class="flex flex-col gap-3 border-b border-border bg-muted/40 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 class="text-lg font-semibold">{{ t('admin.settings.footerLinks.title') }}</h2>
             <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.footerLinks.subtitle') }}</p>
           </div>
-          <Button type="button" size="sm" variant="outline" @click="addFooterLinkItem">
+          <Button type="button" size="sm" variant="outline" class="w-full sm:w-auto" @click="addFooterLinkItem">
             {{ t('admin.settings.footerLinks.add') }}
           </Button>
         </div>
@@ -765,12 +765,12 @@ onMounted(() => {
             {{ t('admin.settings.footerLinks.empty') }}
           </div>
 
-          <div v-for="(link, index) in form.footer_links" :key="`footer-link-${index}`" class="flex items-center gap-3">
+          <div v-for="(link, index) in form.footer_links" :key="`footer-link-${index}`" class="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div class="grid flex-1 grid-cols-1 gap-3 md:grid-cols-2">
               <Input v-model="link.name" :placeholder="t('admin.settings.footerLinks.namePlaceholder')" />
               <Input v-model="link.url" :placeholder="t('admin.settings.footerLinks.urlPlaceholder')" />
             </div>
-            <Button type="button" size="sm" variant="destructive" @click="removeFooterLinkItem(index)">
+            <Button type="button" size="sm" variant="destructive" class="w-full sm:w-auto" @click="removeFooterLinkItem(index)">
               {{ t('admin.common.delete') }}
             </Button>
           </div>
@@ -778,12 +778,12 @@ onMounted(() => {
       </div>
 
       <div class="rounded-xl border border-border bg-card">
-        <div class="flex items-center justify-between border-b border-border bg-muted/40 px-6 py-4">
+        <div class="flex flex-col gap-3 border-b border-border bg-muted/40 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 class="text-lg font-semibold">{{ t('admin.settings.scripts.title') }}</h2>
             <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.scripts.subtitle') }}</p>
           </div>
-          <Button type="button" size="sm" variant="outline" @click="addSiteScriptItem">
+          <Button type="button" size="sm" variant="outline" class="w-full sm:w-auto" @click="addSiteScriptItem">
             {{ t('admin.settings.scripts.addScript') }}
           </Button>
         </div>
@@ -798,9 +798,9 @@ onMounted(() => {
           </div>
 
           <div v-for="(script, index) in form.scripts" :key="`site-script-${index}`" class="space-y-4 rounded-lg border border-border bg-muted/10 p-4">
-            <div class="flex items-center justify-between gap-3">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <h3 class="text-sm font-semibold">{{ t('admin.settings.scripts.scriptItem', { index: index + 1 }) }}</h3>
-              <Button type="button" size="sm" variant="destructive" @click="removeSiteScriptItem(index)">
+              <Button type="button" size="sm" variant="destructive" class="w-full sm:w-auto" @click="removeSiteScriptItem(index)">
                 {{ t('admin.common.delete') }}
               </Button>
             </div>
@@ -836,7 +836,7 @@ onMounted(() => {
 
     <div v-show="currentTab === 'about'" class="space-y-6">
       <div class="rounded-xl border border-border bg-card">
-        <div class="flex items-center justify-between border-b border-border bg-muted/40 px-6 py-4">
+        <div class="flex flex-col gap-3 border-b border-border bg-muted/40 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 class="text-lg font-semibold">{{ t('admin.settings.about.title') }}</h2>
             <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.about.subtitle', { lang: getCurrentLangName() }) }}</p>
@@ -872,9 +872,9 @@ onMounted(() => {
           </div>
 
           <div class="rounded-xl border border-border">
-            <div class="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-3">
+            <div class="flex flex-col gap-3 border-b border-border bg-muted/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
               <h3 class="text-sm font-semibold">{{ t('admin.settings.about.servicesTitle') }}</h3>
-              <Button type="button" size="sm" variant="outline" @click="addAboutServiceItem">
+              <Button type="button" size="sm" variant="outline" class="w-full sm:w-auto" @click="addAboutServiceItem">
                 {{ t('admin.settings.about.addServiceItem') }}
               </Button>
             </div>
@@ -889,9 +889,9 @@ onMounted(() => {
               </div>
 
               <div v-for="(item, index) in form.about.services.items" :key="`about-service-${index}`" class="rounded-lg border border-border bg-muted/10 p-3">
-                <div class="mb-2 flex items-center justify-between">
+                <div class="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.about.serviceItem', { index: index + 1 }) }}</label>
-                  <Button type="button" size="sm" variant="destructive" @click="removeAboutServiceItem(index)">
+                  <Button type="button" size="sm" variant="destructive" class="w-full sm:w-auto" @click="removeAboutServiceItem(index)">
                     {{ t('admin.common.delete') }}
                   </Button>
                 </div>
@@ -922,7 +922,7 @@ onMounted(() => {
 
     <div v-show="currentTab === 'legal'" class="space-y-6">
       <div class="rounded-xl border border-border bg-card">
-        <div class="flex items-center justify-between border-b border-border bg-muted/40 px-6 py-4">
+        <div class="flex flex-col gap-3 border-b border-border bg-muted/40 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 class="text-lg font-semibold">{{ t('admin.settings.legal.termsTitle') }}</h2>
             <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.legal.termsSubtitle', { lang: getCurrentLangName() }) }}</p>
@@ -935,7 +935,7 @@ onMounted(() => {
       </div>
 
       <div class="rounded-xl border border-border bg-card">
-        <div class="flex items-center justify-between border-b border-border bg-muted/40 px-6 py-4">
+        <div class="flex flex-col gap-3 border-b border-border bg-muted/40 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 class="text-lg font-semibold">{{ t('admin.settings.legal.privacyTitle') }}</h2>
             <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.legal.privacySubtitle', { lang: getCurrentLangName() }) }}</p>
@@ -965,7 +965,7 @@ onMounted(() => {
         </div>
 
         <div class="space-y-6 p-6">
-          <div class="flex items-center gap-3 rounded-lg border border-border bg-muted/20 px-4 py-3">
+          <div class="flex flex-col gap-3 rounded-lg border border-border bg-muted/20 px-4 py-3 sm:flex-row sm:items-center">
             <input id="telegram-auth-enabled" v-model="telegramForm.enabled" type="checkbox" class="h-4 w-4 accent-primary" />
             <label for="telegram-auth-enabled" class="text-sm font-medium">{{ t('admin.settings.telegram.enabled') }}</label>
           </div>

@@ -375,7 +375,7 @@ watch(
 
 <template>
   <Dialog :open="modelValue" @update:open="(value) => { if (!value) handleClose() }">
-    <DialogScrollContent class="w-full max-w-5xl">
+    <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-5xl p-4 sm:p-6">
       <DialogHeader>
         <DialogTitle>{{ t('admin.orders.detailTitle') }}</DialogTitle>
       </DialogHeader>
@@ -385,8 +385,8 @@ watch(
           {{ detailError }}
         </div>
         <div v-else-if="selectedOrder" class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <Card class="rounded-lg border-border bg-background shadow-none">
+          <div class="grid grid-cols-1 gap-4 text-sm md:grid-cols-2 [&>*]:min-w-0">
+            <Card class="min-w-0 rounded-lg border-border bg-background shadow-none">
               <CardContent class="p-3">
                 <div class="text-xs text-muted-foreground">{{ t('admin.orders.table.id') }}</div>
                 <div class="text-foreground font-mono mt-1">
@@ -394,86 +394,86 @@ watch(
                 </div>
               </CardContent>
             </Card>
-            <Card class="rounded-lg border-border bg-background shadow-none">
+            <Card class="min-w-0 rounded-lg border-border bg-background shadow-none">
               <CardContent class="p-3">
                 <div class="text-xs text-muted-foreground">{{ t('admin.orders.detailOrderNo') }}</div>
-                <div class="text-foreground font-mono mt-1">{{ selectedOrder.order_no }}</div>
+                <div class="mt-1 break-all font-mono text-foreground">{{ selectedOrder.order_no }}</div>
               </CardContent>
             </Card>
-            <Card class="rounded-lg border-border bg-background shadow-none">
+            <Card class="min-w-0 rounded-lg border-border bg-background shadow-none">
               <CardContent class="p-3">
                 <div class="text-xs text-muted-foreground">{{ t('admin.orders.detailUser') }}</div>
-                <div class="text-sm text-foreground">
+                <div class="text-sm text-foreground break-words">
                   <span v-if="selectedOrder.user_id">
                     {{ t('admin.orders.userLabel') }}:
                     <a :href="userDetailLink(selectedOrder.user_id)" target="_blank" rel="noopener" class="text-primary underline-offset-4 hover:underline">
                       #{{ selectedOrder.user_id }}
                     </a>
                   </span>
-                  <span v-else>{{ t('admin.orders.guestLabel') }}: {{ selectedOrder.guest_email || '-' }}</span>
+                  <span v-else class="break-all">{{ t('admin.orders.guestLabel') }}: {{ selectedOrder.guest_email || '-' }}</span>
                 </div>
               </CardContent>
             </Card>
-            <Card class="rounded-lg border-border bg-background shadow-none">
+            <Card class="min-w-0 rounded-lg border-border bg-background shadow-none">
               <CardContent class="p-3">
                 <div class="text-xs text-muted-foreground">{{ t('admin.orders.detailStatus') }}</div>
                 <div class="text-sm text-foreground">{{ statusLabel(selectedOrder.status) }}</div>
               </CardContent>
             </Card>
-            <Card class="rounded-lg border-border bg-background shadow-none">
+            <Card class="min-w-0 rounded-lg border-border bg-background shadow-none">
               <CardContent class="p-3">
                 <div class="text-xs text-muted-foreground">{{ t('admin.orders.detailCreatedAt') }}</div>
                 <div class="text-sm text-foreground">{{ formatDate(selectedOrder.created_at) }}</div>
               </CardContent>
             </Card>
-            <Card class="rounded-lg border-border bg-background shadow-none">
+            <Card class="min-w-0 rounded-lg border-border bg-background shadow-none">
               <CardContent class="p-3">
                 <div class="text-xs text-muted-foreground">{{ t('admin.orders.detailClientIp') }}</div>
-                <div class="text-sm text-foreground">{{ selectedOrder.client_ip || '-' }}</div>
+                <div class="break-all text-sm text-foreground">{{ selectedOrder.client_ip || '-' }}</div>
               </CardContent>
             </Card>
           </div>
 
           <div class="rounded-xl border border-border bg-muted/20 p-4">
             <h3 class="text-sm font-semibold text-foreground mb-3">{{ t('orderDetail.amountTitle') }}</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <Card class="rounded-lg border-border bg-background shadow-none">
+            <div class="grid grid-cols-1 gap-4 text-sm md:grid-cols-3 [&>*]:min-w-0">
+              <Card class="min-w-0 rounded-lg border-border bg-background shadow-none">
                 <CardContent class="p-3">
                   <div class="text-xs text-muted-foreground">{{ t('orderDetail.amountOriginal') }}</div>
                   <div class="text-foreground font-mono mt-1">{{ formatMoney(selectedOrder.original_amount, selectedOrder.currency) }}</div>
                 </CardContent>
               </Card>
-              <Card class="rounded-lg border-border bg-background shadow-none">
+              <Card class="min-w-0 rounded-lg border-border bg-background shadow-none">
                 <CardContent class="p-3">
                   <div class="text-xs text-muted-foreground">{{ t('orderDetail.amountDiscount') }}</div>
                   <div class="text-foreground font-mono mt-1">{{ formatMoney(selectedOrder.discount_amount, selectedOrder.currency) }}</div>
                 </CardContent>
               </Card>
-              <Card class="rounded-lg border-border bg-background shadow-none">
+              <Card class="min-w-0 rounded-lg border-border bg-background shadow-none">
                 <CardContent class="p-3">
                   <div class="text-xs text-muted-foreground">{{ t('orderDetail.amountTotal') }}</div>
                   <div class="text-foreground font-mono mt-1">{{ formatMoney(selectedOrder.total_amount, selectedOrder.currency) }}</div>
                 </CardContent>
               </Card>
-              <Card v-if="hasPositiveAmount(selectedOrder.wallet_paid_amount)" class="rounded-lg border-border bg-background shadow-none">
+              <Card v-if="hasPositiveAmount(selectedOrder.wallet_paid_amount)" class="min-w-0 rounded-lg border-border bg-background shadow-none">
                 <CardContent class="p-3">
                   <div class="text-xs text-muted-foreground">{{ t('admin.orders.detailWalletPaid') }}</div>
                   <div class="text-foreground font-mono mt-1">{{ formatMoney(selectedOrder.wallet_paid_amount, selectedOrder.currency) }}</div>
                 </CardContent>
               </Card>
-              <Card v-if="hasPositiveAmount(selectedOrder.online_paid_amount)" class="rounded-lg border-border bg-background shadow-none">
+              <Card v-if="hasPositiveAmount(selectedOrder.online_paid_amount)" class="min-w-0 rounded-lg border-border bg-background shadow-none">
                 <CardContent class="p-3">
                   <div class="text-xs text-muted-foreground">{{ t('admin.orders.detailOnlinePaid') }}</div>
                   <div class="text-foreground font-mono mt-1">{{ formatMoney(selectedOrder.online_paid_amount, selectedOrder.currency) }}</div>
                 </CardContent>
               </Card>
-              <Card v-if="hasPositiveAmount(selectedOrder.refunded_amount)" class="rounded-lg border-border bg-background shadow-none">
+              <Card v-if="hasPositiveAmount(selectedOrder.refunded_amount)" class="min-w-0 rounded-lg border-border bg-background shadow-none">
                 <CardContent class="p-3">
                   <div class="text-xs text-muted-foreground">{{ t('admin.orders.detailRefunded') }}</div>
                   <div class="text-foreground font-mono mt-1">{{ formatMoney(selectedOrder.refunded_amount, selectedOrder.currency) }}</div>
                 </CardContent>
               </Card>
-              <Card class="rounded-lg border-border bg-background shadow-none">
+              <Card class="min-w-0 rounded-lg border-border bg-background shadow-none">
                 <CardContent class="p-3">
                   <div class="text-xs text-muted-foreground">{{ t('admin.orders.detailPaymentMethod') }}</div>
                   <div class="text-foreground mt-1">{{ orderPaymentMethodLabel(selectedOrder) }}</div>
@@ -484,20 +484,20 @@ watch(
 
           <div class="rounded-xl border border-border bg-muted/20 p-4">
             <h3 class="text-sm font-semibold text-foreground mb-3">{{ t('admin.orders.detailDiscountTitle') }}</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <Card class="rounded-lg border-border bg-background shadow-none">
+            <div class="grid grid-cols-1 gap-4 text-sm md:grid-cols-2 [&>*]:min-w-0">
+              <Card class="min-w-0 rounded-lg border-border bg-background shadow-none">
                 <CardContent class="p-3">
                   <div class="text-xs text-muted-foreground">{{ t('admin.orders.detailCouponDiscount') }}</div>
                   <div class="text-foreground font-mono mt-1">{{ formatMoney(selectedOrder.discount_amount, selectedOrder.currency) }}</div>
                 </CardContent>
               </Card>
-              <Card class="rounded-lg border-border bg-background shadow-none">
+              <Card class="min-w-0 rounded-lg border-border bg-background shadow-none">
                 <CardContent class="p-3">
                   <div class="text-xs text-muted-foreground">{{ t('admin.orders.detailPromotionDiscount') }}</div>
                   <div class="text-foreground font-mono mt-1">{{ formatMoney(selectedOrder.promotion_discount_amount, selectedOrder.currency) }}</div>
                 </CardContent>
               </Card>
-              <Card v-if="hasPositiveAmount(selectedOrder.member_discount_amount)" class="rounded-lg border-amber-200 bg-amber-50/50 shadow-none">
+              <Card v-if="hasPositiveAmount(selectedOrder.member_discount_amount)" class="min-w-0 rounded-lg border-amber-200 bg-amber-50/50 shadow-none">
                 <CardContent class="p-3">
                   <div class="text-xs text-amber-700">{{ t('admin.orders.detailMemberDiscount') }}</div>
                   <div class="text-amber-700 font-mono mt-1">{{ formatMoney(selectedOrder.member_discount_amount, selectedOrder.currency) }}</div>
@@ -510,9 +510,9 @@ watch(
             <h3 class="text-sm font-semibold text-foreground mb-3">{{ t('orderDetail.itemsTitle') }}</h3>
             <div v-if="selectedOrder.items && selectedOrder.items.length" class="space-y-3">
               <div v-for="item in selectedOrder.items" :key="item.id" class="flex flex-col gap-3 border-b border-border/60 pb-3 text-sm text-muted-foreground">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                  <div>
-                    <a :href="productLink(item.product_id)" target="_blank" rel="noopener" class="text-primary underline-offset-4 hover:underline font-medium">
+                <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div class="min-w-0">
+                    <a :href="productLink(item.product_id)" target="_blank" rel="noopener" class="break-words font-medium text-primary underline-offset-4 hover:underline">
                       {{ getLocalizedText(item.title) }}
                     </a>
                     <div class="text-xs text-muted-foreground mt-1">#{{ item.product_id }}</div>
@@ -523,21 +523,21 @@ watch(
                           <Package class="h-3.5 w-3.5" />
                           {{ t('admin.orders.itemSkuLabel') }}
                         </span>
-                        <span class="font-mono text-xs text-foreground">{{ orderItemSkuCodeText(item) }}</span>
+                        <span class="break-all font-mono text-xs text-foreground">{{ orderItemSkuCodeText(item) }}</span>
                       </div>
-                      <div class="mt-1 text-xs text-muted-foreground">{{ t('admin.orders.itemSkuSpec') }}：{{ orderItemSkuSpecText(item) }}</div>
+                      <div class="mt-1 break-words text-xs text-muted-foreground">{{ t('admin.orders.itemSkuSpec') }}：{{ orderItemSkuSpecText(item) }}</div>
                     </div>
                     <div class="text-xs text-muted-foreground mt-1">
                       {{ t('admin.orders.itemCouponCode') }}：
                       <a v-if="selectedOrder.coupon_code" :href="couponCodeLink(selectedOrder.coupon_code)" target="_blank" rel="noopener" class="text-primary underline-offset-4 hover:underline">
-                        {{ selectedOrder.coupon_code }}
-                      </a>
+                          <span class="break-all">{{ selectedOrder.coupon_code }}</span>
+                        </a>
                       <span v-else>-</span>
                     </div>
                     <div class="text-xs text-muted-foreground mt-1">
                       {{ t('admin.orders.itemPromotionName') }}：
                       <a v-if="item.promotion_id" :href="promotionLink(item.promotion_id)" target="_blank" rel="noopener" class="text-primary underline-offset-4 hover:underline">
-                        {{ item.promotion_name || `#${item.promotion_id}` }}
+                        <span class="break-words">{{ item.promotion_name || `#${item.promotion_id}` }}</span>
                       </a>
                       <span v-else>-</span>
                     </div>
@@ -553,13 +553,13 @@ watch(
                     <div v-if="manualSubmissionRows(item.manual_form_submission).length" class="mt-3 rounded-lg border border-border bg-background p-3">
                       <div class="text-xs font-semibold text-muted-foreground mb-2">{{ t('admin.orders.manualSubmissionTitle') }}</div>
                       <div class="space-y-1 text-xs text-muted-foreground">
-                        <div v-for="row in manualSubmissionRows(item.manual_form_submission)" :key="`${item.id}-${row.key}`">
-                          <span class="text-foreground">{{ row.key }}</span>：{{ row.value }}
+                        <div v-for="row in manualSubmissionRows(item.manual_form_submission)" :key="`${item.id}-${row.key}`" class="break-words">
+                          <span class="text-foreground">{{ row.key }}</span>：<span class="break-all">{{ row.value }}</span>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div class="text-right space-y-1">
+                  <div class="space-y-1 text-left md:text-right">
                     <div>{{ t('orderDetail.unitPriceLabel') }}：{{ formatMoney(item.unit_price, selectedOrder.currency) }}</div>
                     <div>{{ t('orderDetail.totalPriceLabel') }}：{{ formatMoney(item.total_price, selectedOrder.currency) }}</div>
                     <div v-if="hasPositiveAmount(item.coupon_discount_amount)">
@@ -582,16 +582,16 @@ watch(
             <h3 class="text-sm font-semibold text-foreground mb-3">{{ t('orderDetail.childOrdersTitle') }}</h3>
             <div class="space-y-4">
               <div v-for="child in selectedOrder.children" :key="child.id" class="rounded-xl border border-border bg-background p-4">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                  <div>
-                    <div class="text-xs text-muted-foreground">{{ t('orderDetail.childOrderNo') }}：{{ child.order_no }}</div>
+                <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div class="min-w-0">
+                    <div class="break-all text-xs text-muted-foreground">{{ t('orderDetail.childOrderNo') }}：{{ child.order_no }}</div>
                     <div class="text-xs text-muted-foreground mt-1">{{ t('orderDetail.childOrderAmount') }}：{{ formatMoney(child.total_amount, child.currency || selectedOrder.currency) }}</div>
                   </div>
-                  <div class="flex items-center gap-2">
+                  <div class="flex w-full flex-wrap items-center gap-2 md:w-auto md:justify-end">
                     <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="statusClass(child.status)">
                       {{ statusLabel(child.status) }}
                     </span>
-                    <Button v-if="canCreateChildFulfillment(child)" size="sm" variant="secondary" @click="handleOpenFulfillment(child, selectedOrder.id)">
+                    <Button v-if="canCreateChildFulfillment(child)" size="sm" variant="secondary" class="w-full sm:w-auto" @click="handleOpenFulfillment(child, selectedOrder.id)">
                       {{ t('admin.orders.fulfillmentCreate') }}
                     </Button>
                   </div>
@@ -599,9 +599,9 @@ watch(
                 <div class="mt-4">
                   <h4 class="text-xs font-semibold text-muted-foreground mb-2">{{ t('orderDetail.childItemsTitle') }}</h4>
                   <div v-if="child.items && child.items.length" class="space-y-3">
-                    <div v-for="item in child.items" :key="item.id" class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-b border-border/60 pb-3 text-sm text-muted-foreground">
-                      <div>
-                        <a :href="productLink(item.product_id)" target="_blank" rel="noopener" class="text-primary underline-offset-4 hover:underline font-medium">
+                    <div v-for="item in child.items" :key="item.id" class="flex flex-col gap-3 border-b border-border/60 pb-3 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
+                      <div class="min-w-0">
+                        <a :href="productLink(item.product_id)" target="_blank" rel="noopener" class="break-words font-medium text-primary underline-offset-4 hover:underline">
                           {{ getLocalizedText(item.title) }}
                         </a>
                         <div class="text-xs text-muted-foreground mt-1">#{{ item.product_id }}</div>
@@ -612,20 +612,20 @@ watch(
                               <Package class="h-3.5 w-3.5" />
                               {{ t('admin.orders.itemSkuLabel') }}
                             </span>
-                            <span class="font-mono text-xs text-foreground">{{ orderItemSkuCodeText(item) }}</span>
+                            <span class="break-all font-mono text-xs text-foreground">{{ orderItemSkuCodeText(item) }}</span>
                           </div>
-                          <div class="mt-1 text-xs text-muted-foreground">{{ t('admin.orders.itemSkuSpec') }}：{{ orderItemSkuSpecText(item) }}</div>
+                          <div class="mt-1 break-words text-xs text-muted-foreground">{{ t('admin.orders.itemSkuSpec') }}：{{ orderItemSkuSpecText(item) }}</div>
                         </div>
                         <div v-if="manualSubmissionRows(item.manual_form_submission).length" class="mt-3 rounded-lg border border-border bg-muted/20 p-3">
                           <div class="text-xs font-semibold text-muted-foreground mb-2">{{ t('admin.orders.manualSubmissionTitle') }}</div>
                           <div class="space-y-1 text-xs text-muted-foreground">
-                            <div v-for="row in manualSubmissionRows(item.manual_form_submission)" :key="`${item.id}-${row.key}`">
-                              <span class="text-foreground">{{ row.key }}</span>：{{ row.value }}
+                            <div v-for="row in manualSubmissionRows(item.manual_form_submission)" :key="`${item.id}-${row.key}`" class="break-words">
+                              <span class="text-foreground">{{ row.key }}</span>：<span class="break-all">{{ row.value }}</span>
                             </div>
                           </div>
                         </div>
                       </div>
-                      <div class="text-right space-y-1">
+                      <div class="space-y-1 text-left md:text-right">
                         <div>{{ t('orderDetail.unitPriceLabel') }}：{{ formatMoney(item.unit_price, selectedOrder.currency) }}</div>
                         <div>{{ t('orderDetail.totalPriceLabel') }}：{{ formatMoney(item.total_price, selectedOrder.currency) }}</div>
                         <div v-if="hasPositiveAmount(item.coupon_discount_amount)">
@@ -648,9 +648,9 @@ watch(
                     <div class="text-xs text-muted-foreground">{{ t('admin.orders.detailFulfillmentType') }}：{{ fulfillmentTypeLabel(child.fulfillment.type) }}</div>
                     <div class="text-xs text-muted-foreground">{{ t('admin.orders.detailFulfillmentStatus') }}：{{ fulfillmentStatusLabel(child.fulfillment.status) }}</div>
                     <div v-if="fulfillmentDeliveryLines(child.fulfillment).length" class="mt-3 rounded-lg border border-border bg-muted/30 p-3 text-xs text-foreground space-y-1">
-                      <div v-for="(line, lineIndex) in fulfillmentDeliveryLines(child.fulfillment)" :key="`child-fulfillment-${child.id}-${lineIndex}`">{{ line }}</div>
+                      <div v-for="(line, lineIndex) in fulfillmentDeliveryLines(child.fulfillment)" :key="`child-fulfillment-${child.id}-${lineIndex}`" class="break-all">{{ line }}</div>
                     </div>
-                    <div v-else-if="child.fulfillment.payload" class="mt-3 rounded-lg border border-border bg-muted/30 p-3 text-xs text-foreground whitespace-pre-wrap">
+                    <div v-else-if="child.fulfillment.payload" class="mt-3 rounded-lg border border-border bg-muted/30 p-3 text-xs text-foreground whitespace-pre-wrap break-all">
                       {{ child.fulfillment.payload }}
                     </div>
                   </div>
@@ -665,16 +665,16 @@ watch(
             <div class="text-sm text-muted-foreground">{{ t('admin.orders.detailFulfillmentType') }}：{{ fulfillmentTypeLabel(selectedOrder.fulfillment.type) }}</div>
             <div class="text-sm text-muted-foreground">{{ t('admin.orders.detailFulfillmentStatus') }}：{{ fulfillmentStatusLabel(selectedOrder.fulfillment.status) }}</div>
             <div v-if="fulfillmentDeliveryLines(selectedOrder.fulfillment).length" class="mt-3 rounded-lg border border-border bg-background p-3 text-xs text-muted-foreground space-y-1">
-              <div v-for="(line, lineIndex) in fulfillmentDeliveryLines(selectedOrder.fulfillment)" :key="`fulfillment-${selectedOrder.id}-${lineIndex}`">{{ line }}</div>
+              <div v-for="(line, lineIndex) in fulfillmentDeliveryLines(selectedOrder.fulfillment)" :key="`fulfillment-${selectedOrder.id}-${lineIndex}`" class="break-all">{{ line }}</div>
             </div>
-            <div v-else class="mt-3 rounded-lg border border-border bg-background p-3 text-xs text-muted-foreground whitespace-pre-wrap">
+            <div v-else class="mt-3 rounded-lg border border-border bg-background p-3 text-xs text-muted-foreground whitespace-pre-wrap break-all">
               {{ selectedOrder.fulfillment.payload }}
             </div>
           </div>
 
           <div v-if="procurementOrder" class="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4">
             <h3 class="text-sm font-semibold text-indigo-800 mb-3">{{ t('orderDetail.procurementTitle') }}</h3>
-            <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               <div>
                 <span class="text-xs text-muted-foreground">{{ t('procurement.columns.id') }}:</span>
                 <span class="ml-1 font-mono">{{ procurementOrder.id }}</span>
@@ -696,11 +696,11 @@ watch(
               </div>
               <div>
                 <span class="text-xs text-muted-foreground">{{ t('procurement.columns.connection') }}:</span>
-                <span class="ml-1">{{ procurementOrder.connection?.name || procurementOrder.connection_id || '-' }}</span>
+                <span class="ml-1 break-words">{{ procurementOrder.connection?.name || procurementOrder.connection_id || '-' }}</span>
               </div>
               <div>
                 <span class="text-xs text-muted-foreground">{{ t('procurement.columns.upstreamOrderNo') }}:</span>
-                <span class="ml-1 font-mono">{{ procurementOrder.upstream_order_no || '-' }}</span>
+                <span class="ml-1 break-all font-mono">{{ procurementOrder.upstream_order_no || '-' }}</span>
               </div>
               <div>
                 <span class="text-xs text-muted-foreground">{{ t('procurement.columns.upstreamAmount') }}:</span>
@@ -708,7 +708,7 @@ watch(
               </div>
               <div v-if="procurementOrder.error_message">
                 <span class="text-xs text-muted-foreground">{{ t('procurement.columns.errorMessage') }}:</span>
-                <span class="ml-1 text-red-600 text-xs">{{ procurementOrder.error_message }}</span>
+                <span class="ml-1 break-words text-xs text-red-600">{{ procurementOrder.error_message }}</span>
               </div>
             </div>
           </div>
@@ -722,7 +722,8 @@ watch(
               {{ t('admin.orders.detailWalletOnlyNoOnlinePayments') }}
             </div>
             <div v-if="selectedOrder.payments && selectedOrder.payments.length">
-              <Table>
+              <div class="overflow-x-auto">
+                <Table class="min-w-[760px]">
                 <TableHeader class="bg-muted/40 text-xs uppercase text-muted-foreground">
                   <TableRow>
                     <TableHead class="px-4 py-3">{{ t('admin.payments.table.paymentId') }}</TableHead>
@@ -757,7 +758,8 @@ watch(
                     <TableCell class="px-4 py-3 text-xs text-muted-foreground">{{ formatDate(payment.created_at) }}</TableCell>
                   </TableRow>
                 </TableBody>
-              </Table>
+                </Table>
+              </div>
             </div>
             <div v-else class="text-xs text-muted-foreground">{{ t('admin.payments.empty') }}</div>
           </div>
@@ -767,18 +769,21 @@ watch(
             <div class="mb-3 text-xs text-muted-foreground">
               {{ t('admin.orders.refundableAmount') }}：{{ refundableAmountDisplay(selectedOrder) }}
             </div>
-            <form class="grid grid-cols-1 gap-3 md:grid-cols-[1fr_2fr_auto]" @submit.prevent="submitRefundToWallet">
+            <form class="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_auto]" @submit.prevent="submitRefundToWallet">
               <Input
+                class="min-w-0"
                 v-model="refundForm.amount"
                 :placeholder="t('admin.orders.refundAmountPlaceholder')"
                 :disabled="refundSubmitting || !canRefundToWallet(selectedOrder)"
               />
               <Input
+                class="min-w-0"
                 v-model="refundForm.remark"
                 :placeholder="t('admin.orders.refundRemarkPlaceholder')"
                 :disabled="refundSubmitting || !canRefundToWallet(selectedOrder)"
               />
               <Button
+                class="w-full md:w-auto"
                 type="submit"
                 :disabled="refundSubmitting || !canRefundToWallet(selectedOrder)"
               >

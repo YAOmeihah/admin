@@ -378,16 +378,16 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('productMappings.title') }}</h1>
-      <Button @click="openImportModal">{{ t('productMappings.importButton') }}</Button>
+      <Button class="w-full sm:w-auto" @click="openImportModal">{{ t('productMappings.importButton') }}</Button>
     </div>
 
     <!-- Filter -->
     <div class="rounded-xl border border-border bg-card p-4 shadow-sm">
       <div class="flex flex-wrap items-center gap-3">
         <Select v-model="filters.connection_id" @update:modelValue="handleFilterChange">
-          <SelectTrigger class="h-9 w-[220px]">
+          <SelectTrigger class="h-9 w-full sm:w-[220px]">
             <SelectValue :placeholder="t('productMappings.filter.connectionPlaceholder')" />
           </SelectTrigger>
           <SelectContent>
@@ -415,7 +415,7 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
       >
         <!-- Collapsed row -->
         <div
-          class="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-muted/20 transition-colors"
+          class="flex flex-col gap-3 px-5 py-4 cursor-pointer transition-colors hover:bg-muted/20 sm:flex-row sm:items-center sm:gap-4"
           @click="toggleMappingExpand(mapping)"
         >
           <!-- Expand arrow -->
@@ -429,8 +429,8 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
 
           <!-- Product info -->
           <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2">
-              <span class="text-sm font-medium text-foreground truncate">{{ getLocalProductTitle(mapping) }}</span>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="break-words text-sm font-medium text-foreground sm:truncate">{{ getLocalProductTitle(mapping) }}</span>
               <span class="shrink-0 text-[10px] font-mono text-muted-foreground">#{{ mapping.local_product_id }}</span>
               <span
                 class="shrink-0 inline-flex rounded-full border px-2 py-0.5 text-[10px]"
@@ -449,14 +449,14 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
           </div>
 
           <!-- Actions -->
-          <div class="flex items-center gap-2 shrink-0" @click.stop>
-            <Button size="sm" variant="outline" :disabled="syncingId === mapping.id" @click="handleSync(mapping)">
+          <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-2 shrink-0" @click.stop>
+            <Button size="sm" variant="outline" class="w-full sm:w-auto" :disabled="syncingId === mapping.id" @click="handleSync(mapping)">
               {{ syncingId === mapping.id ? t('productMappings.actions.syncing') : t('productMappings.actions.sync') }}
             </Button>
-            <Button size="sm" variant="outline" @click="handleToggleStatus(mapping)">
+            <Button size="sm" variant="outline" class="w-full sm:w-auto" @click="handleToggleStatus(mapping)">
               {{ mapping.is_active ? t('productMappings.actions.disable') : t('productMappings.actions.enable') }}
             </Button>
-            <Button size="sm" variant="destructive" @click="handleDelete(mapping)">{{ t('admin.common.delete') }}</Button>
+            <Button size="sm" variant="destructive" class="w-full sm:w-auto" @click="handleDelete(mapping)">{{ t('admin.common.delete') }}</Button>
           </div>
         </div>
 
@@ -474,16 +474,16 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
               {{ t('productMappings.detail.skuComparison') }}
             </h4>
             <div class="overflow-x-auto rounded-lg border border-border">
-              <table class="w-full text-xs">
+              <table class="min-w-[860px] w-full text-xs">
                 <thead>
                   <tr class="bg-muted/50 text-muted-foreground">
-                    <th class="px-3 py-2.5 text-left font-medium">{{ t('productMappings.detail.skuCode') }}</th>
-                    <th class="px-3 py-2.5 text-left font-medium">{{ t('productMappings.import.skuSpec') }}</th>
-                    <th class="px-3 py-2.5 text-right font-medium">{{ t('productMappings.detail.localPrice') }}</th>
-                    <th class="px-3 py-2.5 text-right font-medium">{{ t('productMappings.detail.upstreamPrice') }}</th>
-                    <th class="px-3 py-2.5 text-center font-medium">{{ t('productMappings.detail.priceDiff') }}</th>
-                    <th class="px-3 py-2.5 text-center font-medium">{{ t('productMappings.detail.upstreamStock') }}</th>
-                    <th class="px-3 py-2.5 text-center font-medium">{{ t('productMappings.detail.upstreamActive') }}</th>
+                    <th class="min-w-[160px] px-3 py-2.5 text-left font-medium">{{ t('productMappings.detail.skuCode') }}</th>
+                    <th class="min-w-[220px] px-3 py-2.5 text-left font-medium">{{ t('productMappings.import.skuSpec') }}</th>
+                    <th class="min-w-[120px] px-3 py-2.5 text-right font-medium">{{ t('productMappings.detail.localPrice') }}</th>
+                    <th class="min-w-[120px] px-3 py-2.5 text-right font-medium">{{ t('productMappings.detail.upstreamPrice') }}</th>
+                    <th class="min-w-[120px] px-3 py-2.5 text-center font-medium">{{ t('productMappings.detail.priceDiff') }}</th>
+                    <th class="min-w-[120px] px-3 py-2.5 text-center font-medium">{{ t('productMappings.detail.upstreamStock') }}</th>
+                    <th class="min-w-[120px] px-3 py-2.5 text-center font-medium">{{ t('productMappings.detail.upstreamActive') }}</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -495,10 +495,10 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
                     :key="sku.id"
                     class="hover:bg-muted/20"
                   >
-                    <td class="px-3 py-2.5 font-mono text-muted-foreground">{{ sku.sku_code }}</td>
-                    <td class="px-3 py-2.5 text-foreground">{{ formatSpecValues(sku.spec_values) }}</td>
-                    <td class="px-3 py-2.5 text-right font-mono text-foreground">{{ sku.price_amount }}</td>
-                    <td class="px-3 py-2.5 text-right font-mono">
+                    <td class="min-w-[160px] px-3 py-2.5 font-mono text-muted-foreground break-all">{{ sku.sku_code }}</td>
+                    <td class="min-w-[220px] px-3 py-2.5 text-foreground break-words">{{ formatSpecValues(sku.spec_values) }}</td>
+                    <td class="min-w-[120px] px-3 py-2.5 text-right font-mono text-foreground">{{ sku.price_amount }}</td>
+                    <td class="min-w-[120px] px-3 py-2.5 text-right font-mono">
                       <template v-if="skuMappingByLocalId[sku.id]">
                         <span class="text-foreground">{{ skuMappingByLocalId[sku.id]?.upstream_price }}</span>
                       </template>
@@ -573,12 +573,12 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
 
     <!-- Import Dialog -->
     <Dialog v-model:open="showImportModal" @update:open="(value: boolean) => { if (!value) closeImportModal() }">
-      <DialogScrollContent class="w-full max-w-5xl max-h-[85vh]" @interact-outside="(e: Event) => e.preventDefault()">
+      <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-5xl max-h-[85vh] p-4 sm:p-6" @interact-outside="(e: Event) => e.preventDefault()">
         <DialogHeader>
           <DialogTitle>{{ t('productMappings.importTitle') }}</DialogTitle>
         </DialogHeader>
         <div class="space-y-5">
-          <div class="flex flex-wrap items-end gap-4">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-end">
             <div class="min-w-[200px] flex-1">
               <label class="mb-1.5 block text-xs font-medium text-muted-foreground">{{ t('productMappings.import.selectConnection') }}</label>
               <Select v-model="importConnectionId">
@@ -623,14 +623,14 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
                   <div class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/20" @click="toggleProduct(product.id)">
                     <input type="checkbox" :checked="selectedProductIds.has(product.id)" class="h-4 w-4 shrink-0 rounded border-border accent-primary cursor-pointer" @click.stop="toggleProduct(product.id)" />
                     <div class="min-w-0 flex-1">
-                      <div class="flex items-center gap-2">
-                        <span class="text-sm font-medium text-foreground truncate">{{ getLocalizedText(product.title) }}</span>
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="break-words text-sm font-medium text-foreground sm:truncate">{{ getLocalizedText(product.title) }}</span>
                         <span class="shrink-0 text-[10px] font-mono text-muted-foreground">#{{ product.id }}</span>
                         <span class="shrink-0 inline-flex rounded-full border px-2 py-0.5 text-[10px]" :class="product.is_active ? 'text-emerald-700 border-emerald-200 bg-emerald-50' : 'text-muted-foreground border-border bg-muted/30'">
                           {{ product.is_active ? t('productMappings.status.active') : t('productMappings.status.inactive') }}
                         </span>
                       </div>
-                      <div class="mt-1 flex items-center gap-4 text-xs text-muted-foreground">
+                      <div class="mt-1 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                         <span>{{ t('productMappings.import.colPrice') }}: <span class="font-mono text-foreground">{{ getSkuPriceRange(product) }}</span><span v-if="product.currency" class="ml-0.5">{{ product.currency }}</span></span>
                         <span>SKU: <span class="text-foreground">{{ product.skus?.length || 0 }}</span></span>
                         <span :class="getSkuStockClass(product)">{{ getSkuStockSummary(product) }}</span>
@@ -643,15 +643,15 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
                     </button>
                   </div>
                   <div v-if="importExpandedIds.has(product.id) && product.skus && product.skus.length > 0" class="border-t border-border/50 bg-muted/20 px-4 py-2">
-                    <div class="ml-7">
-                      <div class="grid grid-cols-[1fr_auto_auto_auto] gap-x-4 text-xs">
+                    <div class="ml-7 overflow-x-auto">
+                      <div class="grid min-w-[640px] grid-cols-[1fr_auto_auto_auto] gap-x-4 text-xs">
                         <div class="font-medium text-muted-foreground py-1.5 border-b border-border/30">{{ t('productMappings.import.skuSpec') }}</div>
                         <div class="font-medium text-muted-foreground py-1.5 border-b border-border/30 text-right">{{ t('productMappings.import.skuPrice') }}</div>
                         <div class="font-medium text-muted-foreground py-1.5 border-b border-border/30 text-center">{{ t('productMappings.import.skuStock') }}</div>
                         <div class="font-medium text-muted-foreground py-1.5 border-b border-border/30 text-center">{{ t('productMappings.import.skuActive') }}</div>
                         <template v-for="sku in product.skus" :key="sku.id">
                           <div class="py-1.5 text-foreground">
-                            <span v-if="sku.sku_code" class="font-mono text-muted-foreground mr-2">{{ sku.sku_code }}</span>
+                            <span v-if="sku.sku_code" class="mr-2 break-all font-mono text-muted-foreground">{{ sku.sku_code }}</span>
                             <span>{{ formatSpecValues(sku.spec_values) }}</span>
                           </div>
                           <div class="py-1.5 text-right font-mono text-foreground">{{ sku.price_amount }}<span v-if="product.currency" class="text-muted-foreground ml-0.5">{{ product.currency }}</span></div>
@@ -670,12 +670,12 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
             </div>
           </div>
 
-          <div class="flex items-center justify-between border-t border-border pt-4">
+          <div class="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
             <span v-if="selectedProductIds.size > 0" class="text-sm text-muted-foreground">{{ t('productMappings.import.selectedCount', { count: selectedProductIds.size }) }}</span>
             <span v-else />
-            <div class="flex gap-3">
-              <Button variant="outline" @click="closeImportModal">{{ t('admin.common.cancel') }}</Button>
-              <Button :disabled="selectedProductIds.size === 0 || !importConnectionId || importing" @click="handleBatchImport">
+            <div class="flex flex-col-reverse gap-3 sm:flex-row">
+              <Button variant="outline" class="w-full sm:w-auto" @click="closeImportModal">{{ t('admin.common.cancel') }}</Button>
+              <Button class="w-full sm:w-auto" :disabled="selectedProductIds.size === 0 || !importConnectionId || importing" @click="handleBatchImport">
                 {{ importing ? t('productMappings.import.importing') : t('productMappings.import.submitBatch', { count: selectedProductIds.size }) }}
               </Button>
             </div>

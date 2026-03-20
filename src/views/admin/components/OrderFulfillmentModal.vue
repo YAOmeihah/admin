@@ -152,7 +152,7 @@ watch(
 
 <template>
   <Dialog :open="modelValue" @update:open="(value) => { if (!value) handleClose() }">
-    <DialogScrollContent class="w-full max-w-2xl">
+    <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-2xl p-4 sm:p-6">
       <DialogHeader>
         <DialogTitle>{{ t('admin.orders.fulfillmentModalTitle') }}</DialogTitle>
       </DialogHeader>
@@ -190,9 +190,9 @@ watch(
             </div>
 
             <div class="rounded-lg border border-border bg-muted/20 p-3 space-y-3">
-              <div class="flex items-center justify-between">
+              <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div class="text-xs font-medium text-muted-foreground">{{ t('admin.orders.fulfillmentDeliveryData') }}</div>
-                <Button type="button" size="sm" variant="outline" @click="addDeliveryEntry">
+                <Button class="w-full sm:w-auto" type="button" size="sm" variant="outline" @click="addDeliveryEntry">
                   {{ t('admin.orders.fulfillmentAddDeliveryField') }}
                 </Button>
               </div>
@@ -200,7 +200,7 @@ watch(
                 <div v-for="(entry, entryIndex) in fulfillmentForm.entries" :key="entryIndex" class="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-2">
                   <Input v-model="entry.key" :placeholder="t('admin.orders.fulfillmentDeliveryKeyPlaceholder')" />
                   <Input v-model="entry.value" :placeholder="t('admin.orders.fulfillmentDeliveryValuePlaceholder')" />
-                  <Button type="button" size="sm" variant="destructive" @click="removeDeliveryEntry(entryIndex)">
+                  <Button class="w-full md:w-auto" type="button" size="sm" variant="destructive" @click="removeDeliveryEntry(entryIndex)">
                     {{ t('admin.common.delete') }}
                   </Button>
                 </div>
@@ -224,11 +224,11 @@ watch(
               {{ fulfillmentSuccess }}
             </div>
 
-            <div class="flex justify-end gap-3">
-              <Button type="button" variant="outline" size="sm" @click="resetFulfillmentForm">
+            <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <Button class="w-full sm:w-auto" type="button" variant="outline" size="sm" @click="resetFulfillmentForm">
                 {{ t('admin.common.reset') }}
               </Button>
-              <Button type="submit" size="sm" :disabled="fulfillmentSubmitting">
+              <Button class="w-full sm:w-auto" type="submit" size="sm" :disabled="fulfillmentSubmitting">
                 {{ fulfillmentSubmitting ? t('admin.orders.fulfillmentSubmitting') : t('admin.orders.fulfillmentSubmit') }}
               </Button>
             </div>

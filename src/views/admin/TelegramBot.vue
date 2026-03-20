@@ -90,7 +90,7 @@ onMounted(() => {
     <!-- Connection Status Card -->
     <Card>
       <CardHeader>
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex items-center gap-3">
             <Bot class="h-8 w-8 text-primary" />
             <div>
@@ -98,7 +98,7 @@ onMounted(() => {
               <CardDescription>{{ t('telegramBot.overview.connectionDesc') }}</CardDescription>
             </div>
           </div>
-          <Badge :variant="isConnected ? 'default' : 'secondary'">
+          <Badge :variant="isConnected ? 'default' : 'secondary'" class="w-fit">
             <component :is="isConnected ? Wifi : WifiOff" class="h-3 w-3 mr-1" />
             {{ isConnected ? t('telegramBot.overview.connected') : t('telegramBot.overview.notConnected') }}
           </Badge>
@@ -148,7 +148,7 @@ onMounted(() => {
     </Card>
 
     <!-- Feature Overview -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
       <Card>
         <CardHeader>
           <CardTitle class="text-base">{{ t('telegramBot.overview.featureBasicSettings') }}</CardTitle>
@@ -212,12 +212,12 @@ onMounted(() => {
       <CardHeader>
         <CardTitle>{{ t('telegramBot.overview.quickActions') }}</CardTitle>
       </CardHeader>
-      <CardContent class="flex gap-3">
-        <Button variant="outline" size="sm" :disabled="loading" @click="fetchRuntimeStatus">
+      <CardContent class="flex flex-col gap-3 sm:flex-row">
+        <Button variant="outline" size="sm" class="w-full sm:w-auto" :disabled="loading" @click="fetchRuntimeStatus">
           <RefreshCw class="h-4 w-4 mr-2" :class="{ 'animate-spin': loading }" />
           {{ t('telegramBot.overview.refreshStatus') }}
         </Button>
-        <Button variant="outline" size="sm" as-child>
+        <Button variant="outline" size="sm" class="w-full sm:w-auto" as-child>
           <RouterLink to="/telegram-bot/broadcasts/create">
             <Send class="h-4 w-4 mr-2" />
             {{ t('telegramBot.overview.createBroadcast') }}

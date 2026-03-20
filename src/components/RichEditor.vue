@@ -414,11 +414,13 @@ onBeforeUnmount(() => {
 }
 
 .editor-toolbar {
-  @apply flex flex-wrap items-center gap-1 p-2 border-b border-border bg-muted/40;
+  @apply flex flex-nowrap items-center gap-1 overflow-x-auto p-1.5 border-b border-border bg-muted/40 sm:flex-wrap sm:p-2;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
 .toolbar-btn {
-  @apply p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all disabled:opacity-30 disabled:cursor-not-allowed;
+  @apply shrink-0 rounded-lg p-1.5 text-muted-foreground transition-all hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30 sm:p-2;
 }
 
 .toolbar-btn.is-active {
@@ -426,7 +428,7 @@ onBeforeUnmount(() => {
 }
 
 .toolbar-divider {
-  @apply w-px h-6 bg-border mx-1;
+  @apply mx-1 h-6 w-px shrink-0 bg-border;
 }
 
 .editor-toolbar.is-source-mode .toolbar-btn:not(.code-mode-btn) {

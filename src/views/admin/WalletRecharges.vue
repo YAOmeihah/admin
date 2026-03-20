@@ -133,12 +133,12 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('admin.walletRecharges.title') }}</h1>
     </div>
 
     <div class="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <div class="w-full md:w-44">
           <Input v-model="filters.rechargeNo" :placeholder="t('admin.walletRecharges.filterRechargeNo')" @update:modelValue="debouncedSearch" />
         </div>
@@ -183,7 +183,7 @@ onMounted(() => {
             </SelectContent>
           </Select>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex w-full flex-col gap-2 md:w-auto md:flex-row md:flex-wrap md:items-center">
           <span class="text-xs text-muted-foreground whitespace-nowrap">{{ t('admin.walletRecharges.filterCreatedRange') }}</span>
           <Input
             v-model="filters.createdFrom"
@@ -192,7 +192,7 @@ onMounted(() => {
             :placeholder="t('admin.walletRecharges.filterCreatedFrom')"
             @update:modelValue="handleSearch"
           />
-          <span class="text-muted-foreground">-</span>
+          <span class="hidden text-muted-foreground md:inline">-</span>
           <Input
             v-model="filters.createdTo"
             type="datetime-local"
@@ -201,7 +201,7 @@ onMounted(() => {
             @update:modelValue="handleSearch"
           />
         </div>
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex w-full flex-col gap-2 md:w-auto md:flex-row md:flex-wrap md:items-center">
           <span class="text-xs text-muted-foreground whitespace-nowrap">{{ t('admin.walletRecharges.filterPaidRange') }}</span>
           <Input
             v-model="filters.paidFrom"
@@ -210,7 +210,7 @@ onMounted(() => {
             :placeholder="t('admin.walletRecharges.filterPaidFrom')"
             @update:modelValue="handleSearch"
           />
-          <span class="text-muted-foreground">-</span>
+          <span class="hidden text-muted-foreground md:inline">-</span>
           <Input
             v-model="filters.paidTo"
             type="datetime-local"
@@ -219,24 +219,24 @@ onMounted(() => {
             @update:modelValue="handleSearch"
           />
         </div>
-        <div class="flex-1"></div>
-        <Button size="sm" variant="outline" @click="refresh">{{ t('admin.common.refresh') }}</Button>
+        <div class="hidden flex-1 sm:block"></div>
+        <Button size="sm" variant="outline" class="w-full sm:w-auto" @click="refresh">{{ t('admin.common.refresh') }}</Button>
       </div>
     </div>
 
-    <div class="rounded-xl border border-border bg-card">
-      <Table>
+    <div class="rounded-xl border border-border bg-card overflow-x-auto">
+      <Table class="min-w-[1220px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-6 py-3">{{ t('admin.walletRecharges.table.id') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.walletRecharges.table.rechargeNo') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.walletRecharges.table.user') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.walletRecharges.table.payment') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.walletRecharges.table.channel') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.walletRecharges.table.status') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.walletRecharges.table.amount') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.walletRecharges.table.paidAt') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.walletRecharges.table.createdAt') }}</TableHead>
+            <TableHead class="min-w-[220px] px-6 py-3">{{ t('admin.walletRecharges.table.rechargeNo') }}</TableHead>
+            <TableHead class="min-w-[240px] px-6 py-3">{{ t('admin.walletRecharges.table.user') }}</TableHead>
+            <TableHead class="min-w-[180px] px-6 py-3">{{ t('admin.walletRecharges.table.payment') }}</TableHead>
+            <TableHead class="min-w-[240px] px-6 py-3">{{ t('admin.walletRecharges.table.channel') }}</TableHead>
+            <TableHead class="min-w-[120px] px-6 py-3">{{ t('admin.walletRecharges.table.status') }}</TableHead>
+            <TableHead class="min-w-[180px] px-6 py-3">{{ t('admin.walletRecharges.table.amount') }}</TableHead>
+            <TableHead class="min-w-[180px] px-6 py-3">{{ t('admin.walletRecharges.table.paidAt') }}</TableHead>
+            <TableHead class="min-w-[180px] px-6 py-3">{{ t('admin.walletRecharges.table.createdAt') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody class="divide-y divide-border">
@@ -252,20 +252,20 @@ onMounted(() => {
             <TableCell class="px-6 py-4">
               <IdCell :value="item.id" />
             </TableCell>
-            <TableCell class="px-6 py-4 text-foreground font-mono">
-              {{ item.recharge_no }}
+            <TableCell class="min-w-[220px] px-6 py-4 text-foreground font-mono">
+              <div class="break-all">{{ item.recharge_no }}</div>
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">
+            <TableCell class="min-w-[240px] px-6 py-4 text-xs text-muted-foreground">
               <div class="text-foreground">
                 <a v-if="item.user_id" :href="userLink(item.user_id)" target="_blank" rel="noopener" class="text-primary underline-offset-4 hover:underline">
                   #{{ item.user_id }}
                 </a>
                 <span v-else>-</span>
               </div>
-              <div v-if="item.user?.display_name" class="text-foreground mt-0.5">{{ item.user.display_name }}</div>
-              <div v-if="item.user?.email" class="mt-0.5">{{ item.user.email }}</div>
+              <div v-if="item.user?.display_name" class="mt-0.5 break-words text-foreground">{{ item.user.display_name }}</div>
+              <div v-if="item.user?.email" class="mt-0.5 break-all">{{ item.user.email }}</div>
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">
+            <TableCell class="min-w-[180px] px-6 py-4 text-xs text-muted-foreground">
               <div class="text-foreground">
                 <a v-if="item.payment_id" :href="paymentLink(item.payment_id)" target="_blank" rel="noopener" class="text-primary underline-offset-4 hover:underline">
                   #{{ item.payment_id }}
@@ -278,9 +278,9 @@ onMounted(() => {
                 </span>
               </div>
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">
-              <div class="text-foreground">{{ item.channel_name || '-' }}</div>
-              <div class="text-muted-foreground">{{ providerTypeLabel(item.provider_type) }} / {{ channelTypeLabel(item.channel_type) }}</div>
+            <TableCell class="min-w-[240px] px-6 py-4 text-xs text-muted-foreground">
+              <div class="break-words text-foreground">{{ item.channel_name || '-' }}</div>
+              <div class="break-words text-muted-foreground">{{ providerTypeLabel(item.provider_type) }} / {{ channelTypeLabel(item.channel_type) }}</div>
               <div class="mt-1">
                 {{ t('admin.walletRecharges.channelId') }}:
                 <a v-if="item.channel_id" :href="channelLink(item.channel_id)" target="_blank" rel="noopener" class="text-primary underline-offset-4 hover:underline">
@@ -289,18 +289,18 @@ onMounted(() => {
                 <span v-else>-</span>
               </div>
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs">
+            <TableCell class="min-w-[120px] px-6 py-4 text-xs">
               <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="statusClass(item.status)">
                 {{ statusLabel(item.status) }}
               </span>
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">
+            <TableCell class="min-w-[180px] px-6 py-4 text-xs text-muted-foreground">
               <div class="font-mono text-foreground">{{ item.amount }} {{ item.currency }}</div>
               <div class="mt-1">{{ t('admin.walletRecharges.payableAmount') }}: <span class="font-mono text-foreground">{{ item.payable_amount }} {{ item.currency }}</span></div>
               <div class="mt-1">{{ t('admin.walletRecharges.feeAmount') }}: <span class="font-mono text-foreground">{{ item.fee_amount }} {{ item.currency }}</span></div>
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ formatDate(item.paid_at) || '-' }}</TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ formatDate(item.created_at) }}</TableCell>
+            <TableCell class="min-w-[180px] px-6 py-4 text-xs text-muted-foreground">{{ formatDate(item.paid_at) || '-' }}</TableCell>
+            <TableCell class="min-w-[180px] px-6 py-4 text-xs text-muted-foreground">{{ formatDate(item.created_at) }}</TableCell>
           </TableRow>
         </TableBody>
       </Table>

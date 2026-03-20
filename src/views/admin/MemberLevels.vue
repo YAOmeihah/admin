@@ -188,13 +188,13 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-semibold">{{ t('admin.memberLevels.title') }}</h1>
         <p class="text-sm text-muted-foreground mt-1">{{ t('admin.memberLevels.subtitle') }}</p>
       </div>
-      <Button size="sm" class="gap-2" @click="openCreateModal">
-        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <Button size="sm" class="w-full gap-2 sm:w-auto" @click="openCreateModal">
+        <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
         {{ t('admin.memberLevels.create') }}
@@ -202,30 +202,29 @@ onMounted(() => {
     </div>
 
     <div class="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <div class="flex items-center gap-3">
-        <div class="flex-1" />
-        <Button size="sm" variant="outline" :disabled="backfilling" @click="handleBackfill">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+        <Button size="sm" variant="outline" class="w-full sm:w-auto" :disabled="backfilling" @click="handleBackfill">
           {{ backfilling ? t('admin.memberLevels.backfilling') : t('admin.memberLevels.backfill') }}
         </Button>
-        <Button size="sm" @click="refresh">{{ t('admin.common.refresh') }}</Button>
+        <Button size="sm" class="w-full sm:w-auto" @click="refresh">{{ t('admin.common.refresh') }}</Button>
       </div>
     </div>
 
     <div class="rounded-xl border border-border bg-card overflow-x-auto">
-      <Table>
+      <Table class="min-w-[1180px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
-            <TableHead class="px-6 py-3">{{ t('admin.memberLevels.table.id') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.memberLevels.table.icon') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.memberLevels.table.name') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.memberLevels.table.slug') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.memberLevels.table.discountRate') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.memberLevels.table.rechargeThreshold') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.memberLevels.table.spendThreshold') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.memberLevels.table.sortOrder') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.memberLevels.table.isActive') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.memberLevels.table.createdAt') }}</TableHead>
-            <TableHead class="px-6 py-3 text-right">{{ t('admin.memberLevels.table.action') }}</TableHead>
+            <TableHead class="min-w-[100px] px-6 py-3">{{ t('admin.memberLevels.table.id') }}</TableHead>
+            <TableHead class="min-w-[88px] px-6 py-3">{{ t('admin.memberLevels.table.icon') }}</TableHead>
+            <TableHead class="min-w-[220px] px-6 py-3">{{ t('admin.memberLevels.table.name') }}</TableHead>
+            <TableHead class="min-w-[180px] px-6 py-3">{{ t('admin.memberLevels.table.slug') }}</TableHead>
+            <TableHead class="min-w-[140px] px-6 py-3">{{ t('admin.memberLevels.table.discountRate') }}</TableHead>
+            <TableHead class="min-w-[160px] px-6 py-3">{{ t('admin.memberLevels.table.rechargeThreshold') }}</TableHead>
+            <TableHead class="min-w-[160px] px-6 py-3">{{ t('admin.memberLevels.table.spendThreshold') }}</TableHead>
+            <TableHead class="min-w-[120px] px-6 py-3">{{ t('admin.memberLevels.table.sortOrder') }}</TableHead>
+            <TableHead class="min-w-[120px] px-6 py-3">{{ t('admin.memberLevels.table.isActive') }}</TableHead>
+            <TableHead class="min-w-[180px] px-6 py-3">{{ t('admin.memberLevels.table.createdAt') }}</TableHead>
+            <TableHead class="min-w-[180px] px-6 py-3 text-right">{{ t('admin.memberLevels.table.action') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody class="divide-y divide-border">
@@ -240,15 +239,15 @@ onMounted(() => {
             </TableCell>
           </TableRow>
           <TableRow v-for="level in levels" :key="level.id" class="hover:bg-muted/30">
-            <TableCell class="px-6 py-4">
+            <TableCell class="min-w-[100px] px-6 py-4">
               <IdCell :value="level.id" />
             </TableCell>
-            <TableCell class="px-6 py-4 text-lg">
+            <TableCell class="min-w-[88px] px-6 py-4 text-lg">
               {{ level.icon || '-' }}
             </TableCell>
-            <TableCell class="px-6 py-4 text-foreground font-medium">
+            <TableCell class="min-w-[220px] px-6 py-4 text-foreground font-medium">
               <div class="flex items-center gap-2">
-                {{ getLocalizedText(level.name) }}
+                <span class="break-words">{{ getLocalizedText(level.name) }}</span>
                 <span
                   v-if="level.is_default"
                   class="inline-flex rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] text-blue-700"
@@ -257,22 +256,22 @@ onMounted(() => {
                 </span>
               </div>
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground font-mono">
+            <TableCell class="min-w-[180px] px-6 py-4 text-xs text-muted-foreground font-mono break-all">
               {{ level.slug }}
             </TableCell>
-            <TableCell class="px-6 py-4 text-foreground font-mono">
+            <TableCell class="min-w-[140px] px-6 py-4 text-foreground font-mono">
               {{ level.discount_rate }}%
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground font-mono">
+            <TableCell class="min-w-[160px] px-6 py-4 text-xs text-muted-foreground font-mono">
               {{ Number(level.recharge_threshold) || '-' }}
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground font-mono">
+            <TableCell class="min-w-[160px] px-6 py-4 text-xs text-muted-foreground font-mono">
               {{ Number(level.spend_threshold) || '-' }}
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">
+            <TableCell class="min-w-[120px] px-6 py-4 text-xs text-muted-foreground">
               {{ level.sort_order }}
             </TableCell>
-            <TableCell class="px-6 py-4">
+            <TableCell class="min-w-[120px] px-6 py-4">
               <span
                 class="inline-flex rounded-full border px-2.5 py-1 text-xs"
                 :class="level.is_active
@@ -282,10 +281,10 @@ onMounted(() => {
                 {{ level.is_active ? t('admin.memberLevels.status.active') : t('admin.memberLevels.status.inactive') }}
               </span>
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">
+            <TableCell class="min-w-[180px] px-6 py-4 text-xs text-muted-foreground">
               {{ formatDate(level.created_at) }}
             </TableCell>
-            <TableCell class="px-6 py-4 text-right">
+            <TableCell class="min-w-[180px] px-6 py-4 text-right">
               <div class="flex flex-wrap items-center justify-end gap-2">
                 <Button size="sm" variant="outline" @click="openEditModal(level)">{{ t('admin.common.edit') }}</Button>
                 <Button size="sm" variant="destructive" @click="handleDelete(level)">{{ t('admin.common.delete') }}</Button>
@@ -297,7 +296,7 @@ onMounted(() => {
     </div>
 
     <Dialog v-model:open="showModal" @update:open="(value: boolean) => { if (!value) closeModal() }">
-      <DialogScrollContent class="w-full max-w-3xl" @interact-outside="(e: Event) => e.preventDefault()">
+      <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-3xl p-4 sm:p-6" @interact-outside="(e: Event) => e.preventDefault()">
         <DialogHeader>
           <DialogTitle>
             {{ isEditing ? t('admin.memberLevels.form.editTitle') : t('admin.memberLevels.form.createTitle') }}
@@ -311,8 +310,8 @@ onMounted(() => {
                 {{ t('admin.memberLevels.form.name') }} *
               </label>
               <div class="space-y-2">
-                <div v-for="loc in supportedLocales" :key="loc" class="flex items-center gap-2">
-                  <span class="w-20 text-xs text-muted-foreground">{{ getLocaleLabel(loc) }}</span>
+                <div v-for="loc in supportedLocales" :key="loc" class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <span class="w-full text-xs text-muted-foreground sm:w-20">{{ getLocaleLabel(loc) }}</span>
                   <Input
                     :model-value="form.name[loc] || ''"
                     @update:model-value="(v: string | number) => { form.name[loc] = String(v) }"
@@ -376,7 +375,7 @@ onMounted(() => {
               </p>
             </div>
 
-            <div class="flex items-center gap-4 md:col-span-2">
+            <div class="flex flex-col gap-3 md:col-span-2 sm:flex-row sm:items-center sm:gap-4">
               <div class="flex items-center gap-2">
                 <input v-model="form.is_default" type="checkbox" class="h-4 w-4 accent-primary" />
                 <span class="text-xs text-muted-foreground">{{ t('admin.memberLevels.form.isDefault') }}</span>
@@ -392,9 +391,9 @@ onMounted(() => {
             {{ error }}
           </div>
 
-          <div class="flex justify-end gap-3">
-            <Button type="button" variant="outline" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
-            <Button type="submit" :disabled="submitting">{{ t('admin.common.save') }}</Button>
+          <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button type="button" variant="outline" class="w-full sm:w-auto" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
+            <Button type="submit" class="w-full sm:w-auto" :disabled="submitting">{{ t('admin.common.save') }}</Button>
           </div>
         </form>
       </DialogScrollContent>

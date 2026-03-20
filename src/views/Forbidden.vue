@@ -39,15 +39,15 @@ const handleBack = () => {
 </script>
 
 <template>
-  <div class="mx-auto max-w-2xl rounded-2xl border border-border bg-card p-10 text-center shadow-sm">
+  <div class="mx-auto max-w-2xl rounded-2xl border border-border bg-card p-6 text-center shadow-sm sm:p-10">
     <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10 text-destructive">
       <ShieldAlert class="h-7 w-7" />
     </div>
     <h1 class="text-2xl font-semibold tracking-tight">{{ content.title }}</h1>
     <p class="mt-3 text-sm text-muted-foreground">{{ content.desc }}</p>
-    <div class="mt-8 flex items-center justify-center gap-3">
-      <Button variant="outline" @click="handleBack">{{ content.goBack }}</Button>
-      <Button @click="router.push('/')">{{ content.backHome }}</Button>
+    <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
+      <Button class="w-full sm:w-auto" variant="outline" @click="handleBack">{{ content.goBack }}</Button>
+      <Button class="w-full sm:w-auto" @click="router.push('/')">{{ content.backHome }}</Button>
     </div>
   </div>
 </template>

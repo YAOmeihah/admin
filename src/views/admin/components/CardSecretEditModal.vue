@@ -71,7 +71,7 @@ const submitEdit = async () => {
 
 <template>
   <Dialog :open="modelValue" @update:open="handleOpenChange">
-    <DialogScrollContent class="w-full max-w-lg">
+    <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-lg p-4 sm:p-6">
       <DialogHeader>
         <DialogTitle>{{ t('admin.cardSecrets.editTitle') }}</DialogTitle>
       </DialogHeader>
@@ -101,9 +101,9 @@ const submitEdit = async () => {
         <div v-if="editError" class="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           {{ editError }}
         </div>
-        <div class="flex justify-end gap-3">
-          <Button type="button" variant="outline" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
-          <Button type="submit" :disabled="editSubmitting">
+        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Button class="w-full sm:w-auto" type="button" variant="outline" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
+          <Button class="w-full sm:w-auto" type="submit" :disabled="editSubmitting">
             {{ editSubmitting ? t('admin.common.loading') : t('admin.common.save') }}
           </Button>
         </div>

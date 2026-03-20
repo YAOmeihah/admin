@@ -773,7 +773,7 @@ onMounted(async () => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-semibold">{{ text.title }}</h1>
         <p class="text-sm text-muted-foreground mt-1">{{ text.subtitle }}</p>
@@ -781,7 +781,7 @@ onMounted(async () => {
     </div>
 
     <section class="rounded-xl border border-border bg-card p-5 space-y-4">
-      <div class="flex items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 class="text-base font-medium">{{ text.adminManageTitle }}</h2>
           <p class="text-xs text-muted-foreground mt-1">{{ text.adminManageHint }}</p>
@@ -793,16 +793,16 @@ onMounted(async () => {
         <div class="space-y-3">
           <Input v-model="adminKeyword" :placeholder="text.adminSearchPlaceholder" class="h-9" />
           <div class="rounded-lg border border-border overflow-x-auto">
-            <Table>
+            <Table class="min-w-[1120px]">
               <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                 <TableRow>
                   <TableHead class="px-4 py-3">{{ text.adminTableId }}</TableHead>
-                  <TableHead class="px-4 py-3">{{ text.adminTableUsername }}</TableHead>
-                  <TableHead class="px-4 py-3">{{ text.adminTableRoles }}</TableHead>
-                  <TableHead class="px-4 py-3">{{ text.adminTableSuper }}</TableHead>
-                  <TableHead class="px-4 py-3">{{ text.adminTableCreatedAt }}</TableHead>
-                  <TableHead class="px-4 py-3">{{ text.adminTableLastLoginAt }}</TableHead>
-                  <TableHead class="px-4 py-3 text-right">{{ text.tableOperation }}</TableHead>
+                  <TableHead class="min-w-[180px] px-4 py-3">{{ text.adminTableUsername }}</TableHead>
+                  <TableHead class="min-w-[220px] px-4 py-3">{{ text.adminTableRoles }}</TableHead>
+                  <TableHead class="min-w-[120px] px-4 py-3">{{ text.adminTableSuper }}</TableHead>
+                  <TableHead class="min-w-[180px] px-4 py-3">{{ text.adminTableCreatedAt }}</TableHead>
+                  <TableHead class="min-w-[180px] px-4 py-3">{{ text.adminTableLastLoginAt }}</TableHead>
+                  <TableHead class="min-w-[220px] px-4 py-3 text-right">{{ text.tableOperation }}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody class="divide-y divide-border">
@@ -821,17 +821,17 @@ onMounted(async () => {
                   <TableCell class="px-4 py-3">
                     <IdCell :value="item.id" />
                   </TableCell>
-                  <TableCell class="px-4 py-3 font-medium">{{ item.username }}</TableCell>
-                  <TableCell class="px-4 py-3 text-xs text-muted-foreground">
+                  <TableCell class="min-w-[180px] px-4 py-3 font-medium break-words">{{ item.username }}</TableCell>
+                  <TableCell class="min-w-[220px] px-4 py-3 text-xs text-muted-foreground break-words">
                     <span v-if="item.roles && item.roles.length">{{ item.roles.map((role) => stripRolePrefix(role)).join(', ') }}</span>
                     <span v-else>{{ text.adminRolesEmpty }}</span>
                   </TableCell>
-                  <TableCell class="px-4 py-3 text-xs">
+                  <TableCell class="min-w-[120px] px-4 py-3 text-xs">
                     <span :class="item.is_super ? 'text-emerald-600' : 'text-muted-foreground'">{{ item.is_super ? text.yes : text.no }}</span>
                   </TableCell>
-                  <TableCell class="px-4 py-3 text-xs text-muted-foreground">{{ formatDateTime(item.created_at) }}</TableCell>
-                  <TableCell class="px-4 py-3 text-xs text-muted-foreground">{{ formatDateTime(item.last_login_at) }}</TableCell>
-                  <TableCell class="px-4 py-3">
+                  <TableCell class="min-w-[180px] px-4 py-3 text-xs text-muted-foreground">{{ formatDateTime(item.created_at) }}</TableCell>
+                  <TableCell class="min-w-[180px] px-4 py-3 text-xs text-muted-foreground">{{ formatDateTime(item.last_login_at) }}</TableCell>
+                  <TableCell class="min-w-[220px] px-4 py-3">
                     <div class="flex flex-wrap items-center justify-end gap-2">
                       <Button size="sm" variant="outline" @click="pickAdminForRoles(item)">
                         {{ selectedAdminId === item.id ? text.adminRoleTargetSelected : text.adminSelectRoleTarget }}
@@ -959,7 +959,7 @@ onMounted(async () => {
                   >
                     <div class="min-w-0">
                       <div class="text-[11px] text-muted-foreground uppercase tracking-wide">{{ item.module }}</div>
-                      <div class="text-xs font-mono truncate">{{ item.method }} {{ item.object }}</div>
+                      <div class="break-all text-xs font-mono">{{ item.method }} {{ item.object }}</div>
                     </div>
                     <Button
                       size="sm"
@@ -976,12 +976,12 @@ onMounted(async () => {
           </div>
 
           <div class="rounded-lg border border-border overflow-x-auto">
-            <Table>
+            <Table class="min-w-[720px]">
               <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                 <TableRow>
-                  <TableHead class="px-4 py-3">{{ text.tableObject }}</TableHead>
-                  <TableHead class="px-4 py-3">{{ text.tableAction }}</TableHead>
-                  <TableHead class="px-4 py-3 text-right">{{ text.tableOperation }}</TableHead>
+                  <TableHead class="min-w-[320px] px-4 py-3">{{ text.tableObject }}</TableHead>
+                  <TableHead class="min-w-[140px] px-4 py-3">{{ text.tableAction }}</TableHead>
+                  <TableHead class="min-w-[140px] px-4 py-3 text-right">{{ text.tableOperation }}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody class="divide-y divide-border">
@@ -992,9 +992,9 @@ onMounted(async () => {
                   <TableCell colspan="3" class="px-4 py-6 text-center text-muted-foreground">{{ text.policiesEmpty }}</TableCell>
                 </TableRow>
                 <TableRow v-for="item in policies" :key="`${item.object}:${item.action}`" class="hover:bg-muted/30">
-                  <TableCell class="px-4 py-3 font-mono text-xs text-muted-foreground">{{ item.object }}</TableCell>
-                  <TableCell class="px-4 py-3 font-medium">{{ item.action }}</TableCell>
-                  <TableCell class="px-4 py-3 text-right">
+                  <TableCell class="min-w-[320px] px-4 py-3 font-mono text-xs text-muted-foreground break-all">{{ item.object }}</TableCell>
+                  <TableCell class="min-w-[140px] px-4 py-3 font-medium break-words">{{ item.action }}</TableCell>
+                  <TableCell class="min-w-[140px] px-4 py-3 text-right">
                     <Button size="sm" variant="outline" @click="handleRevokePolicy(item)">
                       {{ text.delete }}
                     </Button>

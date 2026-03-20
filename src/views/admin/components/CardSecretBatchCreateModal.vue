@@ -168,9 +168,9 @@ const handleImport = async () => {
         <div v-if="batchSuccess" class="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
           {{ batchSuccess }}
         </div>
-        <div class="flex justify-end gap-3">
-          <Button type="button" variant="outline" @click="resetBatchForm">{{ t('admin.common.reset') }}</Button>
-          <Button type="submit" :disabled="batchSubmitting">
+        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Button class="w-full sm:w-auto" type="button" variant="outline" @click="resetBatchForm">{{ t('admin.common.reset') }}</Button>
+          <Button class="w-full sm:w-auto" type="submit" :disabled="batchSubmitting">
             {{ batchSubmitting ? t('admin.cardSecrets.submitting') : t('admin.cardSecrets.submitBatch') }}
           </Button>
         </div>
@@ -207,9 +207,9 @@ const handleImport = async () => {
         <div v-if="importSuccess" class="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
           {{ importSuccess }}
         </div>
-        <div class="flex justify-end gap-3">
-          <Button type="button" variant="outline" @click="resetImportForm">{{ t('admin.common.reset') }}</Button>
-          <Button type="submit" :disabled="importSubmitting">
+        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Button class="w-full sm:w-auto" type="button" variant="outline" @click="resetImportForm">{{ t('admin.common.reset') }}</Button>
+          <Button class="w-full sm:w-auto" type="submit" :disabled="importSubmitting">
             {{ importSubmitting ? t('admin.cardSecrets.importing') : t('admin.cardSecrets.startImport') }}
           </Button>
         </div>

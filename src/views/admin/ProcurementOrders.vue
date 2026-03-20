@@ -276,12 +276,12 @@ onMounted(() => {
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-semibold">{{ t('procurement.title') }}</h1>
         <p class="mt-1 text-sm text-muted-foreground">{{ t('procurement.subtitle') }}</p>
       </div>
-      <Button size="sm" variant="outline" @click="fetchOrders(pagination.page)">
+      <Button size="sm" variant="outline" class="w-full sm:w-auto" @click="fetchOrders(pagination.page)">
         {{ t('admin.common.refresh') }}
       </Button>
     </div>
@@ -307,11 +307,11 @@ onMounted(() => {
     </div>
 
     <!-- Filters -->
-    <div class="flex flex-wrap items-end gap-3">
-      <div>
+    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+      <div class="w-full sm:w-auto">
         <label class="mb-1.5 block text-xs font-medium text-muted-foreground">{{ t('procurement.columns.status') }}</label>
         <Select v-model="filters.status" @update:model-value="handleSearch">
-          <SelectTrigger class="h-9 w-36">
+          <SelectTrigger class="h-9 w-full sm:w-36">
             <SelectValue :placeholder="t('procurement.filters.allStatus')" />
           </SelectTrigger>
           <SelectContent>
@@ -321,10 +321,10 @@ onMounted(() => {
           </SelectContent>
         </Select>
       </div>
-      <div>
+      <div class="w-full sm:w-auto">
         <label class="mb-1.5 block text-xs font-medium text-muted-foreground">{{ t('procurement.columns.connection') }}</label>
         <Select v-model="filters.connection_id" @update:model-value="handleSearch">
-          <SelectTrigger class="h-9 w-44">
+          <SelectTrigger class="h-9 w-full sm:w-44">
             <SelectValue :placeholder="t('procurement.filters.allConnections')" />
           </SelectTrigger>
           <SelectContent>
@@ -335,23 +335,23 @@ onMounted(() => {
           </SelectContent>
         </Select>
       </div>
-      <div>
+      <div class="w-full sm:w-auto">
         <label class="mb-1.5 block text-xs font-medium text-muted-foreground">{{ t('procurement.filters.orderNo') }}</label>
-        <Input v-model="filters.order_no" class="h-9 w-44" :placeholder="t('procurement.filters.orderNoPlaceholder')" @update:modelValue="debouncedSearch" @keyup.enter="handleSearch" />
+        <Input v-model="filters.order_no" class="h-9 w-full sm:w-44" :placeholder="t('procurement.filters.orderNoPlaceholder')" @update:modelValue="debouncedSearch" @keyup.enter="handleSearch" />
       </div>
-      <div>
+      <div class="w-full sm:w-auto">
         <label class="mb-1.5 block text-xs font-medium text-muted-foreground">{{ t('procurement.filters.upstreamOrderNo') }}</label>
-        <Input v-model="filters.upstream_order_no" class="h-9 w-44" :placeholder="t('procurement.filters.upstreamOrderNoPlaceholder')" @update:modelValue="debouncedSearch" @keyup.enter="handleSearch" />
+        <Input v-model="filters.upstream_order_no" class="h-9 w-full sm:w-44" :placeholder="t('procurement.filters.upstreamOrderNoPlaceholder')" @update:modelValue="debouncedSearch" @keyup.enter="handleSearch" />
       </div>
-      <div>
+      <div class="w-full sm:w-auto">
         <label class="mb-1.5 block text-xs font-medium text-muted-foreground">{{ t('procurement.filters.dateRange') }}</label>
-        <div class="flex items-center gap-1.5">
-          <Input v-model="filters.created_from" type="date" class="h-9 w-36" @change="handleSearch" />
-          <span class="text-xs text-muted-foreground">—</span>
-          <Input v-model="filters.created_to" type="date" class="h-9 w-36" @change="handleSearch" />
+        <div class="flex flex-col gap-1.5 sm:flex-row sm:items-center">
+          <Input v-model="filters.created_from" type="date" class="h-9 w-full sm:w-36" @change="handleSearch" />
+          <span class="hidden text-xs text-muted-foreground sm:inline">—</span>
+          <Input v-model="filters.created_to" type="date" class="h-9 w-full sm:w-36" @change="handleSearch" />
         </div>
       </div>
-      <Button size="sm" class="h-9" @click="handleSearch">{{ t('procurement.filters.search') }}</Button>
+      <Button size="sm" class="h-9 w-full sm:w-auto" @click="handleSearch">{{ t('procurement.filters.search') }}</Button>
     </div>
 
     <!-- Order Cards -->
@@ -372,8 +372,8 @@ onMounted(() => {
       >
         <div class="p-4">
           <!-- Top row: status + ID + time -->
-          <div class="flex items-start justify-between gap-3">
-            <div class="flex items-center gap-3">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div class="flex min-w-0 items-start gap-3">
               <div
                 class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border"
                 :class="statusBadgeClass(order.status)"
@@ -382,9 +382,9 @@ onMounted(() => {
                   <path :d="statusIcon(order.status)" />
                 </svg>
               </div>
-              <div>
-                <div class="flex items-center gap-2">
-                  <span class="text-sm font-semibold text-foreground">{{ getOrderTitle(order) }}</span>
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="break-words text-sm font-semibold text-foreground">{{ getOrderTitle(order) }}</span>
                   <span
                     class="inline-flex rounded-full border px-2 py-0.5 text-[11px] font-medium"
                     :class="statusBadgeClass(order.status)"
@@ -392,14 +392,14 @@ onMounted(() => {
                     {{ t('procurement.status.' + order.status) }}
                   </span>
                 </div>
-                <div class="mt-0.5 flex items-center gap-3 text-xs text-muted-foreground">
+                <div class="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                   <span class="font-mono">#{{ order.id }}</span>
-                  <span>{{ order.connection?.name || '-' }}</span>
+                  <span class="break-words">{{ order.connection?.name || '-' }}</span>
                   <span>{{ relativeTime(order.created_at) }}</span>
                 </div>
               </div>
             </div>
-            <div class="flex shrink-0 items-center gap-2" @click.stop>
+            <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end" @click.stop>
               <Button
                 v-if="canRetry(order.status)"
                 size="sm"
@@ -427,11 +427,11 @@ onMounted(() => {
           <div class="mt-3 grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs md:grid-cols-4 lg:grid-cols-6">
             <div>
               <span class="text-muted-foreground">{{ t('procurement.columns.localOrderNo') }}</span>
-              <div class="mt-0.5 font-mono text-foreground">{{ order.local_order_no || '-' }}</div>
+              <div class="mt-0.5 break-all font-mono text-foreground">{{ order.local_order_no || '-' }}</div>
             </div>
             <div>
               <span class="text-muted-foreground">{{ t('procurement.columns.upstreamOrderNo') }}</span>
-              <div class="mt-0.5 font-mono text-foreground">{{ order.upstream_order_no || '-' }}</div>
+              <div class="mt-0.5 break-all font-mono text-foreground">{{ order.upstream_order_no || '-' }}</div>
             </div>
             <div>
               <span class="text-muted-foreground">{{ t('procurement.columns.localSellAmount') }}</span>
@@ -461,24 +461,24 @@ onMounted(() => {
             <svg class="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            <span class="text-xs text-red-700">{{ order.error_message }}</span>
+            <span class="break-words text-xs text-red-700">{{ order.error_message }}</span>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Pagination -->
-    <div v-if="pagination.total_page > 1" class="flex flex-wrap items-center justify-between gap-3">
+    <div v-if="pagination.total_page > 1" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <span class="text-xs text-muted-foreground">
         {{ t('admin.common.pageInfo', { total: pagination.total, page: pagination.page, totalPage: pagination.total_page }) }}
       </span>
-      <div class="flex flex-wrap items-center gap-2">
-        <Input v-model="jumpPage" type="number" min="1" :max="pagination.total_page" class="h-8 w-20" :placeholder="t('admin.common.jumpPlaceholder')" />
-        <Button variant="outline" size="sm" class="h-8" @click="jumpToPage">{{ t('admin.common.jumpTo') }}</Button>
-        <Button variant="outline" size="sm" class="h-8" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">
+      <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+        <Input v-model="jumpPage" type="number" min="1" :max="pagination.total_page" class="h-8 w-full sm:w-20" :placeholder="t('admin.common.jumpPlaceholder')" />
+        <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" @click="jumpToPage">{{ t('admin.common.jumpTo') }}</Button>
+        <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">
           {{ t('admin.common.prevPage') }}
         </Button>
-        <Button variant="outline" size="sm" class="h-8" :disabled="pagination.page >= pagination.total_page" @click="changePage(pagination.page + 1)">
+        <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" :disabled="pagination.page >= pagination.total_page" @click="changePage(pagination.page + 1)">
           {{ t('admin.common.nextPage') }}
         </Button>
       </div>
@@ -486,9 +486,9 @@ onMounted(() => {
 
     <!-- Detail Dialog -->
     <Dialog v-model:open="showDetail" @update:open="(value: boolean) => { if (!value) closeDetail() }">
-      <DialogScrollContent class="w-full max-w-3xl" @interact-outside="(e: Event) => e.preventDefault()">
+      <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-3xl p-4 sm:p-6" @interact-outside="(e: Event) => e.preventDefault()">
         <DialogHeader>
-          <DialogTitle class="flex items-center gap-2">
+          <DialogTitle class="flex flex-wrap items-center gap-2">
             {{ t('procurement.detail.title') }}
             <span v-if="detailOrder" class="font-mono text-sm text-muted-foreground">#{{ detailOrder.id }}</span>
           </DialogTitle>
@@ -514,18 +514,18 @@ onMounted(() => {
             <div class="border-b border-border bg-muted/30 px-4 py-2 text-xs font-semibold text-muted-foreground uppercase">
               {{ t('procurement.detail.orderInfo') }}
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 md:grid-cols-3">
+            <div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 md:grid-cols-3">
               <div>
                 <div class="text-xs text-muted-foreground">{{ t('procurement.columns.localOrderNo') }}</div>
-                <div class="mt-1 text-sm font-mono font-medium">{{ detailOrder.local_order_no || '-' }}</div>
+                <div class="mt-1 break-all text-sm font-mono font-medium">{{ detailOrder.local_order_no || '-' }}</div>
               </div>
               <div>
                 <div class="text-xs text-muted-foreground">{{ t('procurement.columns.upstreamOrderNo') }}</div>
-                <div class="mt-1 text-sm font-mono font-medium">{{ detailOrder.upstream_order_no || '-' }}</div>
+                <div class="mt-1 break-all text-sm font-mono font-medium">{{ detailOrder.upstream_order_no || '-' }}</div>
               </div>
               <div>
                 <div class="text-xs text-muted-foreground">{{ t('procurement.detail.upstreamOrderId') }}</div>
-                <div class="mt-1 text-sm font-mono">{{ detailOrder.upstream_order_id || '-' }}</div>
+                <div class="mt-1 break-all text-sm font-mono">{{ detailOrder.upstream_order_id || '-' }}</div>
               </div>
               <div>
                 <div class="text-xs text-muted-foreground">{{ t('procurement.columns.connection') }}</div>
@@ -547,7 +547,7 @@ onMounted(() => {
             <div class="border-b border-border bg-muted/30 px-4 py-2 text-xs font-semibold text-muted-foreground uppercase">
               {{ t('procurement.detail.financial') }}
             </div>
-            <div class="grid grid-cols-3 divide-x divide-border">
+            <div class="grid grid-cols-1 divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
               <div class="p-4 text-center">
                 <div class="text-xs text-muted-foreground">{{ t('procurement.columns.localSellAmount') }}</div>
                 <div class="mt-1 text-lg font-bold">{{ formatMoney(detailOrder.local_sell_amount, detailOrder.currency) }}</div>
@@ -574,10 +574,10 @@ onMounted(() => {
             </div>
             <div class="p-4 space-y-2">
               <div v-if="detailOrder.local_order.items?.length" class="space-y-2">
-                <div v-for="(item, idx) in detailOrder.local_order.items" :key="idx" class="flex items-center gap-3 text-sm">
-                  <div class="flex-1">
-                    <span class="font-medium">{{ getLocalizedText(item.title) }}</span>
-                    <span v-if="item.sku_snapshot?.sku_code" class="ml-2 text-xs text-muted-foreground">
+                <div v-for="(item, idx) in detailOrder.local_order.items" :key="idx" class="flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:gap-3">
+                  <div class="min-w-0 flex-1">
+                    <span class="break-words font-medium">{{ getLocalizedText(item.title) }}</span>
+                    <span v-if="item.sku_snapshot?.sku_code" class="mt-1 block text-xs text-muted-foreground sm:ml-2 sm:mt-0 sm:inline">
                       SKU: {{ item.sku_snapshot.sku_code }}
                     </span>
                   </div>
@@ -585,9 +585,9 @@ onMounted(() => {
                   <span class="font-mono">{{ formatMoney(item.total_amount, detailOrder.currency) }}</span>
                 </div>
               </div>
-              <div class="flex items-center gap-4 text-xs text-muted-foreground pt-1 border-t border-border">
+              <div class="flex flex-col gap-1 border-t border-border pt-1 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
                 <span>{{ t('procurement.detail.orderStatus') }}: {{ detailOrder.local_order.status }}</span>
-                <span v-if="detailOrder.local_order.user_email">{{ detailOrder.local_order.user_email }}</span>
+                <span v-if="detailOrder.local_order.user_email" class="break-all">{{ detailOrder.local_order.user_email }}</span>
               </div>
             </div>
           </div>
@@ -598,20 +598,20 @@ onMounted(() => {
               {{ t('procurement.detail.timeline') }}
             </div>
             <div class="p-4 space-y-3">
-              <div class="flex items-start gap-3 text-xs">
-                <div class="w-32 shrink-0 text-muted-foreground">{{ t('procurement.columns.createdAt') }}</div>
-                <div>{{ formatTime(detailOrder.created_at) }}</div>
+              <div class="flex flex-col gap-1 text-xs sm:flex-row sm:items-start sm:gap-3">
+                <div class="w-full shrink-0 text-muted-foreground sm:w-32">{{ t('procurement.columns.createdAt') }}</div>
+                <div class="break-all">{{ formatTime(detailOrder.created_at) }}</div>
               </div>
-              <div class="flex items-start gap-3 text-xs">
-                <div class="w-32 shrink-0 text-muted-foreground">{{ t('procurement.detail.updatedAt') }}</div>
-                <div>{{ formatTime(detailOrder.updated_at) }}</div>
+              <div class="flex flex-col gap-1 text-xs sm:flex-row sm:items-start sm:gap-3">
+                <div class="w-full shrink-0 text-muted-foreground sm:w-32">{{ t('procurement.detail.updatedAt') }}</div>
+                <div class="break-all">{{ formatTime(detailOrder.updated_at) }}</div>
               </div>
-              <div v-if="detailOrder.next_retry_at" class="flex items-start gap-3 text-xs">
-                <div class="w-32 shrink-0 text-muted-foreground">{{ t('procurement.detail.nextRetryAt') }}</div>
-                <div>{{ formatTime(detailOrder.next_retry_at) }}</div>
+              <div v-if="detailOrder.next_retry_at" class="flex flex-col gap-1 text-xs sm:flex-row sm:items-start sm:gap-3">
+                <div class="w-full shrink-0 text-muted-foreground sm:w-32">{{ t('procurement.detail.nextRetryAt') }}</div>
+                <div class="break-all">{{ formatTime(detailOrder.next_retry_at) }}</div>
               </div>
-              <div class="flex items-start gap-3 text-xs">
-                <div class="w-32 shrink-0 text-muted-foreground">{{ t('procurement.columns.retryCount') }}</div>
+              <div class="flex flex-col gap-1 text-xs sm:flex-row sm:items-start sm:gap-3">
+                <div class="w-full shrink-0 text-muted-foreground sm:w-32">{{ t('procurement.columns.retryCount') }}</div>
                 <div>{{ detailOrder.retry_count ?? 0 }}</div>
               </div>
             </div>
@@ -638,10 +638,11 @@ onMounted(() => {
           </div>
 
           <!-- Actions -->
-          <div class="flex justify-end gap-3 border-t border-border pt-4">
+          <div class="flex flex-col-reverse gap-3 border-t border-border pt-4 sm:flex-row sm:justify-end">
             <Button
               v-if="canRetry(detailOrder.status)"
               variant="outline"
+              class="w-full sm:w-auto"
               :disabled="retryingId === detailOrder.id"
               @click="handleRetry(detailOrder)"
             >
@@ -650,12 +651,13 @@ onMounted(() => {
             <Button
               v-if="canCancel(detailOrder.status)"
               variant="destructive"
+              class="w-full sm:w-auto"
               :disabled="cancelingId === detailOrder.id"
               @click="handleCancel(detailOrder)"
             >
               {{ t('procurement.actions.cancel') }}
             </Button>
-            <Button variant="outline" @click="closeDetail">{{ t('admin.common.cancel') }}</Button>
+            <Button variant="outline" class="w-full sm:w-auto" @click="closeDetail">{{ t('admin.common.cancel') }}</Button>
           </div>
         </div>
       </DialogScrollContent>

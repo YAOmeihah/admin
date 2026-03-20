@@ -201,12 +201,12 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h2 class="text-2xl font-bold tracking-tight">{{ t('telegramBot.broadcasts.createTitle') }}</h2>
         <p class="text-muted-foreground">{{ t('telegramBot.broadcasts.createSubtitle') }}</p>
       </div>
-      <Button variant="outline" as-child>
+      <Button variant="outline" class="w-full sm:w-auto" as-child>
         <RouterLink to="/telegram-bot/broadcasts">
           {{ t('telegramBot.broadcasts.backToList') }}
         </RouterLink>
@@ -282,12 +282,12 @@ onMounted(() => {
 
     <Card v-if="form.recipient_type === 'specific'">
       <CardHeader>
-        <div class="flex items-center justify-between gap-4">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle>{{ t('telegramBot.broadcasts.userSelectorTitle') }}</CardTitle>
             <CardDescription>{{ t('telegramBot.broadcasts.userSelectorDesc') }}</CardDescription>
           </div>
-          <div class="flex items-center gap-2 rounded-full border px-3 py-1 text-sm">
+          <div class="flex w-fit items-center gap-2 rounded-full border px-3 py-1 text-sm">
             <Users class="h-4 w-4" />
             {{ t('telegramBot.broadcasts.selectedCount', { count: selectedCount }) }}
           </div>
@@ -313,18 +313,18 @@ onMounted(() => {
           </Button>
         </div>
 
-        <div class="rounded-lg border">
-          <Table>
+        <div class="rounded-lg border overflow-x-auto">
+          <Table class="min-w-[920px]">
             <TableHeader>
               <TableRow>
                 <TableHead class="w-12">
                   <input type="checkbox" :checked="allPageSelected" @change="toggleSelectAll" />
                 </TableHead>
-                <TableHead>{{ t('telegramBot.broadcasts.userDisplayName') }}</TableHead>
-                <TableHead>{{ t('telegramBot.broadcasts.userTelegramUsername') }}</TableHead>
-                <TableHead>{{ t('telegramBot.broadcasts.userTelegramId') }}</TableHead>
-                <TableHead>{{ t('telegramBot.broadcasts.userEmail') }}</TableHead>
-                <TableHead>{{ t('telegramBot.broadcasts.userBoundAt') }}</TableHead>
+                <TableHead class="min-w-[180px]">{{ t('telegramBot.broadcasts.userDisplayName') }}</TableHead>
+                <TableHead class="min-w-[180px]">{{ t('telegramBot.broadcasts.userTelegramUsername') }}</TableHead>
+                <TableHead class="min-w-[180px]">{{ t('telegramBot.broadcasts.userTelegramId') }}</TableHead>
+                <TableHead class="min-w-[220px]">{{ t('telegramBot.broadcasts.userEmail') }}</TableHead>
+                <TableHead class="min-w-[180px]">{{ t('telegramBot.broadcasts.userBoundAt') }}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -346,17 +346,25 @@ onMounted(() => {
                     @change="toggleUser(item.user_id, ($event.target as HTMLInputElement).checked)"
                   />
                 </TableCell>
-                <TableCell>{{ item.display_name || '-' }}</TableCell>
-                <TableCell>{{ item.telegram_username ? `@${item.telegram_username}` : '-' }}</TableCell>
-                <TableCell>{{ item.telegram_user_id }}</TableCell>
-                <TableCell>{{ item.user_email || '-' }}</TableCell>
-                <TableCell>{{ formatDate(item.bound_at) || '-' }}</TableCell>
+                <TableCell class="min-w-[180px]">
+                  <div class="break-words">{{ item.display_name || '-' }}</div>
+                </TableCell>
+                <TableCell class="min-w-[180px]">
+                  <div class="break-all">{{ item.telegram_username ? `@${item.telegram_username}` : '-' }}</div>
+                </TableCell>
+                <TableCell class="min-w-[180px] font-mono text-xs">
+                  <div class="break-all">{{ item.telegram_user_id }}</div>
+                </TableCell>
+                <TableCell class="min-w-[220px]">
+                  <div class="break-all">{{ item.user_email || '-' }}</div>
+                </TableCell>
+                <TableCell class="min-w-[180px]">{{ formatDate(item.bound_at) || '-' }}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
         </div>
 
-        <div class="flex items-center justify-end gap-2">
+        <div class="flex flex-wrap items-center justify-end gap-2">
           <Button variant="outline" size="sm" :disabled="pagination.page <= 1" @click="fetchUsers(pagination.page - 1)">
             {{ t('telegramBot.broadcasts.prevPage') }}
           </Button>
@@ -371,7 +379,7 @@ onMounted(() => {
     </Card>
 
     <div class="flex justify-end">
-      <Button :disabled="submitting || uploading" @click="handleSubmit">
+      <Button class="w-full sm:w-auto" :disabled="submitting || uploading" @click="handleSubmit">
         <Send class="h-4 w-4 mr-2" />
         {{ submitting ? t('admin.common.loading') : t('telegramBot.broadcasts.submit') }}
       </Button>

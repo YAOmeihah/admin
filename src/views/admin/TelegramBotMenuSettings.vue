@@ -31,24 +31,26 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex flex-wrap items-center justify-between gap-4">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h2 class="text-2xl font-bold tracking-tight">{{ t('telegramBot.settings.menuTitle') }}</h2>
         <p class="text-muted-foreground">{{ t('telegramBot.settings.menuDesc') }}</p>
       </div>
-      <div class="flex flex-wrap items-center gap-3">
-        <div class="flex rounded-lg border border-border bg-card p-1">
-          <button
-            v-for="lang in languages"
-            :key="lang.code"
-            class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
-            :class="currentLang === lang.code ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'"
-            @click="currentLang = lang.code"
-          >
-            {{ lang.name }}
-          </button>
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div class="overflow-x-auto">
+          <div class="flex w-max rounded-lg border border-border bg-card p-1">
+            <button
+              v-for="lang in languages"
+              :key="lang.code"
+              class="shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
+              :class="currentLang === lang.code ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'"
+              @click="currentLang = lang.code"
+            >
+              {{ lang.name }}
+            </button>
+          </div>
         </div>
-        <Button :disabled="saving || loading" @click="saveConfig">
+        <Button class="w-full sm:w-auto" :disabled="saving || loading" @click="saveConfig">
           <Loader2 v-if="saving" class="mr-2 h-4 w-4 animate-spin" />
           <Save v-else class="mr-2 h-4 w-4" />
           {{ t('telegramBot.settings.save') }}
@@ -58,14 +60,14 @@ onMounted(() => {
 
     <Card>
       <CardHeader>
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle>{{ t('telegramBot.settings.menuTitle') }}</CardTitle>
             <CardDescription>{{ t('telegramBot.settings.menuDesc') }}</CardDescription>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="rounded bg-muted px-2 py-1 text-xs text-muted-foreground">{{ currentLang }}</span>
-            <Button type="button" size="sm" variant="outline" @click="addMenuItem">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <span class="w-fit rounded bg-muted px-2 py-1 text-xs text-muted-foreground">{{ currentLang }}</span>
+            <Button class="w-full sm:w-auto" type="button" size="sm" variant="outline" @click="addMenuItem">
               <Plus class="mr-1 h-4 w-4" />
               {{ t('telegramBot.settings.menuAdd') }}
             </Button>
@@ -81,39 +83,48 @@ onMounted(() => {
           :key="index"
           class="space-y-3 rounded-lg border border-border p-4"
         >
-          <div class="flex flex-wrap items-center gap-2">
-            <input
-              :id="`menu-enabled-${index}`"
-              v-model="item.enabled"
-              type="checkbox"
-              class="h-4 w-4 accent-primary"
-            />
-            <Input
-              v-model="item.key"
-              :placeholder="t('telegramBot.settings.menuKeyPlaceholder')"
-              class="min-w-[120px] flex-1"
-            />
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              :disabled="index === 0"
-              @click="moveMenuItem(index, 'up')"
-            >
-              <ArrowUp class="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              :disabled="index === form.menu.items.length - 1"
-              @click="moveMenuItem(index, 'down')"
-            >
-              <ArrowDown class="h-4 w-4" />
-            </Button>
-            <Button type="button" size="icon" variant="ghost" @click="removeMenuItem(index)">
-              <Trash2 class="h-4 w-4 text-destructive" />
-            </Button>
+          <div class="space-y-3">
+            <div class="flex items-center gap-2">
+              <input
+                :id="`menu-enabled-${index}`"
+                v-model="item.enabled"
+                type="checkbox"
+                class="h-4 w-4 shrink-0 accent-primary"
+              />
+              <Input
+                v-model="item.key"
+                :placeholder="t('telegramBot.settings.menuKeyPlaceholder')"
+                class="min-w-0 w-full flex-1"
+              />
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <Button
+                class="flex-1 sm:flex-none"
+                type="button"
+                size="sm"
+                variant="ghost"
+                :disabled="index === 0"
+                @click="moveMenuItem(index, 'up')"
+              >
+                <ArrowUp class="mr-1 h-4 w-4" />
+                {{ t('telegramBot.settings.menuMoveUp') }}
+              </Button>
+              <Button
+                class="flex-1 sm:flex-none"
+                type="button"
+                size="sm"
+                variant="ghost"
+                :disabled="index === form.menu.items.length - 1"
+                @click="moveMenuItem(index, 'down')"
+              >
+                <ArrowDown class="mr-1 h-4 w-4" />
+                {{ t('telegramBot.settings.menuMoveDown') }}
+              </Button>
+              <Button class="w-full sm:w-auto" type="button" size="sm" variant="ghost" @click="removeMenuItem(index)">
+                <Trash2 class="mr-1 h-4 w-4 text-destructive" />
+                {{ t('admin.common.delete') }}
+              </Button>
+            </div>
           </div>
           <div class="space-y-1">
             <Label>{{ t('telegramBot.settings.menuLabel') }}</Label>

@@ -197,30 +197,30 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h2 class="text-2xl font-bold tracking-tight">{{ t('telegramBot.channelClients.title') }}</h2>
         <p class="text-muted-foreground">{{ t('telegramBot.channelClients.subtitle') }}</p>
       </div>
-      <Button size="sm" @click="showCreateDialog = true">
+      <Button size="sm" class="w-full sm:w-auto" @click="showCreateDialog = true">
         <Plus class="h-4 w-4 mr-2" />
         {{ t('telegramBot.channelClients.create') }}
       </Button>
     </div>
 
     <Card>
-      <CardContent class="p-0">
-        <Table>
+      <CardContent class="overflow-x-auto p-0">
+        <Table class="min-w-[1320px]">
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
-              <TableHead>{{ t('telegramBot.channelClients.name') }}</TableHead>
-              <TableHead>{{ t('telegramBot.channelClients.channelKey') }}</TableHead>
-              <TableHead>{{ t('telegramBot.channelClients.channelSecret') }}</TableHead>
-              <TableHead>{{ t('telegramBot.channelClients.botToken') }}</TableHead>
-              <TableHead>{{ t('telegramBot.channelClients.callbackUrl') }}</TableHead>
-              <TableHead>{{ t('telegramBot.channelClients.statusLabel') }}</TableHead>
-              <TableHead>{{ t('telegramBot.channelClients.actions') }}</TableHead>
+              <TableHead class="min-w-[220px]">{{ t('telegramBot.channelClients.name') }}</TableHead>
+              <TableHead class="min-w-[220px]">{{ t('telegramBot.channelClients.channelKey') }}</TableHead>
+              <TableHead class="min-w-[220px]">{{ t('telegramBot.channelClients.channelSecret') }}</TableHead>
+              <TableHead class="min-w-[140px]">{{ t('telegramBot.channelClients.botToken') }}</TableHead>
+              <TableHead class="min-w-[260px]">{{ t('telegramBot.channelClients.callbackUrl') }}</TableHead>
+              <TableHead class="min-w-[120px]">{{ t('telegramBot.channelClients.statusLabel') }}</TableHead>
+              <TableHead class="min-w-[240px]">{{ t('telegramBot.channelClients.actions') }}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -236,50 +236,50 @@ onMounted(() => {
             </TableRow>
             <TableRow v-for="client in clients" :key="client.id">
               <TableCell>{{ client.id }}</TableCell>
-              <TableCell>
+              <TableCell class="min-w-[220px]">
                 <div>
-                  <div class="font-medium">{{ client.name }}</div>
-                  <div v-if="client.description" class="text-xs text-muted-foreground">{{ client.description }}</div>
+                  <div class="break-words font-medium">{{ client.name }}</div>
+                  <div v-if="client.description" class="break-words text-xs text-muted-foreground">{{ client.description }}</div>
                 </div>
               </TableCell>
-              <TableCell>
+              <TableCell class="min-w-[220px]">
                 <div class="flex items-center gap-1">
-                  <code class="text-xs bg-muted px-1.5 py-0.5 rounded max-w-[180px] truncate block">{{ client.channel_key }}</code>
+                  <code class="block max-w-[180px] break-all rounded bg-muted px-1.5 py-0.5 text-xs">{{ client.channel_key }}</code>
                   <Button variant="ghost" size="sm" class="h-6 w-6 p-0 shrink-0" @click="copyToClipboard(client.channel_key)">
                     <Copy class="h-3 w-3" />
                   </Button>
                 </div>
               </TableCell>
-              <TableCell>
+              <TableCell class="min-w-[220px]">
                 <div class="flex items-center gap-1">
-                  <code class="text-xs bg-muted px-1.5 py-0.5 rounded max-w-[180px] truncate block">{{ client.channel_secret }}</code>
+                  <code class="block max-w-[180px] break-all rounded bg-muted px-1.5 py-0.5 text-xs">{{ client.channel_secret }}</code>
                   <Button variant="ghost" size="sm" class="h-6 w-6 p-0 shrink-0" @click="copyToClipboard(client.channel_secret)">
                     <Copy class="h-3 w-3" />
                   </Button>
                 </div>
               </TableCell>
-              <TableCell>
+              <TableCell class="min-w-[140px]">
                 <Badge v-if="client.bot_token_set" variant="default">
                   {{ t('telegramBot.channelClients.botTokenSet') }}
                 </Badge>
                 <span v-else class="text-xs text-muted-foreground">{{ t('telegramBot.channelClients.botTokenNotSet') }}</span>
               </TableCell>
-              <TableCell>
+              <TableCell class="min-w-[260px]">
                 <div v-if="client.callback_url" class="flex items-center gap-1">
-                  <code class="text-xs bg-muted px-1.5 py-0.5 rounded max-w-[220px] truncate block">{{ client.callback_url }}</code>
+                  <code class="block max-w-[220px] break-all rounded bg-muted px-1.5 py-0.5 text-xs">{{ client.callback_url }}</code>
                   <Button variant="ghost" size="sm" class="h-6 w-6 p-0 shrink-0" @click="copyToClipboard(client.callback_url)">
                     <Copy class="h-3 w-3" />
                   </Button>
                 </div>
                 <span v-else class="text-xs text-muted-foreground">{{ t('telegramBot.channelClients.callbackUrlNotSet') }}</span>
               </TableCell>
-              <TableCell>
+              <TableCell class="min-w-[120px]">
                 <Badge :variant="client.status === 1 ? 'default' : 'secondary'">
                   {{ client.status === 1 ? t('telegramBot.channelClients.active') : t('telegramBot.channelClients.disabled') }}
                 </Badge>
               </TableCell>
-              <TableCell>
-                <div class="flex items-center gap-1">
+              <TableCell class="min-w-[240px]">
+                <div class="flex flex-wrap items-center gap-1">
                   <Button variant="outline" size="sm" @click="openEditDialog(client)" :title="t('telegramBot.channelClients.edit')">
                     <Pencil class="h-3.5 w-3.5" />
                   </Button>
@@ -302,7 +302,7 @@ onMounted(() => {
 
     <!-- Create Dialog -->
     <Dialog v-model:open="showCreateDialog">
-      <DialogContent>
+      <DialogContent class="w-[calc(100vw-1rem)] max-w-lg p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>{{ t('telegramBot.channelClients.createTitle') }}</DialogTitle>
           <DialogDescription>{{ t('telegramBot.channelClients.createDesc') }}</DialogDescription>
@@ -327,9 +327,9 @@ onMounted(() => {
             <Textarea v-model="createForm.description" :placeholder="t('telegramBot.channelClients.descriptionPlaceholder')" rows="2" />
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" @click="showCreateDialog = false">{{ t('telegramBot.channelClients.cancel') }}</Button>
-          <Button :disabled="creating || !createForm.name" @click="handleCreate">
+        <DialogFooter class="flex-col-reverse sm:flex-row">
+          <Button class="w-full sm:w-auto" variant="outline" @click="showCreateDialog = false">{{ t('telegramBot.channelClients.cancel') }}</Button>
+          <Button class="w-full sm:w-auto" :disabled="creating || !createForm.name" @click="handleCreate">
             <Loader2 v-if="creating" class="h-4 w-4 mr-2 animate-spin" />
             {{ t('telegramBot.channelClients.create') }}
           </Button>
@@ -339,7 +339,7 @@ onMounted(() => {
 
     <!-- Edit Dialog -->
     <Dialog v-model:open="showEditDialog">
-      <DialogContent>
+      <DialogContent class="w-[calc(100vw-1rem)] max-w-lg p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>{{ t('telegramBot.channelClients.editTitle') }}</DialogTitle>
           <DialogDescription>{{ t('telegramBot.channelClients.editDesc') }}</DialogDescription>
@@ -371,9 +371,9 @@ onMounted(() => {
             <Textarea v-model="editForm.description" :placeholder="t('telegramBot.channelClients.descriptionPlaceholder')" rows="2" />
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" @click="showEditDialog = false">{{ t('telegramBot.channelClients.cancel') }}</Button>
-          <Button :disabled="editing || !editForm.name" @click="handleEdit">
+        <DialogFooter class="flex-col-reverse sm:flex-row">
+          <Button class="w-full sm:w-auto" variant="outline" @click="showEditDialog = false">{{ t('telegramBot.channelClients.cancel') }}</Button>
+          <Button class="w-full sm:w-auto" :disabled="editing || !editForm.name" @click="handleEdit">
             <Loader2 v-if="editing" class="h-4 w-4 mr-2 animate-spin" />
             {{ t('telegramBot.channelClients.save') }}
           </Button>
@@ -383,7 +383,7 @@ onMounted(() => {
 
     <!-- Confirm Dialog (Reset Secret / Delete) -->
     <Dialog :open="!!confirmAction" @update:open="(v: boolean) => { if (!v) closeConfirm() }">
-      <DialogContent>
+      <DialogContent class="w-[calc(100vw-1rem)] max-w-md p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>
             {{ confirmAction === 'reset' ? t('telegramBot.channelClients.resetSecretTitle') : t('telegramBot.channelClients.deleteTitle') }}
@@ -392,9 +392,9 @@ onMounted(() => {
             {{ confirmAction === 'reset' ? t('telegramBot.channelClients.resetSecretDesc') : t('telegramBot.channelClients.deleteDesc') }}
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" @click="closeConfirm">{{ t('telegramBot.channelClients.cancel') }}</Button>
-          <Button :variant="confirmAction === 'delete' ? 'destructive' : 'default'" :disabled="confirmLoading" @click="handleConfirmAction">
+        <DialogFooter class="flex-col-reverse sm:flex-row">
+          <Button class="w-full sm:w-auto" variant="outline" @click="closeConfirm">{{ t('telegramBot.channelClients.cancel') }}</Button>
+          <Button class="w-full sm:w-auto" :variant="confirmAction === 'delete' ? 'destructive' : 'default'" :disabled="confirmLoading" @click="handleConfirmAction">
             <Loader2 v-if="confirmLoading" class="h-4 w-4 mr-2 animate-spin" />
             {{ t('telegramBot.channelClients.confirm') }}
           </Button>

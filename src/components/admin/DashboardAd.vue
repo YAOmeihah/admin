@@ -160,10 +160,10 @@ onBeforeUnmount(() => {
           class="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-gradient-to-r from-primary/5 to-primary/10 transition-all hover:shadow-md"
           @click="handleClick(item)"
         >
-          <div class="flex items-center gap-4 px-5 py-4">
+          <div class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
             <img v-if="item.image" :src="item.image" :alt="item.title" class="h-12 w-12 shrink-0 rounded-lg object-cover" />
             <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2">
                 <span class="line-clamp-1 text-sm font-semibold text-foreground">{{ item.title }}</span>
                 <span v-if="item.badge" class="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">{{ item.badge }}</span>
               </div>
@@ -171,7 +171,7 @@ onBeforeUnmount(() => {
             </div>
             <button
               v-if="item.cta_label && item.link_type !== 'none'"
-              class="shrink-0 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              class="w-full shrink-0 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto"
               @click.stop="handleClick(item)"
             >
               {{ item.cta_label }}
@@ -203,10 +203,10 @@ onBeforeUnmount(() => {
               class="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-gradient-to-r from-primary/5 to-primary/10 transition-all hover:shadow-md"
               @click="handleClick(item)"
             >
-              <div class="flex items-center gap-4 px-5 py-4">
+              <div class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
                 <img v-if="item.image" :src="item.image" :alt="item.title" class="h-12 w-12 shrink-0 rounded-lg object-cover" />
                 <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-2">
+                  <div class="flex flex-wrap items-center gap-2">
                     <span class="line-clamp-1 text-sm font-semibold text-foreground">{{ item.title }}</span>
                     <span v-if="item.badge" class="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">{{ item.badge }}</span>
                   </div>
@@ -214,7 +214,7 @@ onBeforeUnmount(() => {
                 </div>
                 <button
                   v-if="item.cta_label && item.link_type !== 'none'"
-                  class="shrink-0 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  class="w-full shrink-0 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto"
                   @click.stop="handleClick(item)"
                 >
                   {{ item.cta_label }}
@@ -234,13 +234,13 @@ onBeforeUnmount(() => {
 
         <!-- 左右箭头 -->
         <button
-          class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 flex h-7 w-7 items-center justify-center rounded-full border border-border bg-background shadow-sm transition-colors hover:bg-muted"
+          class="absolute left-2 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background shadow-sm transition-colors hover:bg-muted sm:left-0 sm:-translate-x-1/2"
           @click="prevPage"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <button
-          class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 flex h-7 w-7 items-center justify-center rounded-full border border-border bg-background shadow-sm transition-colors hover:bg-muted"
+          class="absolute right-2 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background shadow-sm transition-colors hover:bg-muted sm:right-0 sm:translate-x-1/2"
           @click="nextPage"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -267,9 +267,9 @@ onBeforeUnmount(() => {
         class="group cursor-pointer rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md"
         @click="handleClick(item)"
       >
-        <div class="flex items-start justify-between gap-2">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
               <img v-if="item.icon" :src="item.icon" :alt="item.title" class="h-5 w-5 shrink-0 rounded" />
               <span v-if="item.badge" class="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">{{ item.badge }}</span>
             </div>
@@ -294,7 +294,7 @@ onBeforeUnmount(() => {
       <div
         v-for="item in visibleItems"
         :key="item.id"
-        class="relative flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3"
+        class="relative flex flex-col items-start gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3 sm:flex-row sm:items-center"
         :class="item.theme === 'highlight' ? 'border-primary/20 bg-primary/5' : ''"
       >
         <img v-if="item.icon" :src="item.icon" :alt="item.title" class="h-5 w-5 shrink-0 rounded" />
@@ -304,7 +304,7 @@ onBeforeUnmount(() => {
         </div>
         <button
           v-if="item.cta_label && item.link_type !== 'none'"
-          class="shrink-0 text-xs font-medium text-primary hover:underline"
+          class="text-xs font-medium text-primary hover:underline sm:shrink-0"
           @click="handleClick(item)"
         >
           {{ item.cta_label }}
@@ -331,7 +331,7 @@ onBeforeUnmount(() => {
           <div
             v-for="item in compactVisibleItems"
             :key="item.id"
-            class="flex items-center gap-1.5 min-w-0 py-1"
+            class="flex min-w-0 flex-wrap items-center gap-1.5 py-1"
           >
             <span class="truncate text-sm text-foreground">{{ item.title }}</span>
             <span v-if="item.badge" class="shrink-0 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">{{ item.badge }}</span>

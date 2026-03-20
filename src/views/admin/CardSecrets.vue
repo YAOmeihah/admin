@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useDebounceFn } from '@vueuse/core'
 import { adminAPI } from '@/api/admin'
 import type { AdminProduct, AdminProductSKU, AdminCardSecret, AdminCardSecretBatch } from '@/api/types'
-import { KeyRound, Upload, Search, PackagePlus } from 'lucide-vue-next'
+import { Upload, PackagePlus } from 'lucide-vue-next'
 import IdCell from '@/components/IdCell.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -595,9 +595,9 @@ onMounted(async () => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('admin.cardSecrets.title') }}</h1>
-      <Button v-if="currentProductId" @click="scrollToImport">
+      <Button v-if="currentProductId" class="w-full sm:w-auto" @click="scrollToImport">
         <Upload class="mr-2 h-4 w-4" />
         {{ t('admin.cardSecrets.importAction') }}
       </Button>
@@ -611,7 +611,7 @@ onMounted(async () => {
         </div>
         <h2 class="text-xl font-semibold text-foreground">{{ t('admin.cardSecrets.guide.title') }}</h2>
         <p class="text-sm text-muted-foreground">{{ t('admin.cardSecrets.guide.description') }}</p>
-        <div class="flex items-start gap-6 justify-center text-left pt-2">
+        <div class="flex flex-col gap-4 pt-2 text-left sm:flex-row sm:items-start sm:justify-center sm:gap-6">
           <div class="flex items-start gap-3">
             <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">1</div>
             <div>
@@ -632,7 +632,7 @@ onMounted(async () => {
 
     <div class="rounded-xl border border-border bg-card p-4 shadow-sm">
       <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-        <div class="md:col-span-4 flex items-center gap-2">
+        <div class="flex flex-col gap-2 md:col-span-4 sm:flex-row sm:items-center">
           <Input
             v-model="productKeyword"
             :placeholder="t('admin.cardSecrets.productSearchPlaceholder')"
@@ -642,7 +642,7 @@ onMounted(async () => {
           <Button
             size="sm"
             variant="outline"
-            class="h-9 shrink-0"
+            class="h-9 w-full shrink-0 sm:w-auto"
             :disabled="productOptionsLoading"
             @click="handleSearchProducts"
           >
@@ -727,20 +727,21 @@ onMounted(async () => {
       </div>
 
       <div class="rounded-xl border border-border bg-card p-6 lg:col-span-2">
-        <div class="flex items-center justify-between mb-4">
+        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 class="text-lg font-semibold text-foreground">{{ t('admin.cardSecrets.batchesTitle') }}</h2>
-          <Button size="sm" variant="outline" @click="refreshBatches">{{ t('admin.common.refresh') }}</Button>
+          <Button class="w-full sm:w-auto" size="sm" variant="outline" @click="refreshBatches">{{ t('admin.common.refresh') }}</Button>
         </div>
 
-        <Table>
+        <div class="overflow-x-auto">
+          <Table class="min-w-[920px]">
           <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
             <TableRow>
-              <TableHead class="px-4 py-3">{{ t('admin.cardSecrets.table.batchNo') }}</TableHead>
-              <TableHead class="px-4 py-3">{{ t('admin.cardSecrets.table.source') }}</TableHead>
-              <TableHead class="px-4 py-3">{{ t('admin.cardSecrets.table.sku') }}</TableHead>
-              <TableHead class="px-4 py-3">{{ t('admin.cardSecrets.table.count') }}</TableHead>
-              <TableHead class="px-4 py-3">{{ t('admin.cardSecrets.table.note') }}</TableHead>
-              <TableHead class="px-4 py-3">{{ t('admin.cardSecrets.table.createdAt') }}</TableHead>
+              <TableHead class="min-w-[220px] px-4 py-3">{{ t('admin.cardSecrets.table.batchNo') }}</TableHead>
+              <TableHead class="min-w-[140px] px-4 py-3">{{ t('admin.cardSecrets.table.source') }}</TableHead>
+              <TableHead class="min-w-[220px] px-4 py-3">{{ t('admin.cardSecrets.table.sku') }}</TableHead>
+              <TableHead class="min-w-[120px] px-4 py-3">{{ t('admin.cardSecrets.table.count') }}</TableHead>
+              <TableHead class="min-w-[220px] px-4 py-3">{{ t('admin.cardSecrets.table.note') }}</TableHead>
+              <TableHead class="min-w-[180px] px-4 py-3">{{ t('admin.cardSecrets.table.createdAt') }}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody class="divide-y divide-border">
@@ -753,15 +754,16 @@ onMounted(async () => {
               <TableCell colspan="6" class="px-4 py-6 text-center text-muted-foreground">{{ t('admin.cardSecrets.emptyBatches') }}</TableCell>
             </TableRow>
             <TableRow v-for="batch in batches" :key="batch.id" class="hover:bg-muted/30">
-              <TableCell class="px-4 py-3 font-medium text-foreground">{{ batch.batch_no || '-' }}</TableCell>
-              <TableCell class="px-4 py-3 text-xs text-muted-foreground">{{ batch.source }}</TableCell>
-              <TableCell class="px-4 py-3 text-xs text-muted-foreground">{{ batchSkuLabel(batch) }}</TableCell>
-              <TableCell class="px-4 py-3 text-xs text-muted-foreground">{{ batch.total_count }}</TableCell>
-              <TableCell class="px-4 py-3 text-xs text-muted-foreground">{{ batch.note || '-' }}</TableCell>
-              <TableCell class="px-4 py-3 text-xs text-muted-foreground">{{ formatDate(batch.created_at) }}</TableCell>
+              <TableCell class="min-w-[220px] px-4 py-3 font-medium text-foreground"><div class="break-all">{{ batch.batch_no || '-' }}</div></TableCell>
+              <TableCell class="min-w-[140px] px-4 py-3 text-xs text-muted-foreground">{{ batch.source }}</TableCell>
+              <TableCell class="min-w-[220px] px-4 py-3 text-xs text-muted-foreground"><div class="break-words">{{ batchSkuLabel(batch) }}</div></TableCell>
+              <TableCell class="min-w-[120px] px-4 py-3 text-xs text-muted-foreground">{{ batch.total_count }}</TableCell>
+              <TableCell class="min-w-[220px] px-4 py-3 text-xs text-muted-foreground"><div class="break-words">{{ batch.note || '-' }}</div></TableCell>
+              <TableCell class="min-w-[180px] px-4 py-3 text-xs text-muted-foreground">{{ formatDate(batch.created_at) }}</TableCell>
             </TableRow>
           </TableBody>
-        </Table>
+          </Table>
+        </div>
 
         <div
           v-if="batchPagination.total_page > 1"
@@ -876,21 +878,22 @@ onMounted(async () => {
         </div>
       </div>
 
-      <Table>
+      <div class="overflow-x-auto">
+        <Table class="min-w-[1320px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-4 py-3">
               <input type="checkbox" class="h-4 w-4 accent-primary" :checked="allCurrentPageSelected" @change="toggleSelectAllSecrets" />
             </TableHead>
             <TableHead class="px-4 py-3">{{ t('admin.cardSecrets.listTable.id') }}</TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.cardSecrets.listTable.secret') }}</TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.cardSecrets.listTable.product') }}</TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.cardSecrets.listTable.sku') }}</TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.cardSecrets.listTable.status') }}</TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.cardSecrets.listTable.orderId') }}</TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.cardSecrets.listTable.batchId') }}</TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.cardSecrets.listTable.createdAt') }}</TableHead>
-            <TableHead class="px-4 py-3 text-right">{{ t('admin.cardSecrets.listTable.action') }}</TableHead>
+            <TableHead class="min-w-[260px] px-4 py-3">{{ t('admin.cardSecrets.listTable.secret') }}</TableHead>
+            <TableHead class="min-w-[260px] px-4 py-3">{{ t('admin.cardSecrets.listTable.product') }}</TableHead>
+            <TableHead class="min-w-[180px] px-4 py-3">{{ t('admin.cardSecrets.listTable.sku') }}</TableHead>
+            <TableHead class="min-w-[120px] px-4 py-3">{{ t('admin.cardSecrets.listTable.status') }}</TableHead>
+            <TableHead class="min-w-[160px] px-4 py-3">{{ t('admin.cardSecrets.listTable.orderId') }}</TableHead>
+            <TableHead class="min-w-[140px] px-4 py-3">{{ t('admin.cardSecrets.listTable.batchId') }}</TableHead>
+            <TableHead class="min-w-[180px] px-4 py-3">{{ t('admin.cardSecrets.listTable.createdAt') }}</TableHead>
+            <TableHead class="min-w-[140px] px-4 py-3 text-right">{{ t('admin.cardSecrets.listTable.action') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody class="divide-y divide-border">
@@ -909,8 +912,8 @@ onMounted(async () => {
             <TableCell class="px-4 py-3">
               <IdCell :value="secret.id" />
             </TableCell>
-            <TableCell class="px-4 py-3 text-xs font-mono text-muted-foreground break-all">{{ secret.secret }}</TableCell>
-            <TableCell class="px-4 py-3 text-xs text-muted-foreground">
+            <TableCell class="min-w-[260px] px-4 py-3 text-xs font-mono text-muted-foreground break-all">{{ secret.secret }}</TableCell>
+            <TableCell class="min-w-[260px] px-4 py-3 text-xs text-muted-foreground">
               <a
                 v-if="secret.product_id"
                 :href="productLink(secret.product_id)"
@@ -918,17 +921,17 @@ onMounted(async () => {
                 rel="noopener"
                 class="text-primary underline-offset-4 hover:underline"
               >
-                #{{ secret.product_id }} {{ resolveProductName(secret.product_id) }}
+                <span class="break-words">#{{ secret.product_id }} {{ resolveProductName(secret.product_id) }}</span>
               </a>
               <span v-else class="text-muted-foreground">-</span>
             </TableCell>
-            <TableCell class="px-4 py-3 text-xs text-muted-foreground">{{ secretSkuLabel(secret) }}</TableCell>
-            <TableCell class="px-4 py-3 text-xs">
+            <TableCell class="min-w-[180px] px-4 py-3 text-xs text-muted-foreground"><div class="break-words">{{ secretSkuLabel(secret) }}</div></TableCell>
+            <TableCell class="min-w-[120px] px-4 py-3 text-xs">
               <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="cardSecretStatusClass(secret.status)">
                 {{ cardSecretStatusLabel(secret.status) }}
               </span>
             </TableCell>
-            <TableCell class="px-4 py-3 text-xs">
+            <TableCell class="min-w-[160px] px-4 py-3 text-xs">
               <div class="flex flex-col gap-1">
                 <a
                   v-if="secret.order_id"
@@ -945,17 +948,18 @@ onMounted(async () => {
                 </span>
               </div>
             </TableCell>
-            <TableCell class="px-4 py-3 text-xs text-muted-foreground">
+            <TableCell class="min-w-[140px] px-4 py-3 text-xs text-muted-foreground">
               <span v-if="secret.batch_id">#{{ secret.batch_id }}</span>
               <span v-else>-</span>
             </TableCell>
-            <TableCell class="px-4 py-3 text-xs text-muted-foreground">{{ formatDate(secret.created_at) }}</TableCell>
-            <TableCell class="px-4 py-3 text-right">
+            <TableCell class="min-w-[180px] px-4 py-3 text-xs text-muted-foreground">{{ formatDate(secret.created_at) }}</TableCell>
+            <TableCell class="min-w-[140px] px-4 py-3 text-right">
               <Button size="sm" variant="outline" @click="openEditSecret(secret)">{{ t('admin.cardSecrets.actions.edit') }}</Button>
             </TableCell>
           </TableRow>
         </TableBody>
-      </Table>
+        </Table>
+      </div>
 
       <div
         v-if="cardSecretPagination.total_page > 1"

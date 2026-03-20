@@ -449,10 +449,10 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('admin.giftCards.title') }}</h1>
-      <Button size="sm" class="gap-2" @click="openGenerateModal">
-        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <Button size="sm" class="w-full gap-2 sm:w-auto" @click="openGenerateModal">
+        <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
         {{ t('admin.giftCards.generate') }}
@@ -488,7 +488,7 @@ onMounted(() => {
           <Input v-model="filters.createdTo" type="datetime-local" :placeholder="t('admin.giftCards.filterCreatedTo')" />
         </div>
         <div class="md:col-span-1 flex items-center justify-end">
-          <Button size="sm" @click="handleSearch">{{ t('admin.giftCards.search') }}</Button>
+          <Button size="sm" class="w-full md:w-auto" @click="handleSearch">{{ t('admin.giftCards.search') }}</Button>
         </div>
       </div>
     </div>
@@ -496,9 +496,9 @@ onMounted(() => {
     <div v-if="hasSelectedCards" class="rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
       <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <span class="text-xs text-muted-foreground">{{ t('admin.giftCards.batch.selectedCount', { count: selectedCardIDs.length }) }}</span>
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           <Select v-model="batchStatusTarget">
-            <SelectTrigger class="h-8 w-[170px] text-xs">
+            <SelectTrigger class="h-8 w-full text-xs sm:w-[170px]">
               <SelectValue :placeholder="t('admin.giftCards.batch.statusPlaceholder')" />
             </SelectTrigger>
             <SelectContent>
@@ -506,13 +506,13 @@ onMounted(() => {
               <SelectItem value="disabled">{{ t('admin.giftCards.status.disabled') }}</SelectItem>
             </SelectContent>
           </Select>
-          <Button size="sm" variant="outline" :disabled="batchActionLoading" @click="applyBatchStatus">
+          <Button size="sm" variant="outline" class="w-full sm:w-auto" :disabled="batchActionLoading" @click="applyBatchStatus">
             {{ t('admin.giftCards.batch.applyStatus') }}
           </Button>
-          <Button size="sm" variant="outline" :disabled="batchActionLoading" @click="exportSelected('txt')">
+          <Button size="sm" variant="outline" class="w-full sm:w-auto" :disabled="batchActionLoading" @click="exportSelected('txt')">
             {{ t('admin.giftCards.batch.exportTxt') }}
           </Button>
-          <Button size="sm" variant="outline" :disabled="batchActionLoading" @click="exportSelected('csv')">
+          <Button size="sm" variant="outline" class="w-full sm:w-auto" :disabled="batchActionLoading" @click="exportSelected('csv')">
             {{ t('admin.giftCards.batch.exportCsv') }}
           </Button>
         </div>
@@ -526,23 +526,23 @@ onMounted(() => {
     </div>
 
     <div class="rounded-xl border border-border bg-card overflow-x-auto">
-      <Table>
+      <Table class="min-w-[1360px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
-            <TableHead class="px-4 py-3">
+            <TableHead class="min-w-[56px] px-4 py-3">
               <input type="checkbox" class="h-4 w-4 accent-primary" :checked="allCurrentPageSelected" @change="toggleSelectAllCards" />
             </TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.giftCards.table.id') }}</TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.giftCards.table.name') }}</TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.giftCards.table.code') }}</TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.giftCards.table.amount') }}</TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.giftCards.table.status') }}</TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.giftCards.table.batchNo') }}</TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.giftCards.table.redeemedUser') }}</TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.giftCards.table.redeemedAt') }}</TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.giftCards.table.expiresAt') }}</TableHead>
-            <TableHead class="px-4 py-3">{{ t('admin.giftCards.table.createdAt') }}</TableHead>
-            <TableHead class="px-4 py-3 text-right">{{ t('admin.giftCards.table.action') }}</TableHead>
+            <TableHead class="min-w-[100px] px-4 py-3">{{ t('admin.giftCards.table.id') }}</TableHead>
+            <TableHead class="min-w-[200px] px-4 py-3">{{ t('admin.giftCards.table.name') }}</TableHead>
+            <TableHead class="min-w-[220px] px-4 py-3">{{ t('admin.giftCards.table.code') }}</TableHead>
+            <TableHead class="min-w-[140px] px-4 py-3">{{ t('admin.giftCards.table.amount') }}</TableHead>
+            <TableHead class="min-w-[120px] px-4 py-3">{{ t('admin.giftCards.table.status') }}</TableHead>
+            <TableHead class="min-w-[180px] px-4 py-3">{{ t('admin.giftCards.table.batchNo') }}</TableHead>
+            <TableHead class="min-w-[220px] px-4 py-3">{{ t('admin.giftCards.table.redeemedUser') }}</TableHead>
+            <TableHead class="min-w-[180px] px-4 py-3">{{ t('admin.giftCards.table.redeemedAt') }}</TableHead>
+            <TableHead class="min-w-[180px] px-4 py-3">{{ t('admin.giftCards.table.expiresAt') }}</TableHead>
+            <TableHead class="min-w-[180px] px-4 py-3">{{ t('admin.giftCards.table.createdAt') }}</TableHead>
+            <TableHead class="min-w-[180px] px-4 py-3 text-right">{{ t('admin.giftCards.table.action') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody class="divide-y divide-border">
@@ -555,7 +555,7 @@ onMounted(() => {
             <TableCell colspan="12" class="px-4 py-8 text-center text-muted-foreground">{{ t('admin.giftCards.empty') }}</TableCell>
           </TableRow>
           <TableRow v-for="card in cards" :key="card.id" class="hover:bg-muted/30">
-            <TableCell class="px-4 py-3">
+            <TableCell class="min-w-[56px] px-4 py-3">
               <input
                 type="checkbox"
                 class="h-4 w-4 accent-primary"
@@ -563,21 +563,21 @@ onMounted(() => {
                 @change="onRowSelectChange(card.id, $event)"
               />
             </TableCell>
-            <TableCell class="px-4 py-3"><IdCell :value="card.id" /></TableCell>
-            <TableCell class="px-4 py-3 text-foreground font-medium">{{ card.name || '-' }}</TableCell>
-            <TableCell class="px-4 py-3 font-mono text-xs text-foreground">{{ card.code || '-' }}</TableCell>
-            <TableCell class="px-4 py-3 font-mono text-xs text-foreground">{{ formatMoney(card.amount, card.currency) }}</TableCell>
-            <TableCell class="px-4 py-3">
+            <TableCell class="min-w-[100px] px-4 py-3"><IdCell :value="card.id" /></TableCell>
+            <TableCell class="min-w-[200px] px-4 py-3 text-foreground font-medium break-words">{{ card.name || '-' }}</TableCell>
+            <TableCell class="min-w-[220px] px-4 py-3 font-mono text-xs text-foreground break-all">{{ card.code || '-' }}</TableCell>
+            <TableCell class="min-w-[140px] px-4 py-3 font-mono text-xs text-foreground">{{ formatMoney(card.amount, card.currency) }}</TableCell>
+            <TableCell class="min-w-[120px] px-4 py-3">
               <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="statusClass(card)">
                 {{ statusLabel(card) }}
               </span>
             </TableCell>
-            <TableCell class="px-4 py-3 text-xs text-muted-foreground">{{ card.batch?.batch_no || '-' }}</TableCell>
-            <TableCell class="px-4 py-3 text-xs text-muted-foreground">{{ redeemedUserText(card) }}</TableCell>
-            <TableCell class="px-4 py-3 text-xs text-muted-foreground">{{ formatDate(card.redeemed_at) || '-' }}</TableCell>
-            <TableCell class="px-4 py-3 text-xs text-muted-foreground">{{ expiresAtText(card) }}</TableCell>
-            <TableCell class="px-4 py-3 text-xs text-muted-foreground">{{ formatDate(card.created_at) || '-' }}</TableCell>
-            <TableCell class="px-4 py-3 text-right">
+            <TableCell class="min-w-[180px] px-4 py-3 text-xs text-muted-foreground break-all">{{ card.batch?.batch_no || '-' }}</TableCell>
+            <TableCell class="min-w-[220px] px-4 py-3 text-xs text-muted-foreground break-words">{{ redeemedUserText(card) }}</TableCell>
+            <TableCell class="min-w-[180px] px-4 py-3 text-xs text-muted-foreground">{{ formatDate(card.redeemed_at) || '-' }}</TableCell>
+            <TableCell class="min-w-[180px] px-4 py-3 text-xs text-muted-foreground break-words">{{ expiresAtText(card) }}</TableCell>
+            <TableCell class="min-w-[180px] px-4 py-3 text-xs text-muted-foreground">{{ formatDate(card.created_at) || '-' }}</TableCell>
+            <TableCell class="min-w-[180px] px-4 py-3 text-right">
               <div class="flex flex-wrap items-center justify-end gap-2">
                 <Button size="sm" variant="outline" @click="openEditModal(card)">{{ t('admin.giftCards.actions.edit') }}</Button>
                 <Button
@@ -629,7 +629,7 @@ onMounted(() => {
     </div>
 
     <Dialog v-model:open="showGenerateModal" @update:open="(value) => { if (!value) closeGenerateModal() }">
-      <DialogScrollContent class="w-full max-w-xl" @interact-outside="(e) => e.preventDefault()">
+      <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-xl p-4 sm:p-6" @interact-outside="(e) => e.preventDefault()">
         <DialogHeader>
           <DialogTitle>{{ t('admin.giftCards.modal.generateTitle') }}</DialogTitle>
         </DialogHeader>
@@ -657,9 +657,9 @@ onMounted(() => {
           <div v-if="generateError" class="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
             {{ generateError }}
           </div>
-          <div class="flex justify-end gap-2">
-            <Button type="button" variant="outline" @click="closeGenerateModal">{{ t('admin.common.cancel') }}</Button>
-            <Button type="submit" :disabled="generateSubmitting">
+          <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button type="button" variant="outline" class="w-full sm:w-auto" @click="closeGenerateModal">{{ t('admin.common.cancel') }}</Button>
+            <Button type="submit" class="w-full sm:w-auto" :disabled="generateSubmitting">
               {{ generateSubmitting ? t('admin.common.submitting') : t('admin.common.confirm') }}
             </Button>
           </div>
@@ -668,7 +668,7 @@ onMounted(() => {
     </Dialog>
 
     <Dialog v-model:open="showEditModal" @update:open="(value) => { if (!value) closeEditModal() }">
-      <DialogScrollContent class="w-full max-w-xl" @interact-outside="(e) => e.preventDefault()">
+      <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-xl p-4 sm:p-6" @interact-outside="(e) => e.preventDefault()">
         <DialogHeader>
           <DialogTitle>{{ t('admin.giftCards.modal.editTitle') }}</DialogTitle>
         </DialogHeader>
@@ -701,9 +701,9 @@ onMounted(() => {
           <div v-if="editError" class="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
             {{ editError }}
           </div>
-          <div class="flex justify-end gap-2">
-            <Button type="button" variant="outline" @click="closeEditModal">{{ t('admin.common.cancel') }}</Button>
-            <Button type="submit" :disabled="editSubmitting">
+          <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button type="button" variant="outline" class="w-full sm:w-auto" @click="closeEditModal">{{ t('admin.common.cancel') }}</Button>
+            <Button type="submit" class="w-full sm:w-auto" :disabled="editSubmitting">
               {{ editSubmitting ? t('admin.common.submitting') : t('admin.common.confirm') }}
             </Button>
           </div>

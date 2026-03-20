@@ -270,12 +270,12 @@ watch(
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('admin.payments.title') }}</h1>
     </div>
 
     <div class="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <div class="w-full md:w-32">
           <Input v-model="filters.userId" :placeholder="t('admin.payments.filterUserId')" @update:modelValue="debouncedSearch" />
         </div>
@@ -300,7 +300,7 @@ watch(
             </SelectContent>
           </Select>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex w-full flex-col gap-2 md:w-auto md:flex-row md:flex-wrap md:items-center">
           <span class="text-xs text-muted-foreground whitespace-nowrap">{{ t('admin.payments.filterCreatedRange') }}</span>
           <Input
             v-model="filters.createdFrom"
@@ -309,7 +309,7 @@ watch(
             :placeholder="t('admin.payments.filterCreatedFrom')"
             @update:modelValue="handleSearch"
           />
-          <span class="text-muted-foreground">-</span>
+          <span class="hidden text-muted-foreground md:inline">-</span>
           <Input
             v-model="filters.createdTo"
             type="datetime-local"
@@ -333,8 +333,8 @@ watch(
             </SelectContent>
           </Select>
         </div>
-        <div class="flex-1"></div>
-        <Button size="sm" variant="outline" @click="refresh">{{ t('admin.common.refresh') }}</Button>
+        <div class="hidden flex-1 sm:block"></div>
+        <Button size="sm" variant="outline" class="w-full sm:w-auto" @click="refresh">{{ t('admin.common.refresh') }}</Button>
         <Button size="sm" :disabled="exporting" @click="handleExport">
           {{ exporting ? t('admin.payments.exporting') : t('admin.payments.export') }}
         </Button>
@@ -345,19 +345,19 @@ watch(
       {{ exportError }}
     </div>
 
-    <div class="rounded-xl border border-border bg-card">
-      <Table>
+    <div class="rounded-xl border border-border bg-card overflow-x-auto">
+      <Table class="min-w-[1120px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-6 py-3">{{ t('admin.payments.table.paymentId') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.payments.table.orderId') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.payments.table.channel') }}</TableHead>
+            <TableHead class="px-6 py-3 min-w-[220px]">{{ t('admin.payments.table.orderId') }}</TableHead>
+            <TableHead class="px-6 py-3 min-w-[260px]">{{ t('admin.payments.table.channel') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.payments.table.status') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.payments.table.amount') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.payments.table.feeRate') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.payments.table.feeAmount') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.payments.table.createdAt') }}</TableHead>
-            <TableHead class="px-6 py-3 text-right">{{ t('admin.payments.table.action') }}</TableHead>
+            <TableHead class="px-6 py-3 min-w-[120px] text-right">{{ t('admin.payments.table.action') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody class="divide-y divide-border">
@@ -373,11 +373,11 @@ watch(
             <TableCell class="px-6 py-4">
               <IdCell :value="payment.id" />
             </TableCell>
-            <TableCell class="px-6 py-4 text-foreground">
+            <TableCell class="min-w-[220px] px-6 py-4 text-foreground">
               <a v-if="payment.order_id" :href="orderLink(payment.order_id)" target="_blank" rel="noopener" class="text-primary underline-offset-4 hover:underline">
                 #{{ payment.order_id }}
               </a>
-              <div v-else-if="payment.recharge_no" class="text-foreground font-mono">
+              <div v-else-if="payment.recharge_no" class="break-all text-foreground font-mono">
                 {{ payment.recharge_no }}
               </div>
               <span v-else>-</span>
@@ -390,9 +390,9 @@ watch(
                 {{ t('admin.payments.rechargeStatus') }}: {{ statusLabel(payment.recharge_status) }}
               </div>
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">
-              <div class="text-foreground">{{ payment.channel_name || '-' }}</div>
-              <div class="text-muted-foreground">{{ providerTypeLabel(payment.provider_type) }} / {{ channelTypeLabel(payment.channel_type) }}</div>
+            <TableCell class="min-w-[260px] px-6 py-4 text-xs text-muted-foreground">
+              <div class="break-words text-foreground">{{ payment.channel_name || '-' }}</div>
+              <div class="break-words text-muted-foreground">{{ providerTypeLabel(payment.provider_type) }} / {{ channelTypeLabel(payment.channel_type) }}</div>
               <div class="text-muted-foreground mt-0.5">
                 {{ t('admin.payments.channelId') }}:
                 <a v-if="payment.channel_id" :href="channelLink(payment.channel_id)" target="_blank" rel="noopener" class="text-primary underline-offset-4 hover:underline">
@@ -410,7 +410,7 @@ watch(
             <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ formatFeeRate(payment) }}</TableCell>
             <TableCell class="px-6 py-4 font-mono text-foreground">{{ formatMoney(payment.fee_amount, payment.currency) }}</TableCell>
             <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ formatDate(payment.created_at) }}</TableCell>
-            <TableCell class="px-6 py-4 text-right">
+            <TableCell class="min-w-[120px] px-6 py-4 text-right">
               <Button size="sm" variant="outline" @click="openDetail(payment)">
                 {{ t('admin.payments.view') }}
               </Button>
@@ -421,35 +421,35 @@ watch(
 
       <div
         v-if="pagination.total_page > 1"
-        class="flex flex-wrap items-center justify-between gap-3 border-t border-border px-6 py-4"
+        class="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
       >
         <div class="flex items-center gap-3">
           <span class="text-xs text-muted-foreground">
             {{ t('admin.common.pageInfo', { total: pagination.total, page: pagination.page, totalPage: pagination.total_page }) }}
           </span>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="flex items-center gap-2">
+        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+          <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             <Input
               v-model="jumpPage"
               type="number"
               min="1"
               :max="pagination.total_page"
-              class="h-8 w-20"
+              class="h-8 w-full sm:w-20"
               :placeholder="t('admin.common.jumpPlaceholder')"
             />
-            <Button variant="outline" size="sm" class="h-8" @click="jumpToPage">
+            <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" @click="jumpToPage">
               {{ t('admin.common.jumpTo') }}
             </Button>
           </div>
-          <div class="flex items-center gap-2">
-            <Button variant="outline" size="sm" class="h-8" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">
+          <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+            <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">
               {{ t('admin.common.prevPage') }}
             </Button>
             <Button
               variant="outline"
               size="sm"
-              class="h-8"
+              class="h-8 w-full sm:w-auto"
               :disabled="pagination.page >= pagination.total_page"
               @click="changePage(pagination.page + 1)"
             >
@@ -461,7 +461,7 @@ watch(
     </div>
 
     <Dialog v-model:open="showDetail" @update:open="(value) => { if (!value) closeDetail() }">
-      <DialogScrollContent class="w-full max-w-5xl">
+      <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-5xl p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>{{ t('admin.payments.detailTitle') }}</DialogTitle>
         </DialogHeader>

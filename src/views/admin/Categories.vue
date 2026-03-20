@@ -227,21 +227,21 @@ watch(
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('admin.categories.title') }}</h1>
-      <Button @click="openCreateModal">{{ t('admin.categories.create') }}</Button>
+      <Button class="w-full sm:w-auto" @click="openCreateModal">{{ t('admin.categories.create') }}</Button>
     </div>
 
-    <div class="rounded-xl border border-border bg-card">
-      <Table>
+    <div class="rounded-xl border border-border bg-card overflow-x-auto">
+      <Table class="min-w-[760px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-6 py-3">{{ t('admin.categories.table.id') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.categories.table.icon') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.categories.table.name') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.categories.table.slug') }}</TableHead>
+            <TableHead class="px-6 py-3 min-w-[260px]">{{ t('admin.categories.table.name') }}</TableHead>
+            <TableHead class="px-6 py-3 min-w-[220px]">{{ t('admin.categories.table.slug') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.categories.table.sort') }}</TableHead>
-            <TableHead class="px-6 py-3 text-right">{{ t('admin.categories.table.action') }}</TableHead>
+            <TableHead class="px-6 py-3 min-w-[140px] text-right">{{ t('admin.categories.table.action') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody class="divide-y divide-border">
@@ -258,28 +258,28 @@ watch(
               <IdCell :value="item.category.id" />
             </TableCell>
             <TableCell class="px-6 py-4">
-              <img v-if="item.category.icon" :src="getImageUrl(item.category.icon)" class="h-8 w-8 rounded object-cover" :alt="getLocalizedText(item.category.name)" />
+              <img v-if="item.category.icon" :src="getImageUrl(item.category.icon)" class="h-8 w-8 shrink-0 rounded object-cover" :alt="getLocalizedText(item.category.name)" />
               <span v-else class="text-xs text-muted-foreground">-</span>
             </TableCell>
-            <TableCell class="px-6 py-4">
+            <TableCell class="min-w-[260px] px-6 py-4">
               <div class="space-y-1" :class="item.depth > 0 ? 'pl-6' : ''">
-                <div class="flex items-center gap-2">
+                <div class="flex items-start gap-2">
                   <span
-                    class="inline-flex rounded-full border px-2 py-0.5 text-[11px]"
+                    class="inline-flex shrink-0 rounded-full border px-2 py-0.5 text-[11px]"
                     :class="item.depth > 0 ? 'border-sky-200 bg-sky-50 text-sky-700' : 'border-border bg-muted/30 text-muted-foreground'"
                   >
                     {{ getCategoryLevelText(item.category) }}
                   </span>
-                  <span class="font-medium text-foreground">{{ getLocalizedText(item.category.name) }}</span>
+                  <span class="min-w-0 break-words font-medium text-foreground">{{ getLocalizedText(item.category.name) }}</span>
                 </div>
-                <div v-if="item.parent" class="text-xs text-muted-foreground">
+                <div v-if="item.parent" class="text-xs text-muted-foreground break-words">
                   {{ t('admin.categories.table.parentPrefix', { name: getLocalizedText(item.parent.name) }) }}
                 </div>
               </div>
             </TableCell>
-            <TableCell class="px-6 py-4 font-mono text-muted-foreground">{{ item.category.slug }}</TableCell>
+            <TableCell class="min-w-[220px] px-6 py-4 font-mono text-muted-foreground break-all">{{ item.category.slug }}</TableCell>
             <TableCell class="px-6 py-4 font-mono text-muted-foreground">{{ item.category.sort_order }}</TableCell>
-            <TableCell class="px-6 py-4 text-right">
+            <TableCell class="min-w-[140px] px-6 py-4 text-right">
               <div class="flex items-center justify-end gap-2">
                 <Button size="sm" variant="outline" @click="openEditModal(item.category)">{{ t('admin.categories.actions.edit') }}</Button>
                 <Button size="sm" variant="destructive" @click="handleDelete(item.category)">{{ t('admin.categories.actions.delete') }}</Button>
@@ -291,18 +291,18 @@ watch(
     </div>
 
     <Dialog v-model:open="showModal" @update:open="(value) => { if (!value) closeModal() }">
-      <DialogScrollContent class="w-full max-w-lg" @interact-outside="(e) => e.preventDefault()">
+      <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-lg p-4 sm:p-6" @interact-outside="(e) => e.preventDefault()">
         <DialogHeader>
           <DialogTitle>{{ isEditing ? t('admin.categories.modal.editTitle') : t('admin.categories.modal.createTitle') }}</DialogTitle>
         </DialogHeader>
         <form class="space-y-6" @submit.prevent="handleSubmit">
           <div class="border-b border-border">
-            <div class="flex gap-4">
+            <div class="flex gap-2 overflow-x-auto pb-1 sm:gap-4">
               <button
                 v-for="lang in languages"
                 :key="lang.code"
                 type="button"
-                class="border-b-2 px-4 py-2 text-sm font-medium"
+                class="shrink-0 border-b-2 px-3 py-2 text-sm font-medium sm:px-4"
                 :class="currentLang === lang.code ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'"
                 @click="currentLang = lang.code"
               >
@@ -373,9 +373,9 @@ watch(
             <p class="text-xs text-muted-foreground mt-1">{{ t('admin.categories.form.sortTip') }}</p>
           </div>
 
-          <div class="flex justify-end gap-3 border-t border-border pt-6">
-            <Button type="button" variant="outline" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
-            <Button type="submit" :disabled="submitting">{{ isEditing ? t('admin.categories.actions.saveChanges') : t('admin.categories.actions.createNow') }}</Button>
+          <div class="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:justify-end">
+            <Button type="button" variant="outline" class="w-full sm:w-auto" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
+            <Button type="submit" class="w-full sm:w-auto" :disabled="submitting">{{ isEditing ? t('admin.categories.actions.saveChanges') : t('admin.categories.actions.createNow') }}</Button>
           </div>
         </form>
       </DialogScrollContent>

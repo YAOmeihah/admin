@@ -241,22 +241,22 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('siteConnections.title') }}</h1>
-      <Button @click="openCreateModal">{{ t('siteConnections.createButton') }}</Button>
+      <Button class="w-full sm:w-auto" @click="openCreateModal">{{ t('siteConnections.createButton') }}</Button>
     </div>
 
     <div class="rounded-xl border border-border bg-card overflow-x-auto">
-      <Table>
+      <Table class="min-w-[1120px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-6 py-3">{{ t('siteConnections.columns.id') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('siteConnections.columns.name') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('siteConnections.columns.baseUrl') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('siteConnections.columns.protocol') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('siteConnections.columns.status') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('siteConnections.columns.lastPing') }}</TableHead>
-            <TableHead class="px-6 py-3 text-right">{{ t('siteConnections.columns.actions') }}</TableHead>
+            <TableHead class="min-w-[220px] px-6 py-3">{{ t('siteConnections.columns.name') }}</TableHead>
+            <TableHead class="min-w-[280px] px-6 py-3">{{ t('siteConnections.columns.baseUrl') }}</TableHead>
+            <TableHead class="min-w-[140px] px-6 py-3">{{ t('siteConnections.columns.protocol') }}</TableHead>
+            <TableHead class="min-w-[120px] px-6 py-3">{{ t('siteConnections.columns.status') }}</TableHead>
+            <TableHead class="min-w-[180px] px-6 py-3">{{ t('siteConnections.columns.lastPing') }}</TableHead>
+            <TableHead class="min-w-[240px] px-6 py-3 text-right">{{ t('siteConnections.columns.actions') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody class="divide-y divide-border">
@@ -272,10 +272,10 @@ onMounted(() => {
             <TableCell class="px-6 py-4">
               <IdCell :value="conn.id" />
             </TableCell>
-            <TableCell class="px-6 py-4 font-medium text-foreground">{{ conn.name }}</TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground font-mono">{{ conn.base_url }}</TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ conn.protocol }}</TableCell>
-            <TableCell class="px-6 py-4">
+            <TableCell class="min-w-[220px] px-6 py-4 font-medium text-foreground break-words">{{ conn.name }}</TableCell>
+            <TableCell class="min-w-[280px] px-6 py-4 text-xs text-muted-foreground font-mono break-all">{{ conn.base_url }}</TableCell>
+            <TableCell class="min-w-[140px] px-6 py-4 text-xs text-muted-foreground break-words">{{ conn.protocol }}</TableCell>
+            <TableCell class="min-w-[120px] px-6 py-4">
               <span
                 class="inline-flex rounded-full border px-2.5 py-1 text-xs"
                 :class="statusBadgeClass(conn.status)"
@@ -283,8 +283,8 @@ onMounted(() => {
                 {{ statusLabel(conn.status) }}
               </span>
             </TableCell>
-            <TableCell class="px-6 py-4 text-xs text-muted-foreground">{{ formatTime(conn.last_ping_at) }}</TableCell>
-            <TableCell class="px-6 py-4 text-right">
+            <TableCell class="min-w-[180px] px-6 py-4 text-xs text-muted-foreground">{{ formatTime(conn.last_ping_at) }}</TableCell>
+            <TableCell class="min-w-[240px] px-6 py-4 text-right">
               <div class="flex flex-wrap items-center justify-end gap-2">
                 <Button size="sm" variant="outline" @click="openEditModal(conn)">{{ t('admin.common.edit') }}</Button>
                 <Button
@@ -323,7 +323,7 @@ onMounted(() => {
     </div>
 
     <Dialog v-model:open="showModal" @update:open="(value: boolean) => { if (!value) closeModal() }">
-      <DialogScrollContent class="w-full max-w-2xl" @interact-outside="(e: Event) => e.preventDefault()">
+      <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-2xl p-4 sm:p-6" @interact-outside="(e: Event) => e.preventDefault()">
         <DialogHeader>
           <DialogTitle>{{ isEditing ? t('siteConnections.editTitle') : t('siteConnections.createTitle') }}</DialogTitle>
         </DialogHeader>
@@ -374,9 +374,9 @@ onMounted(() => {
             </div>
           </div>
 
-          <div class="flex justify-end gap-3 border-t border-border pt-6">
-            <Button type="button" variant="outline" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
-            <Button type="submit">{{ isEditing ? t('admin.common.save') : t('admin.common.create') }}</Button>
+          <div class="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:justify-end">
+            <Button type="button" variant="outline" class="w-full sm:w-auto" @click="closeModal">{{ t('admin.common.cancel') }}</Button>
+            <Button type="submit" class="w-full sm:w-auto">{{ isEditing ? t('admin.common.save') : t('admin.common.create') }}</Button>
           </div>
         </form>
       </DialogScrollContent>

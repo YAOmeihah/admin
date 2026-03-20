@@ -40,7 +40,7 @@ import {
   Send,
   Crown,
 } from 'lucide-vue-next'
-import { Menu, X } from 'lucide-vue-next'
+import { Menu } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -699,8 +699,10 @@ onMounted(() => {
             </Button>
           </div>
         </header>
-        <main class="px-4 md:px-8 py-4 md:py-6 flex-1">
-          <RouterView />
+        <main class="min-w-0 flex-1 overflow-x-hidden px-4 py-4 md:px-8 md:py-6">
+          <div class="min-w-0">
+            <RouterView />
+          </div>
         </main>
       </div>
     </div>

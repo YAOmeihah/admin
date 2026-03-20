@@ -171,7 +171,7 @@ onMounted(() => fetchCredentials())
     <!-- Filters -->
     <div class="flex flex-wrap gap-3 items-center">
       <Select v-model="filterStatus" @update:model-value="fetchCredentials(1)">
-        <SelectTrigger class="w-[160px]">
+        <SelectTrigger class="w-full sm:w-[160px]">
           <SelectValue :placeholder="t('apiCredentials.filters.statusPlaceholder')" />
         </SelectTrigger>
         <SelectContent>
@@ -182,7 +182,7 @@ onMounted(() => fetchCredentials())
       </Select>
       <Input
         v-model="searchQuery"
-        class="w-[240px]"
+        class="w-full sm:w-[240px]"
         :placeholder="t('apiCredentials.filters.searchPlaceholder')"
         @update:modelValue="debouncedSearch"
         @keyup.enter="handleSearch"
@@ -193,18 +193,18 @@ onMounted(() => fetchCredentials())
     </div>
 
     <!-- Table -->
-    <div class="rounded-md border">
-      <Table>
+    <div class="rounded-md border overflow-x-auto">
+      <Table class="min-w-[1180px]">
         <TableHeader>
           <TableRow>
             <TableHead>{{ t('apiCredentials.columns.id') }}</TableHead>
-            <TableHead>{{ t('apiCredentials.columns.user') }}</TableHead>
-            <TableHead>{{ t('apiCredentials.columns.apiKey') }}</TableHead>
-            <TableHead>{{ t('apiCredentials.columns.status') }}</TableHead>
-            <TableHead>{{ t('apiCredentials.columns.isActive') }}</TableHead>
-            <TableHead>{{ t('apiCredentials.columns.lastUsedAt') }}</TableHead>
-            <TableHead>{{ t('apiCredentials.columns.createdAt') }}</TableHead>
-            <TableHead>{{ t('apiCredentials.columns.actions') }}</TableHead>
+            <TableHead class="min-w-[240px]">{{ t('apiCredentials.columns.user') }}</TableHead>
+            <TableHead class="min-w-[260px]">{{ t('apiCredentials.columns.apiKey') }}</TableHead>
+            <TableHead class="min-w-[140px]">{{ t('apiCredentials.columns.status') }}</TableHead>
+            <TableHead class="min-w-[120px]">{{ t('apiCredentials.columns.isActive') }}</TableHead>
+            <TableHead class="min-w-[180px]">{{ t('apiCredentials.columns.lastUsedAt') }}</TableHead>
+            <TableHead class="min-w-[180px]">{{ t('apiCredentials.columns.createdAt') }}</TableHead>
+            <TableHead class="min-w-[220px]">{{ t('apiCredentials.columns.actions') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -218,27 +218,27 @@ onMounted(() => fetchCredentials())
           </TableRow>
           <TableRow v-for="cred in credentials" :key="cred.id">
             <TableCell><IdCell :value="cred.id" /></TableCell>
-            <TableCell>
+            <TableCell class="min-w-[240px]">
               <div class="text-sm">
-                <div class="font-medium">{{ cred.user?.display_name || '-' }}</div>
-                <div class="text-xs text-muted-foreground">{{ cred.user?.email || '-' }}</div>
+                <div class="break-words font-medium">{{ cred.user?.display_name || '-' }}</div>
+                <div class="break-all text-xs text-muted-foreground">{{ cred.user?.email || '-' }}</div>
                 <div class="text-xs text-muted-foreground">ID: {{ cred.user_id }}</div>
               </div>
             </TableCell>
-            <TableCell class="font-mono text-xs max-w-[200px] truncate">{{ cred.api_key || '-' }}</TableCell>
-            <TableCell>
+            <TableCell class="min-w-[260px] font-mono text-xs"><div class="break-all">{{ cred.api_key || '-' }}</div></TableCell>
+            <TableCell class="min-w-[140px]">
               <Badge :variant="statusVariant(cred.status)">
                 {{ t(`apiCredentials.status.${cred.status}`, cred.status) }}
               </Badge>
             </TableCell>
-            <TableCell>
+            <TableCell class="min-w-[120px]">
               <Badge :variant="cred.is_active ? 'default' : 'outline'">
                 {{ cred.is_active ? 'ON' : 'OFF' }}
               </Badge>
             </TableCell>
-            <TableCell class="text-xs">{{ formatDate(cred.last_used_at) }}</TableCell>
-            <TableCell class="text-xs">{{ formatDate(cred.created_at) }}</TableCell>
-            <TableCell>
+            <TableCell class="min-w-[180px] text-xs">{{ formatDate(cred.last_used_at) }}</TableCell>
+            <TableCell class="min-w-[180px] text-xs">{{ formatDate(cred.created_at) }}</TableCell>
+            <TableCell class="min-w-[220px]">
               <div class="flex flex-wrap gap-1">
                 <Button size="xs" variant="outline" @click="openDetail(cred)">
                   {{ t('apiCredentials.actions.detail') }}
@@ -300,12 +300,12 @@ onMounted(() => fetchCredentials())
 
     <!-- Detail Dialog -->
     <Dialog v-model:open="showDetail">
-      <DialogScrollContent class="max-w-lg">
+      <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-lg p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>{{ t('apiCredentials.detail.title') }}</DialogTitle>
         </DialogHeader>
         <div v-if="detailCred" class="space-y-3 text-sm">
-          <div class="grid grid-cols-[120px_1fr] gap-y-2">
+          <div class="grid grid-cols-1 gap-y-2 sm:grid-cols-[120px_1fr]">
             <span class="text-muted-foreground">{{ t('apiCredentials.columns.id') }}</span>
             <span>{{ detailCred.id }}</span>
             <span class="text-muted-foreground">{{ t('apiCredentials.columns.user') }}</span>
@@ -339,7 +339,7 @@ onMounted(() => fetchCredentials())
 
     <!-- Reject Dialog -->
     <Dialog v-model:open="showReject">
-      <DialogScrollContent class="max-w-md">
+      <DialogScrollContent class="w-[calc(100vw-1rem)] max-w-md p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>{{ t('apiCredentials.reject.title') }}</DialogTitle>
         </DialogHeader>
@@ -348,9 +348,9 @@ onMounted(() => fetchCredentials())
             <Label>{{ t('apiCredentials.reject.reasonLabel') }}</Label>
             <Input v-model="rejectReason" :placeholder="t('apiCredentials.reject.reasonPlaceholder')" />
           </div>
-          <div class="flex justify-end gap-2">
-            <Button variant="outline" @click="showReject = false">Cancel</Button>
-            <Button variant="destructive" :disabled="!rejectReason.trim()" @click="handleReject">
+          <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button variant="outline" class="w-full sm:w-auto" @click="showReject = false">Cancel</Button>
+            <Button variant="destructive" class="w-full sm:w-auto" :disabled="!rejectReason.trim()" @click="handleReject">
               {{ t('apiCredentials.actions.reject') }}
             </Button>
           </div>
