@@ -26,6 +26,7 @@ const showModal = ref(false)
 const isEditing = ref(false)
 const currentLang = ref('zh-CN')
 const fileInput = ref<HTMLInputElement | null>(null)
+const mobileFileInput = ref<HTMLInputElement | null>(null)
 
 const languages = computed(() => [
   { code: 'zh-CN', name: t('admin.common.lang.zhCN') },
@@ -284,20 +285,34 @@ const triggerFileInput = () => {
   fileInput.value?.click()
 }
 
-const handleFileChange = async (event: Event) => {
-  const file = (event.target as HTMLInputElement).files?.[0]
-  if (!file) return
+const triggerMobileFileInput = () => {
+  mobileFileInput.value?.click()
+}
+
+const uploadBannerImage = async (file: File, target: 'image' | 'mobile_image') => {
   uploading.value = true
   try {
     const formData = new FormData()
     formData.append('file', file)
     const res = await adminAPI.upload(formData, 'banner')
-    form.image = (res.data.data as Record<string, string>)?.url || ''
+    form[target] = (res.data.data as Record<string, string>)?.url || ''
   } catch {
     notifyError(t('admin.banners.errors.uploadFailed'))
   } finally {
     uploading.value = false
   }
+}
+
+const handleFileChange = async (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  await uploadBannerImage(file, 'image')
+}
+
+const handleMobileFileChange = async (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  await uploadBannerImage(file, 'mobile_image')
 }
 
 const openEditById = async (rawId: unknown) => {
@@ -497,7 +512,18 @@ watch(
 
             <div class="md:col-span-2">
               <label class="mb-1.5 block text-xs font-medium text-muted-foreground">{{ t('admin.banners.form.mobileImage') }}</label>
-              <Input v-model="form.mobile_image" :placeholder="t('admin.banners.form.mobileImagePlaceholder')" />
+              <div
+                class="cursor-pointer rounded-lg border border-dashed border-border p-4 text-center hover:border-primary"
+                @click="triggerMobileFileInput"
+              >
+                <input ref="mobileFileInput" type="file" class="hidden" accept="image/*" @change="handleMobileFileChange" />
+                <div v-if="form.mobile_image" class="space-y-2">
+                  <img :src="getImageUrl(form.mobile_image)" class="mx-auto h-36 rounded-lg object-cover" />
+                  <div class="text-xs text-muted-foreground">{{ uploading ? t('admin.common.loading') : t('admin.banners.form.imageReplaceTip') }}</div>
+                </div>
+                <div v-else class="text-sm text-muted-foreground">{{ t('admin.banners.form.imageUploadHint') }}</div>
+              </div>
+              <Input v-model="form.mobile_image" class="mt-2" :placeholder="t('admin.banners.form.mobileImagePlaceholder')" />
             </div>
 
             <div>
