@@ -93,6 +93,8 @@ const paypalConfig = reactive({
   webhook_id: '',
   brand_name: '',
   locale: '',
+  target_currency: '',
+  exchange_rate: '',
 })
 
 const stripeConfig = reactive({
@@ -283,6 +285,8 @@ const resetPaypalConfig = () => {
   paypalConfig.webhook_id = ''
   paypalConfig.brand_name = ''
   paypalConfig.locale = ''
+  paypalConfig.target_currency = ''
+  paypalConfig.exchange_rate = ''
 }
 
 const resetStripeConfig = () => {
@@ -382,6 +386,8 @@ const applyPaypalConfig = (raw: Record<string, unknown>) => {
   paypalConfig.webhook_id = String(raw.webhook_id || '')
   paypalConfig.brand_name = String(raw.brand_name || '')
   paypalConfig.locale = String(raw.locale || '')
+  paypalConfig.target_currency = String(raw.target_currency || '')
+  paypalConfig.exchange_rate = String(raw.exchange_rate || '')
 }
 
 const applyStripeConfig = (raw: Record<string, unknown>) => {
@@ -490,6 +496,8 @@ const buildPaypalConfig = () => {
   setIfNotEmpty('webhook_id', paypalConfig.webhook_id)
   setIfNotEmpty('brand_name', paypalConfig.brand_name)
   setIfNotEmpty('locale', paypalConfig.locale)
+  setIfNotEmpty('target_currency', paypalConfig.target_currency)
+  setIfNotEmpty('exchange_rate', paypalConfig.exchange_rate)
   return config
 }
 
@@ -1003,6 +1011,14 @@ const closeModal = () => {
             <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.paypalLocale') }}</label>
               <Input v-model="paypalConfig.locale" :placeholder="t('admin.paymentChannels.modal.paypalLocalePlaceholder')" />
+            </div>
+            <div class="min-w-0">
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.paypalTargetCurrency') }}</label>
+              <Input v-model="paypalConfig.target_currency" :placeholder="t('admin.paymentChannels.modal.paypalTargetCurrencyPlaceholder')" />
+            </div>
+            <div class="min-w-0">
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.paypalExchangeRate') }}</label>
+              <Input v-model="paypalConfig.exchange_rate" :placeholder="t('admin.paymentChannels.modal.paypalExchangeRatePlaceholder')" />
             </div>
           </div>
           <div class="mt-3 text-xs text-muted-foreground">{{ t('admin.paymentChannels.modal.paypalHint') }}</div>
