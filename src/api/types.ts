@@ -58,6 +58,7 @@ export interface AdminProduct {
   purchase_type: string
   max_purchase_quantity: number
   fulfillment_type: string
+  requires_shipping_address: boolean
   manual_form_schema: Record<string, unknown> | null
   manual_stock_total: number
   manual_stock_locked: number
@@ -166,6 +167,7 @@ export interface AdminOrder {
   payments?: AdminPayment[]
   user_display_name?: string
   user_email?: string
+  shipping_address?: Record<string, unknown>
 }
 
 export interface AdminUserOAuthIdentity {

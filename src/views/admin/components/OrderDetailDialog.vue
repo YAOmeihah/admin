@@ -288,6 +288,22 @@ const manualSubmissionRows = (
   return rows
 }
 
+const shippingAddressRows = (order: AdminOrder | null) => {
+  const address = order?.shipping_address
+  if (!address || typeof address !== 'object') return []
+  const region = [address.province, address.city, address.district]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean)
+    .join(' ')
+  return [
+    { key: 'receiver_name', label: t('admin.orders.shippingReceiverName'), value: String(address.receiver_name || '-') },
+    { key: 'receiver_phone', label: t('admin.orders.shippingReceiverPhone'), value: String(address.receiver_phone || '-') },
+    { key: 'region', label: t('admin.orders.shippingRegion'), value: region || '-' },
+    { key: 'detail_address', label: t('admin.orders.shippingDetailAddress'), value: String(address.detail_address || '-') },
+    { key: 'postal_code', label: t('admin.orders.shippingPostalCode'), value: String(address.postal_code || '-') },
+  ]
+}
+
 const parseOrderItemSkuId = (item: AdminOrderItem & Record<string, unknown>) => {
   const snapshot = item?.sku_snapshot as Record<string, unknown> | undefined
   const value = Number(item?.sku_id || snapshot?.sku_id || 0)
@@ -733,6 +749,16 @@ watch(
                   <div class="text-amber-700 font-mono mt-1">{{ formatMoney(selectedOrder.member_discount_amount, selectedOrder.currency) }}</div>
                 </CardContent>
               </Card>
+            </div>
+          </div>
+
+          <div v-if="shippingAddressRows(selectedOrder).length" class="rounded-xl border border-border bg-muted/20 p-4">
+            <h3 class="text-sm font-semibold text-foreground mb-3">{{ t('admin.orders.shippingTitle') }}</h3>
+            <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+              <div v-for="row in shippingAddressRows(selectedOrder)" :key="row.key" class="rounded-lg border border-border bg-background p-3">
+                <div class="text-xs text-muted-foreground">{{ row.label }}</div>
+                <div class="mt-1 break-words text-foreground">{{ row.value }}</div>
+              </div>
             </div>
           </div>
 

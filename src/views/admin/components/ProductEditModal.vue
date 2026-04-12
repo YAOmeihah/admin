@@ -149,6 +149,7 @@ const form = reactive({
   purchase_type: 'member',
   max_purchase_quantity: '' as number | '',
   fulfillment_type: 'manual',
+  requires_shipping_address: false,
   manual_stock_total: 0,
   skus: [] as SKUFormItem[],
   category_id: null as number | null,
@@ -480,6 +481,7 @@ const resetForm = () => {
     purchase_type: 'member',
     max_purchase_quantity: '',
     fulfillment_type: 'manual',
+    requires_shipping_address: false,
     manual_stock_total: 0,
     skus: [],
     category_id: null,
@@ -525,6 +527,7 @@ const populateForm = (product: AdminProduct) => {
     purchase_type: product.purchase_type || 'member',
     max_purchase_quantity: Number(product.max_purchase_quantity || 0) > 0 ? Math.floor(Number(product.max_purchase_quantity || 0)) : '',
     fulfillment_type: product.fulfillment_type || 'manual',
+    requires_shipping_address: Boolean(product.requires_shipping_address),
     manual_stock_total: resolveManualStockMetrics(product).total,
     skus: Array.isArray(product.skus) ? product.skus.map((item: AdminProductSKU) => createSKUFormItem(item)) : [],
     category_id: Number(product.category_id || 0) || null,
@@ -587,6 +590,7 @@ const handleSubmit = async () => {
         ? Math.floor(normalizedMaxPurchaseQuantity)
         : 0,
       fulfillment_type: form.fulfillment_type,
+      requires_shipping_address: form.requires_shipping_address,
       manual_stock_total: effectiveManualStockTotal,
       skus: normalizedSKUs,
       payment_channel_ids: form.payment_channel_ids.length > 0 ? form.payment_channel_ids : [],
@@ -786,6 +790,17 @@ watch(
               </SelectContent>
             </Select>
             <p v-if="editingIsMapped" class="mt-1 text-xs text-indigo-600">{{ t('admin.products.mappedFulfillmentLocked') }}</p>
+          </div>
+
+          <div class="col-span-1">
+            <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.products.form.shippingAddressMode') }}</label>
+            <div class="rounded-lg border border-border bg-muted/20 p-3">
+              <label class="inline-flex items-center gap-2">
+                <input v-model="form.requires_shipping_address" type="checkbox" class="h-4 w-4 accent-primary" />
+                <span class="text-sm text-muted-foreground select-none">{{ t('admin.products.form.requiresShippingAddress') }}</span>
+              </label>
+              <p class="mt-2 text-xs text-muted-foreground">{{ t('admin.products.form.requiresShippingAddressTip') }}</p>
+            </div>
           </div>
 
           <div class="col-span-1">
