@@ -27,6 +27,7 @@ const props = defineProps<{
   modelValue: boolean
   order: AdminOrder | null
   siteCurrency: string
+  maxRefundDays: number
 }>()
 
 const emit = defineEmits<{
@@ -381,6 +382,28 @@ const isPaidOrder = (order: AdminOrder | null) => {
   return Boolean(order.paid_at)
 }
 
+const normalizedMaxRefundDays = () => {
+  const parsed = Number(props.maxRefundDays)
+  if (!Number.isFinite(parsed)) return 30
+  const normalized = Math.trunc(parsed)
+  if (normalized < 0) return 30
+  if (normalized > 3650) return 3650
+  return normalized
+}
+
+const isOrderRefundWindowExpired = (order: AdminOrder | null) => {
+  if (!order || !isPaidOrder(order)) return false
+  if (normalizedMaxRefundDays() === 0) return false
+  const baseAtRaw = order.paid_at || order.created_at
+  if (!baseAtRaw) return false
+  const baseAtMs = Date.parse(baseAtRaw)
+  if (Number.isNaN(baseAtMs)) return false
+  const nowMs = Date.now()
+  if (!Number.isFinite(nowMs) || nowMs <= baseAtMs) return false
+  const diffDays = (nowMs - baseAtMs) / (1000 * 60 * 60 * 24)
+  return diffDays > normalizedMaxRefundDays()
+}
+
 const refundableAmountValue = (order: AdminOrder | null) => {
   if (!order) return 0
   if (!isPaidOrder(order)) return 0
@@ -397,12 +420,14 @@ const canRefundToWallet = (order: AdminOrder | null) => {
   if (!order) return false
   if (!order.user_id) return false
   if (!isPaidOrder(order)) return false
+  if (isOrderRefundWindowExpired(order)) return false
   return refundableAmountValue(order) > 0
 }
 
 const canManualRefund = (order: AdminOrder | null) => {
   if (!order) return false
   if (!isPaidOrder(order)) return false
+  if (isOrderRefundWindowExpired(order)) return false
   return refundableAmountValue(order) > 0
 }
 
@@ -410,6 +435,7 @@ const shouldShowRefundCard = (order: AdminOrder | null) => {
   if (!order) return false
   if (!isPaidOrder(order)) return false
   if (order.status === 'canceled') return false
+  if (isOrderRefundWindowExpired(order)) return false
   return true
 }
 
@@ -961,10 +987,9 @@ watch(
                   class="ml-1 inline-flex rounded-full border px-2 py-0.5 text-xs"
                   :class="{
                     'text-yellow-700 border-yellow-200 bg-yellow-50': procurementOrder.status === 'pending',
-                    'text-blue-700 border-blue-200 bg-blue-50': ['submitted', 'accepted'].includes(procurementOrder.status),
+                    'text-blue-700 border-blue-200 bg-blue-50': ['submitted', 'accepted', 'refunded'].includes(procurementOrder.status),
                     'text-emerald-700 border-emerald-200 bg-emerald-50': ['fulfilled', 'completed'].includes(procurementOrder.status),
                     'text-orange-700 border-orange-200 bg-orange-50': procurementOrder.status === 'partially_refunded',
-                    'text-rose-700 border-rose-200 bg-rose-50': procurementOrder.status === 'refunded',
                     'text-red-700 border-red-200 bg-red-50': ['failed', 'rejected'].includes(procurementOrder.status),
                     'text-muted-foreground border-border bg-muted/30': procurementOrder.status === 'canceled',
                   }"
