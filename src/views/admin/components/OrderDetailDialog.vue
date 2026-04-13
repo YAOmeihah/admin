@@ -291,7 +291,7 @@ const manualSubmissionRows = (
 const shippingAddressRows = (order: AdminOrder | null) => {
   const address = order?.shipping_address
   if (!address || typeof address !== 'object') return []
-  const region = [address.province, address.city, address.district]
+  const region = [address.province, address.city, address.district, address.township, address.village]
     .map((value) => String(value || '').trim())
     .filter(Boolean)
     .join(' ')
@@ -300,7 +300,6 @@ const shippingAddressRows = (order: AdminOrder | null) => {
     { key: 'receiver_phone', label: t('admin.orders.shippingReceiverPhone'), value: String(address.receiver_phone || '-') },
     { key: 'region', label: t('admin.orders.shippingRegion'), value: region || '-' },
     { key: 'detail_address', label: t('admin.orders.shippingDetailAddress'), value: String(address.detail_address || '-') },
-    { key: 'postal_code', label: t('admin.orders.shippingPostalCode'), value: String(address.postal_code || '-') },
   ]
 }
 
