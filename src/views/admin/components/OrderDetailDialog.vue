@@ -291,7 +291,7 @@ const manualSubmissionRows = (
 const shippingAddressRows = (order: AdminOrder | null) => {
   const address = order?.shipping_address
   if (!address || typeof address !== 'object') return []
-  const region = [address.province, address.city, address.district, address.township, address.village]
+  const region = [address.province, address.city, address.district, address.township]
     .map((value) => String(value || '').trim())
     .filter(Boolean)
     .join(' ')
