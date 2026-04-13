@@ -138,6 +138,7 @@ export interface AdminOrder {
   order_no: string
   parent_id?: number
   user_id: number
+  guest_phone?: string
   guest_email?: string
   guest_locale?: string
   status: string

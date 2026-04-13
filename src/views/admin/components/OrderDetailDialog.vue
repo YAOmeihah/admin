@@ -655,7 +655,10 @@ watch(
                       #{{ selectedOrder.user_id }}
                     </a>
                   </span>
-                  <span v-else class="break-all">{{ t('admin.orders.guestLabel') }}: {{ selectedOrder.guest_email || '-' }}</span>
+                  <span v-else class="space-y-1">
+                    <div class="break-all">{{ t('admin.orders.guestPhoneLabel') }}: {{ selectedOrder.guest_phone || '-' }}</div>
+                    <div class="break-all">{{ t('admin.orders.guestEmailLabel') }}: {{ selectedOrder.guest_email || '-' }}</div>
+                  </span>
                 </div>
               </CardContent>
             </Card>

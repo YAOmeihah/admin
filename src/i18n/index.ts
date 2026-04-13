@@ -747,7 +747,7 @@ const messages = {
         filterUserId: '用户ID',
         filterUserKeyword: '用户邮箱 / 昵称 / 第三方账号',
         filterOrderNo: '订单号',
-        filterGuestEmail: '游客邮箱',
+        filterGuestPhone: '游客手机号',
         filterProductKeyword: '商品名称',
         filterCreatedRange: '创建时间',
         filterCreatedFrom: '开始时间',
@@ -774,6 +774,8 @@ const messages = {
         },
         userLabel: '用户',
         guestLabel: '游客',
+        guestPhoneLabel: '游客手机号',
+        guestEmailLabel: '游客邮箱',
         update: '更新状态',
         view: '查看详情',
         markCompleted: '标记完成',
@@ -2210,10 +2212,10 @@ const messages = {
           enabledHint: '开启后，系统将对下单行为进行风控检查。',
           pendingLimits: {
             title: '并发待支付订单限制',
-            subtitle: '限制同一用户/IP/游客邮箱的最大待支付订单数量，防止恶意占库存。设为 0 表示不限制。',
+            subtitle: '限制同一用户/IP/游客手机号的最大待支付订单数量，防止恶意占库存。设为 0 表示不限制。',
             perUser: '每用户最大待支付订单数',
             perIP: '每 IP 最大待支付订单数',
-            perGuestEmail: '每游客邮箱最大待支付订单数',
+            perGuestPhone: '每游客手机号最大待支付订单数',
           },
           rateLimit: {
             title: '下单频率限制',
@@ -2231,10 +2233,10 @@ const messages = {
             subtitle: '被封禁的 IP 将无法下单。每行填写一个 IP 地址，支持 CIDR 格式（如 1.2.3.0/24）。',
             placeholder: '每行一个 IP 地址，例如：\n1.2.3.4\n5.6.7.0/24',
           },
-          emailBlacklist: {
-            title: '邮箱黑名单',
-            subtitle: '被封禁的邮箱将无法以游客身份下单。每行填写一个邮箱地址。',
-            placeholder: '每行一个邮箱地址，例如：\nspam@example.com',
+          phoneBlacklist: {
+            title: '手机号黑名单',
+            subtitle: '被封禁的手机号将无法以游客身份下单。每行填写一个手机号。',
+            placeholder: '每行一个手机号，例如：\n+8613800138000',
           },
         },
         callbackRoutes: {
@@ -3887,7 +3889,7 @@ const messages = {
         filterUserId: '用戶ID',
         filterUserKeyword: '用戶信箱 / 暱稱 / 第三方帳號',
         filterOrderNo: '訂單號',
-        filterGuestEmail: '訪客信箱',
+        filterGuestPhone: '訪客手機號',
         filterProductKeyword: '商品名稱',
         filterCreatedRange: '建立時間',
         filterCreatedFrom: '開始時間',
@@ -3914,6 +3916,8 @@ const messages = {
         },
         userLabel: '用戶',
         guestLabel: '訪客',
+        guestPhoneLabel: '訪客手機號',
+        guestEmailLabel: '訪客信箱',
         update: '更新狀態',
         view: '查看詳情',
         markCompleted: '標記完成',
@@ -5350,10 +5354,10 @@ const messages = {
           enabledHint: '開啟後，系統將對下單行為進行風控檢查。',
           pendingLimits: {
             title: '並發待支付訂單限制',
-            subtitle: '限制同一用戶/IP/遊客郵箱的最大待支付訂單數量，防止惡意佔庫存。設為 0 表示不限制。',
+            subtitle: '限制同一用戶/IP/遊客手機號的最大待支付訂單數量，防止惡意佔庫存。設為 0 表示不限制。',
             perUser: '每用戶最大待支付訂單數',
             perIP: '每 IP 最大待支付訂單數',
-            perGuestEmail: '每遊客郵箱最大待支付訂單數',
+            perGuestPhone: '每遊客手機號最大待支付訂單數',
           },
           rateLimit: {
             title: '下單頻率限制',
@@ -5371,10 +5375,10 @@ const messages = {
             subtitle: '被封禁的 IP 將無法下單。每行填寫一個 IP 地址，支援 CIDR 格式（如 1.2.3.0/24）。',
             placeholder: '每行一個 IP 地址，例如：\n1.2.3.4\n5.6.7.0/24',
           },
-          emailBlacklist: {
-            title: '郵箱黑名單',
-            subtitle: '被封禁的郵箱將無法以遊客身份下單。每行填寫一個郵箱地址。',
-            placeholder: '每行一個郵箱地址，例如：\nspam@example.com',
+          phoneBlacklist: {
+            title: '手機號黑名單',
+            subtitle: '被封禁的手機號將無法以遊客身份下單。每行填寫一個手機號。',
+            placeholder: '每行一個手機號，例如：\n+8613800138000',
           },
         },
         callbackRoutes: {
@@ -7027,7 +7031,7 @@ const messages = {
         filterUserId: 'User ID',
         filterUserKeyword: 'User email / nickname / third-party account',
         filterOrderNo: 'Order No',
-        filterGuestEmail: 'Guest Email',
+        filterGuestPhone: 'Guest Phone',
         filterProductKeyword: 'Product Name',
         filterCreatedRange: 'Created Range',
         filterCreatedFrom: 'From',
@@ -7054,6 +7058,8 @@ const messages = {
         },
         userLabel: 'User',
         guestLabel: 'Guest',
+        guestPhoneLabel: 'Guest Phone',
+        guestEmailLabel: 'Guest Email',
         update: 'Update',
         view: 'View',
         markCompleted: 'Complete',
@@ -8490,10 +8496,10 @@ const messages = {
           enabledHint: 'When enabled, the system will perform risk checks on order placement.',
           pendingLimits: {
             title: 'Concurrent Pending Order Limits',
-            subtitle: 'Limit the maximum number of pending orders per user/IP/guest email to prevent inventory hoarding. Set to 0 for no limit.',
+            subtitle: 'Limit the maximum number of pending orders per user/IP/guest phone to prevent inventory hoarding. Set to 0 for no limit.',
             perUser: 'Max pending orders per user',
             perIP: 'Max pending orders per IP',
-            perGuestEmail: 'Max pending orders per guest email',
+            perGuestPhone: 'Max pending orders per guest phone',
           },
           rateLimit: {
             title: 'Order Rate Limit',
@@ -8511,10 +8517,10 @@ const messages = {
             subtitle: 'Blocked IPs will not be able to place orders. Enter one IP per line. CIDR notation supported (e.g. 1.2.3.0/24).',
             placeholder: 'One IP per line, e.g.:\n1.2.3.4\n5.6.7.0/24',
           },
-          emailBlacklist: {
-            title: 'Email Blacklist',
-            subtitle: 'Blocked emails will not be able to place guest orders. Enter one email per line.',
-            placeholder: 'One email per line, e.g.:\nspam@example.com',
+          phoneBlacklist: {
+            title: 'Phone Blacklist',
+            subtitle: 'Blocked phone numbers will not be able to place guest orders. Enter one phone number per line.',
+            placeholder: 'One phone number per line, e.g.:\n+8613800138000',
           },
         },
         callbackRoutes: {

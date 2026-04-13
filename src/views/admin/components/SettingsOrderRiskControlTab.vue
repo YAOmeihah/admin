@@ -15,7 +15,7 @@ const form = reactive({
   enabled: false,
   max_pending_orders_per_user: 3,
   max_pending_orders_per_ip: 5,
-  max_pending_orders_per_guest_email: 2,
+  max_pending_orders_per_guest_phone: 2,
   order_rate_limit: {
     enabled: false,
     window_seconds: 60,
@@ -23,7 +23,7 @@ const form = reactive({
     block_seconds: 120,
   },
   ip_blacklist_text: '',
-  email_blacklist_text: '',
+  phone_blacklist_text: '',
 })
 
 const loadConfig = async () => {
@@ -35,7 +35,7 @@ const loadConfig = async () => {
       form.enabled = !!data.enabled
       form.max_pending_orders_per_user = data.max_pending_orders_per_user != null ? Number(data.max_pending_orders_per_user) : 3
       form.max_pending_orders_per_ip = data.max_pending_orders_per_ip != null ? Number(data.max_pending_orders_per_ip) : 5
-      form.max_pending_orders_per_guest_email = data.max_pending_orders_per_guest_email != null ? Number(data.max_pending_orders_per_guest_email) : 2
+      form.max_pending_orders_per_guest_phone = data.max_pending_orders_per_guest_phone != null ? Number(data.max_pending_orders_per_guest_phone) : 2
       const rl = data.order_rate_limit as Record<string, unknown> | undefined
       if (rl) {
         form.order_rate_limit.enabled = !!rl.enabled
@@ -45,8 +45,8 @@ const loadConfig = async () => {
       }
       const ipList = data.ip_blacklist as string[] | undefined
       form.ip_blacklist_text = ipList?.join('\n') || ''
-      const emailList = data.email_blacklist as string[] | undefined
-      form.email_blacklist_text = emailList?.join('\n') || ''
+      const phoneList = data.phone_blacklist as string[] | undefined
+      form.phone_blacklist_text = phoneList?.join('\n') || ''
     }
   } catch {
     // ignore load error, use defaults
@@ -62,9 +62,9 @@ const save = async () => {
       .split('\n')
       .map((s: string) => s.trim())
       .filter((s: string) => s.length > 0)
-    const emailBlacklist = form.email_blacklist_text
+    const phoneBlacklist = form.phone_blacklist_text
       .split('\n')
-      .map((s: string) => s.trim().toLowerCase())
+      .map((s: string) => s.trim())
       .filter((s: string) => s.length > 0)
 
     await adminAPI.updateSettings({
@@ -73,7 +73,7 @@ const save = async () => {
         enabled: form.enabled,
         max_pending_orders_per_user: Number(form.max_pending_orders_per_user),
         max_pending_orders_per_ip: Number(form.max_pending_orders_per_ip),
-        max_pending_orders_per_guest_email: Number(form.max_pending_orders_per_guest_email),
+        max_pending_orders_per_guest_phone: Number(form.max_pending_orders_per_guest_phone),
         order_rate_limit: {
           enabled: form.order_rate_limit.enabled,
           window_seconds: Number(form.order_rate_limit.window_seconds),
@@ -81,7 +81,7 @@ const save = async () => {
           block_seconds: Number(form.order_rate_limit.block_seconds),
         },
         ip_blacklist: ipBlacklist,
-        email_blacklist: emailBlacklist,
+        phone_blacklist: phoneBlacklist,
       },
     })
     notifySuccess(t('admin.settings.alerts.saveSuccess'))
@@ -136,8 +136,8 @@ onMounted(() => {
           <Input v-model.number="form.max_pending_orders_per_ip" type="number" min="0" max="100" />
         </div>
         <div class="space-y-1">
-          <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.orderRiskControl.pendingLimits.perGuestEmail') }}</label>
-          <Input v-model.number="form.max_pending_orders_per_guest_email" type="number" min="0" max="100" />
+          <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.orderRiskControl.pendingLimits.perGuestPhone') }}</label>
+          <Input v-model.number="form.max_pending_orders_per_guest_phone" type="number" min="0" max="100" />
         </div>
       </div>
     </div>
@@ -185,15 +185,15 @@ onMounted(() => {
       />
     </div>
 
-    <!-- 邮箱黑名单 -->
+    <!-- 手机号黑名单 -->
     <div v-show="form.enabled" class="rounded-lg border p-6 space-y-4">
       <div>
-        <h3 class="text-sm font-semibold">{{ t('admin.settings.orderRiskControl.emailBlacklist.title') }}</h3>
-        <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.orderRiskControl.emailBlacklist.subtitle') }}</p>
+        <h3 class="text-sm font-semibold">{{ t('admin.settings.orderRiskControl.phoneBlacklist.title') }}</h3>
+        <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.orderRiskControl.phoneBlacklist.subtitle') }}</p>
       </div>
       <Textarea
-        v-model="form.email_blacklist_text"
-        :placeholder="t('admin.settings.orderRiskControl.emailBlacklist.placeholder')"
+        v-model="form.phone_blacklist_text"
+        :placeholder="t('admin.settings.orderRiskControl.phoneBlacklist.placeholder')"
         rows="5"
         class="font-mono text-sm"
       />

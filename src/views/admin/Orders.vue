@@ -32,7 +32,7 @@ const pagination = ref({
 const jumpPage = ref('')
 const filters = reactive({
   orderNo: '',
-  guestEmail: '',
+  guestPhone: '',
   createdFrom: '',
   createdTo: '',
   status: '',
@@ -84,7 +84,7 @@ const fetchOrders = async (page = 1) => {
       user_id: filters.userId || undefined,
       user_keyword: filters.userKeyword || undefined,
       order_no: filters.orderNo || undefined,
-      guest_email: filters.guestEmail || undefined,
+      guest_phone: filters.guestPhone || undefined,
       product_keyword: filters.productKeyword || undefined,
       created_from: toRFC3339(filters.createdFrom),
       created_to: toRFC3339(filters.createdTo),
@@ -260,7 +260,7 @@ watch(
           <Input v-model="filters.orderNo" :placeholder="t('admin.orders.filterOrderNo')" @update:modelValue="debouncedSearch" />
         </div>
         <div class="w-full md:w-48">
-          <Input v-model="filters.guestEmail" :placeholder="t('admin.orders.filterGuestEmail')" @update:modelValue="debouncedSearch" />
+          <Input v-model="filters.guestPhone" :placeholder="t('admin.orders.filterGuestPhone')" @update:modelValue="debouncedSearch" />
         </div>
         <div class="w-full md:w-48">
           <Input v-model="filters.productKeyword" :placeholder="t('admin.orders.filterProductKeyword')" @update:modelValue="debouncedSearch" />
@@ -382,7 +382,10 @@ watch(
                   </a>
                 </div>
               </div>
-              <div v-else class="break-all">{{ t('admin.orders.guestLabel') }}: {{ order.guest_email || '-' }}</div>
+              <div v-else class="space-y-1">
+                <div class="break-all">{{ t('admin.orders.guestPhoneLabel') }}: {{ order.guest_phone || '-' }}</div>
+                <div class="break-all">{{ t('admin.orders.guestEmailLabel') }}: {{ order.guest_email || '-' }}</div>
+              </div>
             </TableCell>
             <TableCell class="px-4 py-3 text-xs text-muted-foreground hidden xl:table-cell">{{ order.client_ip || '-' }}</TableCell>
             <TableCell class="px-4 py-3 font-mono text-xs text-foreground">{{ formatMoney(order.total_amount, order.currency) }}</TableCell>
