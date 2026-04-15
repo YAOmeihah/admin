@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { adminAPI } from '@/api/admin'
-import type { AdminPaymentChannel } from '@/api/types'
 import RichEditor from '@/components/RichEditor.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,7 +11,6 @@ import SettingsSMTPTab from './components/SettingsSMTPTab.vue'
 import SettingsCaptchaTab from './components/SettingsCaptchaTab.vue'
 import SettingsOrderEmailTemplateTab from './components/SettingsOrderEmailTemplateTab.vue'
 import SettingsNavigationTab from './components/SettingsNavigationTab.vue'
-import SettingsOrderRiskControlTab from './components/SettingsOrderRiskControlTab.vue'
 
 const { t } = useI18n()
 const loading = ref(false)
@@ -20,7 +18,6 @@ const smtpTabRef = ref<InstanceType<typeof SettingsSMTPTab>>()
 const captchaTabRef = ref<InstanceType<typeof SettingsCaptchaTab>>()
 const orderEmailTemplateTabRef = ref<InstanceType<typeof SettingsOrderEmailTemplateTab>>()
 const navigationTabRef = ref<InstanceType<typeof SettingsNavigationTab>>()
-const orderRiskControlTabRef = ref<InstanceType<typeof SettingsOrderRiskControlTab>>()
 const supportedLanguages = ['zh-CN', 'zh-TW', 'en-US'] as const
 type SupportedLanguage = (typeof supportedLanguages)[number]
 type SiteScriptPosition = 'head' | 'body_end'
@@ -38,6 +35,7 @@ const registrationForm = reactive({
   registration_enabled: true,
   email_verification_enabled: true,
 })
+const orderPaymentExpireMinutes = ref(15)
 type FooterLinkItem = {
   name: string
   url: string
@@ -66,9 +64,6 @@ const tabs = computed(() => [
   { label: t('admin.settings.tabs.captcha'), value: 'captcha' },
   { label: t('admin.settings.tabs.telegram'), value: 'telegram' },
   { label: t('admin.settings.tabs.dashboard'), value: 'dashboard' },
-  { label: t('admin.settings.tabs.wallet'), value: 'wallet' },
-  { label: t('admin.settings.tabs.callbackRoutes'), value: 'callback_routes' },
-  { label: t('admin.settings.tabs.orderRiskControl'), value: 'order_risk_control' },
 ])
 
 const fallbackCurrencyOptions = [
@@ -169,6 +164,7 @@ const form = reactive({
     site_description: createLocalizedField(),
   },
   currency: 'CNY',
+  order_max_refund_days: 30,
   contact: {
     telegram: '',
     whatsapp: '',
@@ -291,138 +287,6 @@ const dashboardForm = reactive({
   },
 })
 
-const walletForm = reactive({
-  recharge_channel_ids: [] as number[],
-  wallet_only_payment: false,
-})
-const walletPaymentChannels = ref<AdminPaymentChannel[]>([])
-const walletSaving = ref(false)
-
-// --- 回调路由配置 ---
-const callbackRoutesForm = reactive({
-  payment_callback: '',
-  paypal_webhook: '',
-  stripe_webhook: '',
-  upstream_callback: '',
-})
-const callbackRoutesSaving = ref(false)
-const callbackRoutesLoaded = ref(false)
-
-const loadCallbackRoutes = async () => {
-  try {
-    const res = await adminAPI.getSettings({ key: 'callback_routes_config' })
-    const data = res.data?.data as Record<string, string> | null
-    if (data) {
-      callbackRoutesForm.payment_callback = data.payment_callback || ''
-      callbackRoutesForm.paypal_webhook = data.paypal_webhook || ''
-      callbackRoutesForm.stripe_webhook = data.stripe_webhook || ''
-      callbackRoutesForm.upstream_callback = data.upstream_callback || ''
-    }
-  } catch {
-    // 未配置时保持空值
-  }
-  callbackRoutesLoaded.value = true
-}
-
-const reservedRoutePrefixes = [
-  '/api/v1/public/', '/api/v1/admin/', '/api/v1/auth/',
-  '/api/v1/guest/', '/api/v1/channel/', '/api/v1/upstream/api/', '/api/v1/user/',
-]
-
-const saveCallbackRoutes = async () => {
-  // 验证：非空值必须以 /api/ 开头，且不能与已有路由冲突
-  const fields = [
-    { key: 'payment_callback', value: callbackRoutesForm.payment_callback },
-    { key: 'paypal_webhook', value: callbackRoutesForm.paypal_webhook },
-    { key: 'stripe_webhook', value: callbackRoutesForm.stripe_webhook },
-    { key: 'upstream_callback', value: callbackRoutesForm.upstream_callback },
-  ]
-  const nonEmptyPaths: string[] = []
-  for (const field of fields) {
-    const v = field.value.trim().replace(/\/+$/, '')
-    if (v && !v.startsWith('/api/')) {
-      notifyError(t('admin.settings.callbackRoutes.mustStartWithApi'))
-      return
-    }
-    if (v) {
-      const vSlash = v + '/'
-      if (reservedRoutePrefixes.some(p => vSlash.startsWith(p) || p.startsWith(vSlash))) {
-        notifyError(t('admin.settings.callbackRoutes.conflictWithSystem'))
-        return
-      }
-      if (nonEmptyPaths.includes(v)) {
-        notifyError(t('admin.settings.callbackRoutes.duplicatePath'))
-        return
-      }
-      nonEmptyPaths.push(v)
-    }
-  }
-
-  callbackRoutesSaving.value = true
-  try {
-    await adminAPI.updateSettings({
-      key: 'callback_routes_config',
-      value: {
-        payment_callback: callbackRoutesForm.payment_callback.trim(),
-        paypal_webhook: callbackRoutesForm.paypal_webhook.trim(),
-        stripe_webhook: callbackRoutesForm.stripe_webhook.trim(),
-        upstream_callback: callbackRoutesForm.upstream_callback.trim(),
-      },
-    } as any)
-    notifySuccess(t('admin.settings.saved'))
-  } catch (err: any) {
-    notifyError(err?.message || t('admin.settings.saveFailed'))
-  } finally {
-    callbackRoutesSaving.value = false
-  }
-}
-
-const toggleWalletRechargeChannel = (channelId: number) => {
-  const idx = walletForm.recharge_channel_ids.indexOf(channelId)
-  if (idx >= 0) {
-    walletForm.recharge_channel_ids.splice(idx, 1)
-  } else {
-    walletForm.recharge_channel_ids.push(channelId)
-  }
-}
-
-const loadWalletConfig = async () => {
-  try {
-    const res = await adminAPI.getSettings({ key: 'wallet_config' })
-    const data = res.data?.data
-    if (data && Array.isArray(data.recharge_channel_ids)) {
-      walletForm.recharge_channel_ids = data.recharge_channel_ids.filter((id: unknown) => typeof id === 'number' && id > 0)
-    } else {
-      walletForm.recharge_channel_ids = []
-    }
-    walletForm.wallet_only_payment = !!data?.wallet_only_payment
-  } catch {
-    walletForm.recharge_channel_ids = []
-    walletForm.wallet_only_payment = false
-  }
-}
-
-const loadWalletPaymentChannels = async () => {
-  try {
-    const res = await adminAPI.getPaymentChannels({ page: 1, page_size: 200 })
-    walletPaymentChannels.value = (res.data?.data ?? []).filter((ch: AdminPaymentChannel) => ch.is_active)
-  } catch {
-    walletPaymentChannels.value = []
-  }
-}
-
-const saveWalletConfig = async () => {
-  walletSaving.value = true
-  try {
-    await adminAPI.updateSettings({ key: 'wallet_config', value: { recharge_channel_ids: walletForm.recharge_channel_ids, wallet_only_payment: walletForm.wallet_only_payment } } as any)
-    notifySuccess(t('admin.settings.saved'))
-  } catch (err: any) {
-    notifyError(err?.message || t('admin.settings.saveFailed'))
-  } finally {
-    walletSaving.value = false
-  }
-}
-
 const getCurrentLangName = () => {
   return languages.value.find((item) => item.code === currentLang.value)?.name || t('admin.common.lang.zhCN')
 }
@@ -452,8 +316,9 @@ const notifyErrorIfNeeded = (err: unknown, fallback: string) => {
 const fetchSettings = async () => {
   loading.value = true
   try {
-    const [siteRes, smtpRes, captchaRes, telegramRes, dashboardRes, registrationRes, orderEmailTmplRes] = await Promise.all([
+    const [siteRes, orderRes, smtpRes, captchaRes, telegramRes, dashboardRes, registrationRes, orderEmailTmplRes] = await Promise.all([
       adminAPI.getSettings({ key: 'site_config' }),
+      adminAPI.getSettings({ key: 'order_config' }),
       adminAPI.getSMTPSettings(),
       adminAPI.getCaptchaSettings(),
       adminAPI.getTelegramAuthSettings(),
@@ -532,6 +397,15 @@ const fetchSettings = async () => {
 
       const rawTemplateMode = String(data.template_mode || 'card').trim()
       form.template_mode = rawTemplateMode === 'list' ? 'list' : 'card'
+    }
+
+    if (orderRes.data && orderRes.data.data) {
+      const orderData = orderRes.data.data as Record<string, unknown>
+      form.order_max_refund_days = clampNumber(orderData.max_refund_days, 0, 3650, 30)
+      orderPaymentExpireMinutes.value = clampNumber(orderData.payment_expire_minutes, 1, 10080, 15)
+    } else {
+      form.order_max_refund_days = 30
+      orderPaymentExpireMinutes.value = 15
     }
 
     if (smtpRes.data && smtpRes.data.data) {
@@ -657,10 +531,10 @@ const saveRegistrationSettings = async () => {
 const saveSiteSettings = async () => {
   const payload = {
     key: 'site_config',
-      value: {
-        brand: form.brand,
-        currency: String(form.currency || 'CNY').trim().toUpperCase(),
-        contact: form.contact,
+    value: {
+      brand: form.brand,
+      currency: String(form.currency || 'CNY').trim().toUpperCase(),
+      contact: form.contact,
       seo: form.seo,
       about: form.about,
       legal: form.legal,
@@ -670,6 +544,20 @@ const saveSiteSettings = async () => {
     },
   }
   await adminAPI.updateSettings(payload)
+}
+
+const saveOrderSettings = async () => {
+  const normalizedMaxRefundDays = clampNumber(form.order_max_refund_days, 0, 3650, 30)
+  const normalizedPaymentExpireMinutes = clampNumber(orderPaymentExpireMinutes.value, 1, 10080, 15)
+  form.order_max_refund_days = normalizedMaxRefundDays
+  orderPaymentExpireMinutes.value = normalizedPaymentExpireMinutes
+  await adminAPI.updateSettings({
+    key: 'order_config',
+    value: {
+      payment_expire_minutes: normalizedPaymentExpireMinutes,
+      max_refund_days: normalizedMaxRefundDays,
+    },
+  })
 }
 
 const addAboutServiceItem = () => {
@@ -773,10 +661,6 @@ const saveSettings = async () => {
     await navigationTabRef.value?.save()
     return
   }
-  if (currentTab.value === 'order_risk_control') {
-    await orderRiskControlTabRef.value?.save()
-    return
-  }
   loading.value = true
   try {
     if (currentTab.value === 'telegram') {
@@ -785,6 +669,7 @@ const saveSettings = async () => {
       await saveDashboardSettings()
     } else {
       await saveRegistrationSettings()
+      await saveOrderSettings()
       await saveSiteSettings()
     }
     notifySuccess(t('admin.settings.alerts.saveSuccess'))
@@ -797,16 +682,6 @@ const saveSettings = async () => {
 
 onMounted(() => {
   fetchSettings()
-})
-
-watch(currentTab, (newTab) => {
-  if (newTab === 'wallet' && walletPaymentChannels.value.length === 0) {
-    loadWalletPaymentChannels()
-    loadWalletConfig()
-  }
-  if (newTab === 'callback_routes' && !callbackRoutesLoaded.value) {
-    loadCallbackRoutes()
-  }
 })
 </script>
 
@@ -868,6 +743,37 @@ watch(currentTab, (newTab) => {
               <label for="email-verification-enabled" class="text-sm font-medium">{{ t('admin.settings.registration.emailVerificationEnabled') }}</label>
               <p class="text-xs text-muted-foreground">{{ t('admin.settings.registration.emailVerificationEnabledDesc') }}</p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-border bg-card">
+        <div class="border-b border-border bg-muted/40 px-6 py-4">
+          <h2 class="text-lg font-semibold">{{ t('admin.settings.order.title') }}</h2>
+          <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.order.subtitle') }}</p>
+        </div>
+        <div class="grid grid-cols-1 gap-6 p-6 md:grid-cols-2">
+          <div class="space-y-2">
+            <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.order.paymentExpireMinutes') }}</label>
+            <Input
+              v-model.number="orderPaymentExpireMinutes"
+              type="number"
+              min="1"
+              max="10080"
+              :placeholder="t('admin.settings.order.paymentExpireMinutesPlaceholder')"
+            />
+            <p class="text-xs text-muted-foreground">{{ t('admin.settings.order.paymentExpireMinutesTip') }}</p>
+          </div>
+          <div class="space-y-2">
+            <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.order.maxRefundDays') }}</label>
+            <Input
+              v-model.number="form.order_max_refund_days"
+              type="number"
+              min="0"
+              max="3650"
+              :placeholder="t('admin.settings.order.maxRefundDaysPlaceholder')"
+            />
+            <p class="text-xs text-muted-foreground">{{ t('admin.settings.order.maxRefundDaysTip') }}</p>
           </div>
         </div>
       </div>
@@ -1328,89 +1234,6 @@ watch(currentTab, (newTab) => {
                 <p class="text-xs text-muted-foreground">{{ t('admin.settings.dashboard.ranking.topChannelsLimitHint') }}</p>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div v-show="currentTab === 'wallet'" class="space-y-6">
-      <div class="rounded-xl border border-border bg-card">
-        <div class="border-b border-border bg-muted/40 px-6 py-4">
-          <h2 class="text-lg font-semibold">{{ t('admin.settings.wallet.title') }}</h2>
-          <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.wallet.subtitle') }}</p>
-        </div>
-        <div class="space-y-4 p-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <label for="wallet-only-payment" class="text-sm font-medium">{{ t('admin.settings.wallet.walletOnlyPayment') }}</label>
-              <p class="text-xs text-muted-foreground mt-0.5">{{ t('admin.settings.wallet.walletOnlyPaymentTip') }}</p>
-            </div>
-            <input id="wallet-only-payment" v-model="walletForm.wallet_only_payment" type="checkbox" class="h-4 w-4 accent-primary" />
-          </div>
-          <div class="border-t border-border pt-4">
-            <label class="block text-xs font-medium text-muted-foreground mb-2">{{ t('admin.settings.wallet.rechargeChannels') }}</label>
-            <div v-if="walletPaymentChannels.length > 0" class="flex flex-wrap gap-2">
-              <label v-for="ch in walletPaymentChannels" :key="ch.id" class="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs cursor-pointer select-none" :class="walletForm.recharge_channel_ids.includes(ch.id) ? 'bg-primary/10 border-primary text-primary' : 'text-muted-foreground hover:border-primary/40'">
-                <input type="checkbox" :checked="walletForm.recharge_channel_ids.includes(ch.id)" class="h-3.5 w-3.5 accent-primary" @change="toggleWalletRechargeChannel(ch.id)" />
-                {{ ch.name }}
-              </label>
-            </div>
-            <p v-else class="text-xs text-muted-foreground">{{ t('admin.settings.wallet.noChannels') }}</p>
-            <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.wallet.rechargeChannelsTip') }}</p>
-          </div>
-          <div class="flex justify-end border-t border-border pt-4">
-            <Button :disabled="walletSaving" @click="saveWalletConfig">
-              {{ walletSaving ? t('admin.settings.actions.saving') : t('admin.settings.actions.save') }}
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 回调路由配置 -->
-    <!-- 订单风控 -->
-    <div v-show="currentTab === 'order_risk_control'">
-      <SettingsOrderRiskControlTab ref="orderRiskControlTabRef" />
-    </div>
-
-    <div v-show="currentTab === 'callback_routes'" class="space-y-6">
-      <div class="rounded-xl border border-border bg-card">
-        <div class="border-b border-border bg-muted/40 px-6 py-4">
-          <h2 class="text-lg font-semibold">{{ t('admin.settings.callbackRoutes.title') }}</h2>
-          <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.callbackRoutes.subtitle') }}</p>
-        </div>
-        <div class="space-y-6 p-6">
-          <div class="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
-            <p class="text-xs text-amber-600 dark:text-amber-400">{{ t('admin.settings.callbackRoutes.warning') }}</p>
-          </div>
-
-          <div class="grid grid-cols-1 gap-6">
-            <div class="space-y-2">
-              <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.callbackRoutes.paymentCallback') }}</label>
-              <input v-model="callbackRoutesForm.payment_callback" type="text" class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" :placeholder="t('admin.settings.callbackRoutes.paymentCallbackPlaceholder')" />
-              <p class="text-xs text-muted-foreground">{{ t('admin.settings.callbackRoutes.defaultPath') }}: /api/v1/payments/callback</p>
-            </div>
-            <div class="space-y-2">
-              <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.callbackRoutes.paypalWebhook') }}</label>
-              <input v-model="callbackRoutesForm.paypal_webhook" type="text" class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" :placeholder="t('admin.settings.callbackRoutes.webhookPlaceholder')" />
-              <p class="text-xs text-muted-foreground">{{ t('admin.settings.callbackRoutes.defaultPath') }}: /api/v1/payments/webhook/paypal</p>
-            </div>
-            <div class="space-y-2">
-              <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.callbackRoutes.stripeWebhook') }}</label>
-              <input v-model="callbackRoutesForm.stripe_webhook" type="text" class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" :placeholder="t('admin.settings.callbackRoutes.webhookPlaceholder')" />
-              <p class="text-xs text-muted-foreground">{{ t('admin.settings.callbackRoutes.defaultPath') }}: /api/v1/payments/webhook/stripe</p>
-            </div>
-            <div class="space-y-2">
-              <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.callbackRoutes.upstreamCallback') }}</label>
-              <input v-model="callbackRoutesForm.upstream_callback" type="text" class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" :placeholder="t('admin.settings.callbackRoutes.callbackPlaceholder')" />
-              <p class="text-xs text-muted-foreground">{{ t('admin.settings.callbackRoutes.defaultPath') }}: /api/v1/upstream/callback</p>
-            </div>
-          </div>
-
-          <div class="flex justify-end border-t border-border pt-4">
-            <Button :disabled="callbackRoutesSaving" @click="saveCallbackRoutes">
-              {{ callbackRoutesSaving ? t('admin.settings.actions.saving') : t('admin.settings.actions.save') }}
-            </Button>
           </div>
         </div>
       </div>
