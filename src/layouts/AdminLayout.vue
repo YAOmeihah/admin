@@ -157,6 +157,12 @@ const navGroups = computed<NavGroup[]>(() => {
           permission: 'GET:/admin/orders',
         },
         {
+          label: t('admin.navItems.orderRiskControl'),
+          to: '/order-risk-control',
+          icon: ShieldCheck,
+          permission: 'GET:/admin/settings',
+        },
+        {
           label: t('admin.navItems.orderRefunds'),
           to: '/order-refunds',
           icon: ReceiptText,
@@ -181,6 +187,12 @@ const navGroups = computed<NavGroup[]>(() => {
           icon: ReceiptText,
           permission: 'GET:/admin/payments',
         },
+        {
+          label: t('admin.navItems.callbackRoutes'),
+          to: '/callback-routes',
+          icon: Link,
+          permission: 'GET:/admin/settings',
+        },
       ],
     },
     {
@@ -199,6 +211,12 @@ const navGroups = computed<NavGroup[]>(() => {
           to: '/wallet-recharges',
           icon: Wallet,
           permission: 'GET:/admin/wallet/recharges',
+        },
+        {
+          label: t('admin.navItems.walletConfig'),
+          to: '/wallet-config',
+          icon: Wallet,
+          permission: 'GET:/admin/settings',
         },
         {
           label: t('admin.navItems.userLoginLogs'),
