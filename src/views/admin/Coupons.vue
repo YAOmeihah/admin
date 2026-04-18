@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { adminAPI } from '@/api/admin'
-import type { AdminCoupon, AdminProduct } from '@/api/types'
+import type { AdminCoupon, AdminMemberLevel, AdminProduct } from '@/api/types'
 import IdCell from '@/components/IdCell.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,6 +12,7 @@ import { Dialog, DialogHeader, DialogScrollContent, DialogTitle } from '@/compon
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { MultiSelect } from '@/components/ui/multi-select'
 import { formatDate, getLocalizedText } from '@/utils/format'
 import { notifyError } from '@/utils/notify'
 import { confirmAction } from '@/utils/confirm'
@@ -45,6 +46,7 @@ const scopeFilterKeyword = ref('')
 const productKeyword = ref('')
 const productOptions = ref<AdminProduct[]>([])
 const productOptionsLoading = ref(false)
+const memberLevels = ref<AdminMemberLevel[]>([])
 const selectedScopeIDs = ref<number[]>([])
 const form = reactive({
   code: '',
@@ -54,6 +56,8 @@ const form = reactive({
   max_discount: 0,
   usage_limit: 0,
   per_user_limit: 0,
+  payment_roles: [] as string[],
+  member_levels: [] as number[],
   starts_at: '',
   ends_at: '',
   is_active: true,
@@ -101,6 +105,18 @@ const discountTypeLabel = (type: string) => {
   return map[type] || type
 }
 
+const paymentRoleOptions = computed(() => [
+  { value: 'guest', label: t('admin.coupons.paymentRoles.guest') },
+  { value: 'member', label: t('admin.coupons.paymentRoles.member') },
+])
+
+const memberLevelOptions = computed(() =>
+  memberLevels.value.map((item) => ({
+    value: item.id,
+    label: getLocalizedText(item.name) || `#${item.id}`,
+  }))
+)
+
 const resetForm = () => {
   form.code = ''
   form.type = 'percent'
@@ -109,6 +125,8 @@ const resetForm = () => {
   form.max_discount = 0
   form.usage_limit = 0
   form.per_user_limit = 0
+  form.payment_roles = []
+  form.member_levels = []
   form.starts_at = ''
   form.ends_at = ''
   form.is_active = true
@@ -157,6 +175,34 @@ const normalizeScopeIDs = (raw: unknown) => {
       new Set(
         text
           .split(/[,，\s]+/)
+          .map((item) => Number(item))
+          .filter((item) => Number.isFinite(item) && item > 0)
+          .map((item) => Math.floor(item))
+      )
+    )
+  }
+  return []
+}
+
+const normalizePaymentRoles = (raw: unknown) => {
+  if (Array.isArray(raw)) {
+    const allowed = new Set(['guest', 'member'])
+    return Array.from(
+      new Set(
+        raw
+          .map((item) => String(item || '').trim().toLowerCase())
+          .filter((item) => allowed.has(item))
+      )
+    )
+  }
+  return []
+}
+
+const normalizeMemberLevels = (raw: unknown) => {
+  if (Array.isArray(raw)) {
+    return Array.from(
+      new Set(
+        raw
           .map((item) => Number(item))
           .filter((item) => Number.isFinite(item) && item > 0)
           .map((item) => Math.floor(item))
@@ -224,6 +270,15 @@ const loadProductOptions = async (keywordInput?: string) => {
     productOptions.value = ensureScopeProductsInOptions([])
   } finally {
     productOptionsLoading.value = false
+  }
+}
+
+const loadMemberLevels = async () => {
+  try {
+    const response = await adminAPI.getMemberLevels({ page: 1, page_size: 200 })
+    memberLevels.value = Array.isArray(response.data.data) ? response.data.data : []
+  } catch {
+    memberLevels.value = []
   }
 }
 
@@ -349,6 +404,8 @@ const openEditModal = (coupon: AdminCoupon) => {
   form.max_discount = coupon.max_discount || 0
   form.usage_limit = coupon.usage_limit || 0
   form.per_user_limit = coupon.per_user_limit || 0
+  form.payment_roles = normalizePaymentRoles(coupon.payment_roles)
+  form.member_levels = normalizeMemberLevels(coupon.member_levels)
   form.starts_at = toLocalInput(coupon.starts_at)
   form.ends_at = toLocalInput(coupon.ends_at)
   form.is_active = Boolean(coupon.is_active)
@@ -382,6 +439,8 @@ const handleSubmit = async () => {
       max_discount: Number(form.max_discount || 0),
       usage_limit: Number(form.usage_limit || 0),
       per_user_limit: Number(form.per_user_limit || 0),
+      payment_roles: normalizePaymentRoles(form.payment_roles),
+      member_levels: normalizeMemberLevels(form.member_levels),
       starts_at: form.starts_at ? toISO(form.starts_at) : '',
       ends_at: form.ends_at ? toISO(form.ends_at) : '',
       is_active: form.is_active,
@@ -426,9 +485,31 @@ const formatScope = (scope?: unknown) => {
     .join(', ')
 }
 
+const formatPaymentRoles = (raw: unknown) => {
+  const roles = normalizePaymentRoles(raw)
+  if (!roles.length) return '-'
+  const labels: Record<string, string> = {
+    guest: t('admin.coupons.paymentRoles.guest'),
+    member: t('admin.coupons.paymentRoles.member'),
+  }
+  return roles.map((role) => labels[role] || role).join(', ')
+}
+
+const formatMemberLevels = (raw: unknown) => {
+  const levelIDs = normalizeMemberLevels(raw)
+  if (!levelIDs.length) return '-'
+  return levelIDs
+    .map((levelID) => {
+      const target = memberLevels.value.find((item) => Number(item.id) === levelID)
+      if (!target) return `#${levelID}`
+      return getLocalizedText(target.name) || `#${levelID}`
+    })
+    .join(', ')
+}
+
 onMounted(async () => {
   applyRouteFilter()
-  await loadProductOptions()
+  await Promise.all([loadProductOptions(), loadMemberLevels()])
   fetchCoupons()
 })
 
@@ -573,6 +654,8 @@ watch(
               <div class="break-words">{{ t('admin.coupons.limit.maxDiscount') }}：{{ coupon.max_discount || '-' }}</div>
               <div class="break-words">{{ t('admin.coupons.limit.usageLimit') }}：{{ coupon.usage_limit || '-' }}</div>
               <div class="break-words">{{ t('admin.coupons.limit.perUserLimit') }}：{{ coupon.per_user_limit || '-' }}</div>
+              <div class="break-words">{{ t('admin.coupons.limit.paymentRoles') }}：{{ formatPaymentRoles(coupon.payment_roles) }}</div>
+              <div class="break-words">{{ t('admin.coupons.limit.memberLevels') }}：{{ formatMemberLevels(coupon.member_levels) }}</div>
             </TableCell>
             <TableCell class="min-w-[90px] px-6 py-4 text-xs text-muted-foreground">
               <div class="break-words">{{ t('admin.coupons.period.startsAt') }}：{{ formatDate(coupon.starts_at) || '-' }}</div>
@@ -734,6 +817,23 @@ watch(
             <div>
               <label class="mb-1.5 block text-xs font-medium text-muted-foreground">{{ t('admin.coupons.modal.perUserLimit') }}</label>
               <Input v-model.number="form.per_user_limit" type="number" placeholder="0" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="mb-1.5 block text-xs font-medium text-muted-foreground">{{ t('admin.coupons.modal.paymentRoles') }}</label>
+              <MultiSelect
+                v-model="form.payment_roles"
+                :options="paymentRoleOptions"
+                :placeholder="t('admin.coupons.modal.paymentRolesPlaceholder')"
+              />
+            </div>
+            <div class="md:col-span-2">
+              <label class="mb-1.5 block text-xs font-medium text-muted-foreground">{{ t('admin.coupons.modal.memberLevels') }}</label>
+              <MultiSelect
+                v-model="form.member_levels"
+                :options="memberLevelOptions"
+                :placeholder="t('admin.coupons.modal.memberLevelsPlaceholder')"
+                :disabled="memberLevelOptions.length === 0"
+              />
             </div>
             <div>
               <label class="mb-1.5 block text-xs font-medium text-muted-foreground">{{ t('admin.coupons.modal.startsAt') }}</label>
