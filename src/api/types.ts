@@ -223,6 +223,8 @@ export interface AdminCoupon {
   usage_limit: number
   used_count: number
   per_user_limit: number
+  payment_roles?: string[]
+  member_levels?: number[]
   scope_type: string
   scope_ref_ids: number[] | string
   starts_at?: string
