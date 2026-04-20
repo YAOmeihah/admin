@@ -94,3 +94,12 @@ export const resolveSkuSpecFromSnapshot = (snapshot: unknown, locale?: string) =
   const row = snapshot as Record<string, unknown>
   return formatSkuSpecValues(row.spec_values, locale)
 }
+
+// formatSkuDisplayLabel 构造"规格 · 编码"展示文本，spec 和 code 有任一显示，都有则拼接。
+// 用于订单列表、退款列表等后台管理界面统一 SKU 展示。
+export const formatSkuDisplayLabel = (snapshot: unknown, locale?: string) => {
+  const spec = resolveSkuSpecFromSnapshot(snapshot, locale)
+  const code = resolveSkuCodeFromSnapshot(snapshot)
+  if (spec && code) return `${spec} · ${code}`
+  return spec || code
+}

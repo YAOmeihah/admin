@@ -692,6 +692,7 @@ const messages = {
         rankings: {
           topProductsTitle: '商品排行（Top 5）',
           topChannelsTitle: '渠道排行（Top 5）',
+          skuLabel: 'SKU',
           paidAmount: '成交金额',
           paidOrders: '支付订单',
           quantity: '成交数量',
@@ -3862,6 +3863,7 @@ const messages = {
         rankings: {
           topProductsTitle: '商品排行（Top 5）',
           topChannelsTitle: '渠道排行（Top 5）',
+          skuLabel: 'SKU',
           paidAmount: '成交金額',
           paidOrders: '支付訂單',
           quantity: '成交數量',
@@ -7032,6 +7034,7 @@ const messages = {
         rankings: {
           topProductsTitle: 'Top Products (Top 5)',
           topChannelsTitle: 'Top Channels (Top 5)',
+          skuLabel: 'SKU',
           paidAmount: 'Paid Amount',
           paidOrders: 'Paid Orders',
           quantity: 'Quantity',

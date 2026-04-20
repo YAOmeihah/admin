@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogScrollContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { copyText } from '@/utils/clipboard'
 import { formatDate, getLocalizedText } from '@/utils/format'
+import { formatSkuDisplayLabel } from '@/utils/sku'
 
 const props = defineProps<{
   modelValue: boolean
@@ -19,7 +20,10 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+const entrySkuLabel = (entry: Record<string, unknown>) =>
+  formatSkuDisplayLabel(entry?.sku_snapshot, locale.value)
 const adminPath = import.meta.env.VITE_ADMIN_PATH || ''
 
 const detailLoading = ref(false)
@@ -136,9 +140,9 @@ watch(
                 <div class="mb-2 text-xs text-muted-foreground">{{ t('admin.orderRefunds.detailProductName') }}</div>
                 <div v-if="detailRefund.items && detailRefund.items.length > 0" class="space-y-1">
                   <div v-for="entry in detailRefund.items" :key="entry.id" class="text-xs">
-                    <span class="text-foreground">{{ getLocalizedText((entry as any).product_title) || getLocalizedText((entry as any).title) || '-' }}</span>
-                    <span v-if="entry.sku_spec_values && Object.keys(entry.sku_spec_values).length > 0" class="ml-1 text-muted-foreground">
-                      ({{ Object.values(entry.sku_spec_values).join(' / ') }})
+                    <span class="text-foreground">{{ getLocalizedText((entry as any).title) || '-' }}</span>
+                    <span v-if="entrySkuLabel(entry as any)" class="ml-1 text-muted-foreground">
+                      ({{ entrySkuLabel(entry as any) }})
                     </span>
                     <span class="ml-1 text-muted-foreground">x{{ entry.quantity }}</span>
                   </div>

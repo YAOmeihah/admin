@@ -101,15 +101,20 @@ export interface AdminOrderItem {
   order_id: number
   product_id: number
   sku_id: number
-  product_title: LocalizedText
-  sku_spec_values: Record<string, string>
+  title: LocalizedText
+  sku_snapshot?: {
+    sku_id?: number
+    sku_code?: string
+    spec_values?: unknown
+    image?: string
+    [key: string]: unknown
+  }
   quantity: number
   unit_price: number
   cost_price: number
   total_price: number
   fulfillment_type: string
   created_at: string
-  title?: string
   promotion_id?: number
   promotion_name?: string
   tags?: string[]

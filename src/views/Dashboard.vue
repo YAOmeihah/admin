@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { formatMoney, getLocalizedText } from '@/utils/format'
+import { formatSkuDisplayLabel } from '@/utils/sku'
 import type { AdminDashboardInventoryAlert } from '@/api/types'
 import DashboardAd from '@/components/admin/DashboardAd.vue'
 
@@ -80,6 +81,9 @@ interface DashboardTrends {
 
 interface DashboardProductRanking {
   product_id: number
+  sku_id?: number
+  sku_code?: string
+  sku_spec_values?: Record<string, unknown>
   title: string
   paid_orders: number
   quantity: number
@@ -108,7 +112,10 @@ interface DashboardRankings {
   top_channels: DashboardChannelRanking[]
 }
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+const rankingSkuLabel = (item: DashboardProductRanking) =>
+  formatSkuDisplayLabel({ sku_code: item.sku_code, spec_values: item.sku_spec_values }, locale.value)
 
 const loadingOverview = ref(false)
 const loadingTrends = ref(false)
@@ -627,8 +634,11 @@ onMounted(() => {
           <div v-if="loadingRankings" class="text-sm text-muted-foreground">{{ t('admin.common.loading') }}</div>
           <div v-else-if="!rankings || rankings.top_products.length === 0" class="text-sm text-muted-foreground">{{ t('admin.dashboard.rankings.empty') }}</div>
           <div v-else class="space-y-2">
-            <div v-for="item in rankings.top_products" :key="item.product_id" class="min-w-0 rounded-lg border border-border px-3 py-2">
+            <div v-for="item in rankings.top_products" :key="`${item.product_id}-${item.sku_id || 0}`" class="min-w-0 rounded-lg border border-border px-3 py-2">
               <div class="line-clamp-1 min-w-0 text-sm font-medium">{{ item.title }}</div>
+              <div v-if="rankingSkuLabel(item)" class="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+                {{ t('admin.dashboard.rankings.skuLabel') }}: {{ rankingSkuLabel(item) }}
+              </div>
               <div class="mt-1 flex flex-col gap-1 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
                 <span>{{ t('admin.dashboard.rankings.paidOrders') }}: {{ item.paid_orders }}</span>
                 <span>{{ t('admin.dashboard.rankings.quantity') }}: {{ item.quantity }}</span>

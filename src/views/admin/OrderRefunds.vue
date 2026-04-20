@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
 import { formatDate, getLocalizedText, toRFC3339 } from '@/utils/format'
+import { formatSkuDisplayLabel } from '@/utils/sku'
 
 const loading = ref(true)
 const refunds = ref<AdminOrderRefund[]>([])
@@ -24,7 +25,10 @@ const pagination = ref({
 const jumpPage = ref('')
 const adminPath = import.meta.env.VITE_ADMIN_PATH || ''
 const route = useRoute()
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+const entrySkuLabel = (entry: Record<string, unknown>) =>
+  formatSkuDisplayLabel(entry?.sku_snapshot, locale.value)
 
 const filters = reactive({
   userId: '',
@@ -231,9 +235,9 @@ watch(
             <TableCell class="px-6 py-4 text-xs text-foreground">
               <div v-if="item.items && item.items.length > 0" class="space-y-1">
                 <div v-for="entry in item.items" :key="entry.id" class="text-xs">
-                  <span class="text-foreground">{{ getLocalizedText((entry as any).product_title) || getLocalizedText((entry as any).title) || '-' }}</span>
-                  <span v-if="entry.sku_spec_values && Object.keys(entry.sku_spec_values).length > 0" class="ml-1 text-muted-foreground">
-                    ({{ Object.values(entry.sku_spec_values).join(' / ') }})
+                  <span class="text-foreground">{{ getLocalizedText((entry as any).title) || '-' }}</span>
+                  <span v-if="entrySkuLabel(entry as any)" class="ml-1 text-muted-foreground">
+                    ({{ entrySkuLabel(entry as any) }})
                   </span>
                   <span class="ml-1 text-muted-foreground">x{{ entry.quantity }}</span>
                 </div>

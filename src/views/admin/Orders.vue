@@ -18,6 +18,7 @@ import {
   orderStatusLabel,
 } from '@/utils/status'
 import { formatDate, formatMoney, getLocalizedText, toRFC3339 } from '@/utils/format'
+import { formatSkuDisplayLabel } from '@/utils/sku'
 import OrderDetailDialog from './components/OrderDetailDialog.vue'
 import OrderFulfillmentModal from './components/OrderFulfillmentModal.vue'
 
@@ -53,9 +54,12 @@ const selectedOrder = ref<AdminOrder | null>(null)
 const fulfillmentParentId = ref<number | null>(null)
 const maxRefundDays = ref(30)
 const route = useRoute()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const adminPath = import.meta.env.VITE_ADMIN_PATH || ''
 const userDetailLink = (userId: number) => `${adminPath}/users/${userId}`
+
+const itemSkuLabel = (item: AdminOrderItem & Record<string, unknown>) =>
+  formatSkuDisplayLabel((item as any)?.sku_snapshot, locale.value)
 
 const normalizeMaxRefundDays = (raw: unknown) => {
   const parsed = Number(raw)
@@ -383,9 +387,9 @@ watch(
             <TableCell class="min-w-[140px] px-4 py-3">
               <div v-if="order.items && order.items.length > 0" class="space-y-1">
                 <div v-for="item in order.items" :key="item.id" class="text-xs">
-                  <span class="text-foreground">{{ getLocalizedText(item.product_title) || getLocalizedText(item.title) || '-' }}</span>
-                  <span v-if="item.sku_spec_values && Object.keys(item.sku_spec_values).length > 0" class="ml-1 text-muted-foreground">
-                    ({{ Object.values(item.sku_spec_values).join(' / ') }})
+                  <span class="text-foreground">{{ getLocalizedText(item.title) || '-' }}</span>
+                  <span v-if="itemSkuLabel(item)" class="ml-1 text-muted-foreground">
+                    ({{ itemSkuLabel(item) }})
                   </span>
                   <span class="ml-1 text-muted-foreground">x{{ item.quantity }}</span>
                 </div>

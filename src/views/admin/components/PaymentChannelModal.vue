@@ -832,26 +832,36 @@ const handleSubmit = async () => {
     } else {
       delete configJson.merchant_key
     }
+    delete configJson.target_currency
+    delete configJson.exchange_rate
     configJson = {
       ...configJson,
       ...buildEpayConfig(),
     }
   } else if (form.provider_type === 'official' && form.channel_type === 'paypal') {
+    delete configJson.target_currency
+    delete configJson.exchange_rate
     configJson = {
       ...configJson,
       ...buildPaypalConfig(),
     }
   } else if (form.provider_type === 'official' && form.channel_type === 'stripe') {
+    delete configJson.target_currency
+    delete configJson.exchange_rate
     configJson = {
       ...configJson,
       ...buildStripeConfig(),
     }
   } else if (form.provider_type === 'official' && form.channel_type === 'alipay') {
+    delete configJson.target_currency
+    delete configJson.exchange_rate
     configJson = {
       ...configJson,
       ...buildAlipayConfig(),
     }
   } else if (form.provider_type === 'official' && form.channel_type === 'wechat') {
+    delete configJson.target_currency
+    delete configJson.exchange_rate
     configJson = {
       ...configJson,
       ...buildWechatConfig(),
@@ -867,6 +877,7 @@ const handleSubmit = async () => {
       ...buildTokenpayConfig(),
     }
   } else if (form.provider_type === 'okpay') {
+    delete configJson.exchange_rate
     configJson = {
       ...configJson,
       ...buildOkpayConfig(),
