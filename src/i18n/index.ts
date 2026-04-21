@@ -2407,6 +2407,10 @@ const messages = {
           telegramPlaceholder: 'https://t.me/...',
           whatsapp: 'WhatsApp 链接',
           whatsappPlaceholder: 'https://wa.me/...',
+          supportUrl: '客服网站链接',
+          supportUrlPlaceholder: 'https://support.example.com',
+          supportUrlHint: '填写完整 http(s) 链接；留空则用户端隐藏客服入口',
+          supportUrlInvalid: '客服网站链接必须是完整的 http(s) 地址',
         },
         footerLinks: {
           title: '页脚自定义链接',
@@ -5578,6 +5582,10 @@ const messages = {
           telegramPlaceholder: 'https://t.me/...',
           whatsapp: 'WhatsApp 連結',
           whatsappPlaceholder: 'https://wa.me/...',
+          supportUrl: '客服網站連結',
+          supportUrlPlaceholder: 'https://support.example.com',
+          supportUrlHint: '請填寫完整 http(s) 連結；留空則使用者端隱藏客服入口',
+          supportUrlInvalid: '客服網站連結必須是完整的 http(s) 位址',
         },
         footerLinks: {
           title: '頁尾自訂連結',
@@ -8749,6 +8757,10 @@ const messages = {
           telegramPlaceholder: 'https://t.me/...',
           whatsapp: 'WhatsApp',
           whatsappPlaceholder: 'https://wa.me/...',
+          supportUrl: 'Support Link',
+          supportUrlPlaceholder: 'https://support.example.com',
+          supportUrlHint: 'Enter a full http(s) URL. Leave empty to hide the support entry on the user side.',
+          supportUrlInvalid: 'Support link must be a full http(s) URL',
         },
         footerLinks: {
           title: 'Custom Footer Links',

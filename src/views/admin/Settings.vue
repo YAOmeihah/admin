@@ -153,6 +153,13 @@ const normalizeLocalizedField = (raw: unknown): Record<SupportedLanguage, string
   return normalized
 }
 
+const normalizeSupportURL = (value: unknown) => {
+  const text = String(value || '').trim()
+  if (text === '') return ''
+  if (/^https?:\/\//i.test(text)) return text
+  return ''
+}
+
 const isLocalizedFieldNotEmpty = (value: Record<SupportedLanguage, string>) => {
   return Object.values(value).some((item) => item.trim() !== '')
 }
@@ -168,6 +175,7 @@ const form = reactive({
   contact: {
     telegram: '',
     whatsapp: '',
+    support_url: '',
   },
   seo: {
     title: createLocalizedField(),
@@ -342,6 +350,7 @@ const fetchSettings = async () => {
       if (data.contact) {
         Object.assign(form.contact, data.contact)
       }
+      form.contact.support_url = String(form.contact.support_url || '')
       const seo = data.seo as Record<string, unknown> | undefined
       if (seo) {
         ;['title', 'keywords', 'description'].forEach((field) => {
@@ -529,6 +538,13 @@ const saveRegistrationSettings = async () => {
 }
 
 const saveSiteSettings = async () => {
+  const rawSupportURL = String(form.contact.support_url || '').trim()
+  const normalizedSupportURL = normalizeSupportURL(rawSupportURL)
+  if (rawSupportURL !== '' && !normalizedSupportURL) {
+    throw new Error(t('admin.settings.contact.supportUrlInvalid'))
+  }
+  form.contact.support_url = normalizedSupportURL
+
   const payload = {
     key: 'site_config',
     value: {
@@ -849,6 +865,11 @@ onMounted(() => {
           <div class="space-y-2">
             <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.contact.whatsapp') }}</label>
             <Input v-model="form.contact.whatsapp" :placeholder="t('admin.settings.contact.whatsappPlaceholder')" />
+          </div>
+          <div class="space-y-2 md:col-span-2">
+            <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.contact.supportUrl') }}</label>
+            <Input v-model="form.contact.support_url" :placeholder="t('admin.settings.contact.supportUrlPlaceholder')" />
+            <p class="text-xs text-muted-foreground">{{ t('admin.settings.contact.supportUrlHint') }}</p>
           </div>
         </div>
       </div>
