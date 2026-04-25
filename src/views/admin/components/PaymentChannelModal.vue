@@ -155,6 +155,13 @@ const okpayConfig = reactive({
   display_name: '',
 })
 
+const vpayConfig = reactive({
+  gateway_url: '',
+  sign_key: '',
+  notify_url: '',
+  return_url: '',
+})
+
 const epayChannelOptions = [
   { value: 'wechat', label: 'admin.paymentChannels.channelTypes.wechat' },
   { value: 'alipay', label: 'admin.paymentChannels.channelTypes.alipay' },
@@ -179,10 +186,16 @@ const okpayChannelOptions = [
   { value: 'trx', label: 'admin.paymentChannels.channelTypes.trx' },
 ]
 
+const vpayChannelOptions = [
+  { value: 'wechat', label: 'admin.paymentChannels.channelTypes.wechat' },
+  { value: 'alipay', label: 'admin.paymentChannels.channelTypes.alipay' },
+]
+
 const channelOptions = [
   ...epayChannelOptions,
   ...officialChannelOptions,
   ...okpayChannelOptions,
+  ...vpayChannelOptions,
 ]
 
 const paymentTypeOptions = computed(() => [
@@ -215,6 +228,9 @@ const formChannelOptions = computed(() => {
   if (form.provider_type === 'okpay') {
     return okpayChannelOptions
   }
+  if (form.provider_type === 'vpay') {
+    return vpayChannelOptions
+  }
   return channelOptions
 })
 
@@ -239,6 +255,11 @@ const interactionModeOptions = computed(() => {
   if (form.provider_type === 'okpay') {
     return [
       { value: 'qr', label: 'admin.paymentChannels.interactionModes.qr' },
+      { value: 'redirect', label: 'admin.paymentChannels.interactionModes.redirect' },
+    ]
+  }
+  if (form.provider_type === 'vpay') {
+    return [
       { value: 'redirect', label: 'admin.paymentChannels.interactionModes.redirect' },
     ]
   }
@@ -372,6 +393,13 @@ const resetOkpayConfig = () => {
   okpayConfig.display_name = ''
 }
 
+const resetVpayConfig = () => {
+  vpayConfig.gateway_url = ''
+  vpayConfig.sign_key = ''
+  vpayConfig.notify_url = 'https://api.yourdomain.com/api/v1/payments/callback'
+  vpayConfig.return_url = 'https://yourdomain.com/pay'
+}
+
 const resetAllConfigs = () => {
   resetEpayConfig()
   resetPaypalConfig()
@@ -381,6 +409,7 @@ const resetAllConfigs = () => {
   resetEpusdtConfig()
   resetTokenpayConfig()
   resetOkpayConfig()
+  resetVpayConfig()
 }
 
 // --- Apply functions ---
@@ -482,6 +511,13 @@ const applyOkpayConfig = (raw: Record<string, unknown>) => {
   okpayConfig.return_url = String(raw.return_url || '')
   okpayConfig.callback_url = String(raw.callback_url || '')
   okpayConfig.display_name = String(raw.display_name || '')
+}
+
+const applyVpayConfig = (raw: Record<string, unknown>) => {
+  vpayConfig.gateway_url = String(raw.gateway_url || '')
+  vpayConfig.sign_key = String(raw.sign_key || raw.merchant_key || '')
+  vpayConfig.notify_url = String(raw.notify_url || '')
+  vpayConfig.return_url = String(raw.return_url || '')
 }
 
 // --- Build functions ---
@@ -669,6 +705,21 @@ const buildOkpayConfig = () => {
   return config
 }
 
+const buildVpayConfig = () => {
+  const config: Record<string, unknown> = {}
+  const setIfNotEmpty = (key: string, value: string) => {
+    const trimmed = String(value || '').trim()
+    if (trimmed !== '') {
+      config[key] = trimmed
+    }
+  }
+  setIfNotEmpty('gateway_url', vpayConfig.gateway_url)
+  setIfNotEmpty('sign_key', vpayConfig.sign_key)
+  setIfNotEmpty('notify_url', vpayConfig.notify_url)
+  setIfNotEmpty('return_url', vpayConfig.return_url)
+  return config
+}
+
 // --- Watchers for provider_type / channel_type ---
 
 watch(
@@ -696,6 +747,11 @@ watch(
       const allowed = okpayChannelOptions.map((option) => option.value)
       if (!allowed.includes(form.channel_type)) {
         form.channel_type = allowed[0] || 'usdt'
+      }
+    } else if (value === 'vpay') {
+      const allowed = vpayChannelOptions.map((option) => option.value)
+      if (!allowed.includes(form.channel_type)) {
+        form.channel_type = allowed[0] || 'wechat'
       }
     } else if (value === 'tokenpay') {
       form.channel_type = 'usdt'
@@ -796,6 +852,7 @@ watch(
           applyEpusdtConfig(channel.config_json)
           applyTokenpayConfig(channel.config_json)
           applyOkpayConfig(channel.config_json)
+          applyVpayConfig(channel.config_json)
         } else {
           resetAllConfigs()
         }
@@ -882,6 +939,11 @@ const handleSubmit = async () => {
       ...configJson,
       ...buildOkpayConfig(),
     }
+  } else if (form.provider_type === 'vpay') {
+    configJson = {
+      ...configJson,
+      ...buildVpayConfig(),
+    }
   }
 
   const payload = {
@@ -950,6 +1012,7 @@ const closeModal = () => {
                 <SelectItem value="epusdt">{{ t('admin.paymentChannels.providerTypes.epusdt') }}</SelectItem>
                 <SelectItem value="okpay">{{ t('admin.paymentChannels.providerTypes.okpay') }}</SelectItem>
                 <SelectItem value="tokenpay">{{ t('admin.paymentChannels.providerTypes.tokenpay') }}</SelectItem>
+                <SelectItem value="vpay">{{ t('admin.paymentChannels.providerTypes.vpay') }}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1380,6 +1443,29 @@ const closeModal = () => {
             </div>
           </div>
           <div class="mt-3 text-xs text-muted-foreground">{{ t('admin.paymentChannels.modal.okpayHint') }}</div>
+        </div>
+
+        <div v-if="form.provider_type === 'vpay'" class="min-w-0 rounded-xl border border-border bg-muted/20 p-4 overflow-hidden">
+          <div class="text-sm font-semibold text-foreground mb-3">{{ t('admin.paymentChannels.modal.vpaySection') }}</div>
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 [&>*]:min-w-0">
+            <div class="min-w-0 md:col-span-2">
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.vpayGatewayUrl') }}</label>
+              <Input v-model="vpayConfig.gateway_url" :placeholder="t('admin.paymentChannels.modal.vpayGatewayUrlPlaceholder')" />
+            </div>
+            <div class="min-w-0 md:col-span-2">
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.vpaySignKey') }}</label>
+              <Input v-model="vpayConfig.sign_key" :placeholder="t('admin.paymentChannels.modal.vpaySignKeyPlaceholder')" />
+            </div>
+            <div class="min-w-0">
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.vpayNotifyUrl') }}</label>
+              <Input v-model="vpayConfig.notify_url" :placeholder="t('admin.paymentChannels.modal.vpayNotifyUrlPlaceholder')" />
+            </div>
+            <div class="min-w-0">
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.vpayReturnUrl') }}</label>
+              <Input v-model="vpayConfig.return_url" :placeholder="t('admin.paymentChannels.modal.vpayReturnUrlPlaceholder')" />
+            </div>
+          </div>
+          <div class="mt-3 text-xs text-muted-foreground">{{ t('admin.paymentChannels.modal.vpayHint') }}</div>
         </div>
 
         <div>
