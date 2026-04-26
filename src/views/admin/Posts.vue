@@ -53,6 +53,7 @@ const form = reactive({
   type: 'blog',
   thumbnail: '',
   is_published: true,
+  is_home_popup: false,
 })
 
 const { errors, validate, clearErrors } = useFormValidation({
@@ -111,6 +112,7 @@ const openCreateModal = () => {
     type: currentTab.value,
     thumbnail: '',
     is_published: true,
+    is_home_popup: false,
   })
   showModal.value = true
 }
@@ -127,6 +129,7 @@ const openEditModal = (post: AdminPost) => {
     type: post.type,
     thumbnail: post.thumbnail,
     is_published: post.is_published,
+    is_home_popup: post.is_home_popup || false,
   })
   showModal.value = true
 }
@@ -140,7 +143,7 @@ const handleSubmit = async () => {
   if (!validate({ slug: form.slug, type: form.type, title: form.title['zh-CN'] } as Record<string, unknown>)) return
   submitting.value = true
   try {
-    const payload = { ...form }
+    const payload = { ...form, is_home_popup: form.type === 'notice' && form.is_home_popup }
     if (isEditing.value) {
       await adminAPI.updatePost(form.id, payload)
     } else {
@@ -189,6 +192,15 @@ watch(
   (value) => {
     if (value) {
       openEditById(value)
+    }
+  }
+)
+
+watch(
+  () => form.type,
+  (value) => {
+    if (value !== 'notice') {
+      form.is_home_popup = false
     }
   }
 )
@@ -253,7 +265,15 @@ watch(
                 >
                   <img :src="getImageUrl(post.thumbnail)" class="h-full w-full object-cover" />
                 </div>
-                <div class="break-words font-medium text-foreground">{{ getLocalizedText(post.title) }}</div>
+                <div class="min-w-0">
+                  <div class="break-words font-medium text-foreground">{{ getLocalizedText(post.title) }}</div>
+                  <span
+                    v-if="post.is_home_popup"
+                    class="mt-1 inline-flex rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs text-sky-700"
+                  >
+                    {{ t('admin.posts.status.homePopup') }}
+                  </span>
+                </div>
               </div>
             </TableCell>
             <TableCell class="min-w-[220px] px-6 py-4 font-mono text-muted-foreground break-all">{{ post.slug }}</TableCell>
@@ -397,6 +417,17 @@ watch(
             <div class="col-span-1 flex items-center gap-2 border-t border-border pt-4 md:col-span-2">
               <input v-model="form.is_published" type="checkbox" class="h-4 w-4 accent-primary" />
               <span class="text-sm text-muted-foreground">{{ t('admin.posts.form.publishNow') }}</span>
+            </div>
+
+            <div
+              v-if="form.type === 'notice'"
+              class="col-span-1 flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3 md:col-span-2"
+            >
+              <input v-model="form.is_home_popup" type="checkbox" class="mt-0.5 h-4 w-4 accent-primary" />
+              <div class="space-y-1">
+                <div class="text-sm font-medium text-foreground">{{ t('admin.posts.form.homePopup') }}</div>
+                <p class="text-xs text-muted-foreground">{{ t('admin.posts.form.homePopupHint') }}</p>
+              </div>
             </div>
           </div>
 

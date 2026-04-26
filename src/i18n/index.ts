@@ -2038,6 +2038,7 @@ const messages = {
         status: {
           published: '已发布',
           draft: '草稿',
+          homePopup: '首页弹窗',
         },
         actions: {
           edit: '编辑',
@@ -2065,6 +2066,8 @@ const messages = {
           content: '正文内容 ({lang})',
           contentPlaceholder: '使用富文本编辑器编写文章...',
           publishNow: '立即发布',
+          homePopup: '设为首页弹窗公告',
+          homePopupHint: '全站只能有一个首页弹窗公告，保存后会自动取消其他公告的首页弹窗标记。',
         },
         confirmDelete: '确定要删除文章 "{name}" 吗？',
         errors: {
@@ -5224,6 +5227,7 @@ const messages = {
         status: {
           published: '已發布',
           draft: '草稿',
+          homePopup: '首頁彈窗',
         },
         actions: {
           edit: '編輯',
@@ -5251,6 +5255,8 @@ const messages = {
           content: '正文內容 ({lang})',
           contentPlaceholder: '使用富文本編輯器編寫文章...',
           publishNow: '立即發布',
+          homePopup: '設為首頁彈窗公告',
+          homePopupHint: '全站只能有一個首頁彈窗公告，保存後會自動取消其他公告的首頁彈窗標記。',
         },
         confirmDelete: '確定要刪除文章 "{name}" 嗎？',
         errors: {
@@ -8410,6 +8416,7 @@ const messages = {
         status: {
           published: 'Published',
           draft: 'Draft',
+          homePopup: 'Home popup',
         },
         actions: {
           edit: 'Edit',
@@ -8437,6 +8444,8 @@ const messages = {
           content: 'Content ({lang})',
           contentPlaceholder: 'Write content in editor...',
           publishNow: 'Publish now',
+          homePopup: 'Set as home popup notice',
+          homePopupHint: 'Only one home popup notice is allowed. Saving will clear the popup flag from other notices.',
         },
         confirmDelete: 'Delete post \"{name}\"?',
         errors: {

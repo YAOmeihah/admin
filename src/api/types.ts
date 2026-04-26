@@ -394,6 +394,7 @@ export interface AdminPost {
   content: LocalizedText
   thumbnail: string
   is_published: boolean
+  is_home_popup: boolean
   published_at?: string
   created_at: string
 }
