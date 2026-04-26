@@ -3,7 +3,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { adminAPI } from '@/api/admin'
-import type { AdminPost } from '@/api/types'
+import type { AdminPost, AdminProduct, LocalizedText } from '@/api/types'
 import MediaPicker from '@/components/admin/MediaPicker.vue'
 import RichEditor from '@/components/RichEditor.vue'
 import IdCell from '@/components/IdCell.vue'
@@ -19,6 +19,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { notifyError } from '@/utils/notify'
 import { confirmAction } from '@/utils/confirm'
 import { useFormValidation, rules } from '@/composables/useFormValidation'
+
+interface RelatedProductRef {
+  id: number
+  slug: string
+  title: LocalizedText
+  image?: string
+}
 
 const { t } = useI18n()
 const loading = ref(false)
@@ -53,7 +60,72 @@ const form = reactive({
   type: 'blog',
   thumbnail: '',
   is_published: true,
+  product_ids: [] as number[],
 })
+
+const relatedProducts = ref<RelatedProductRef[]>([])
+const productSearch = ref('')
+const productSearchResults = ref<RelatedProductRef[]>([])
+const productSearchLoading = ref(false)
+let productSearchTimer: ReturnType<typeof setTimeout> | null = null
+
+const resetRelatedProductsState = () => {
+  relatedProducts.value = []
+  productSearch.value = ''
+  productSearchResults.value = []
+  productSearchLoading.value = false
+}
+
+const fetchPostRelatedProducts = async (postId: number) => {
+  try {
+    const res = await adminAPI.getPostRelatedProducts(postId)
+    relatedProducts.value = (res.data.data || []) as RelatedProductRef[]
+    form.product_ids = relatedProducts.value.map((p) => p.id)
+  } catch {
+    relatedProducts.value = []
+    form.product_ids = []
+  }
+}
+
+const runProductSearch = async () => {
+  const keyword = productSearch.value.trim()
+  if (!keyword) {
+    productSearchResults.value = []
+    productSearchLoading.value = false
+    return
+  }
+  productSearchLoading.value = true
+  try {
+    const res = await adminAPI.getProducts({ search: keyword, page: 1, page_size: 20 })
+    const list = (res.data.data || []) as AdminProduct[]
+    productSearchResults.value = list.map((p) => ({
+      id: p.id,
+      slug: p.slug,
+      title: p.title,
+      image: p.images?.[0],
+    }))
+  } catch {
+    productSearchResults.value = []
+  } finally {
+    productSearchLoading.value = false
+  }
+}
+
+watch(productSearch, () => {
+  if (productSearchTimer) clearTimeout(productSearchTimer)
+  productSearchTimer = setTimeout(runProductSearch, 300)
+})
+
+const addRelatedProduct = (product: RelatedProductRef) => {
+  if (form.product_ids.includes(product.id)) return
+  relatedProducts.value.push(product)
+  form.product_ids.push(product.id)
+}
+
+const removeRelatedProduct = (id: number) => {
+  relatedProducts.value = relatedProducts.value.filter((p) => p.id !== id)
+  form.product_ids = form.product_ids.filter((pid) => pid !== id)
+}
 
 const { errors, validate, clearErrors } = useFormValidation({
   slug: [rules.required('This field is required')],
@@ -102,6 +174,7 @@ const openCreateModal = () => {
   isEditing.value = false
   currentLang.value = 'zh-CN'
   clearErrors()
+  resetRelatedProductsState()
   Object.assign(form, {
     id: 0,
     title: { 'zh-CN': '', 'zh-TW': '', 'en-US': '' },
@@ -111,6 +184,7 @@ const openCreateModal = () => {
     type: currentTab.value,
     thumbnail: '',
     is_published: true,
+    product_ids: [],
   })
   showModal.value = true
 }
@@ -118,6 +192,7 @@ const openCreateModal = () => {
 const openEditModal = (post: AdminPost) => {
   isEditing.value = true
   currentLang.value = 'zh-CN'
+  resetRelatedProductsState()
   Object.assign(form, {
     id: post.id,
     title: post.title || { 'zh-CN': '', 'zh-TW': '', 'en-US': '' },
@@ -127,8 +202,12 @@ const openEditModal = (post: AdminPost) => {
     type: post.type,
     thumbnail: post.thumbnail,
     is_published: post.is_published,
+    product_ids: [],
   })
   showModal.value = true
+  if (post.type === 'blog') {
+    fetchPostRelatedProducts(post.id)
+  }
 }
 
 const closeModal = () => {
@@ -140,7 +219,10 @@ const handleSubmit = async () => {
   if (!validate({ slug: form.slug, type: form.type, title: form.title['zh-CN'] } as Record<string, unknown>)) return
   submitting.value = true
   try {
-    const payload = { ...form }
+    const { product_ids, ...rest } = form
+    const payload: Partial<AdminPost> & { product_ids?: number[] } = { ...rest }
+    // type=blog 提交当前选择的商品；其他类型显式置空，避免历史关联残留出现在商品页
+    payload.product_ids = form.type === 'blog' ? [...product_ids] : []
     if (isEditing.value) {
       await adminAPI.updatePost(form.id, payload)
     } else {
@@ -392,6 +474,79 @@ watch(
                 {{ t('admin.posts.form.content', { lang: getCurrentLangName() }) }}
               </label>
               <RichEditor :model-value="form.content[currentLang] || ''" @update:model-value="(v: string) => form.content[currentLang] = v" :placeholder="t('admin.posts.form.contentPlaceholder')" />
+            </div>
+
+            <div v-if="form.type === 'blog'" class="col-span-1 md:col-span-2 border-t border-border pt-4">
+              <label class="mb-1.5 block text-xs font-medium text-muted-foreground">
+                {{ t('admin.posts.form.relatedProducts') }}
+              </label>
+              <p class="mb-3 text-xs text-muted-foreground">
+                {{ t('admin.posts.form.relatedProductsHint') }}
+              </p>
+
+              <div v-if="relatedProducts.length" class="mb-3 space-y-2">
+                <div
+                  v-for="p in relatedProducts"
+                  :key="p.id"
+                  class="flex items-center gap-3 rounded-md border border-border bg-muted/30 px-3 py-2"
+                >
+                  <div
+                    v-if="p.image"
+                    class="h-10 w-10 shrink-0 overflow-hidden rounded border border-border bg-muted/40"
+                  >
+                    <img :src="getImageUrl(p.image)" class="h-full w-full object-cover" />
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="truncate text-sm font-medium text-foreground">{{ getLocalizedText(p.title) }}</div>
+                    <div class="truncate font-mono text-xs text-muted-foreground">/{{ p.slug }}</div>
+                  </div>
+                  <Button type="button" size="sm" variant="outline" @click="removeRelatedProduct(p.id)">
+                    {{ t('admin.posts.form.relatedProductsRemove') }}
+                  </Button>
+                </div>
+              </div>
+              <p v-else class="mb-3 text-sm text-muted-foreground">
+                {{ t('admin.posts.form.relatedProductsEmpty') }}
+              </p>
+
+              <Input v-model="productSearch" :placeholder="t('admin.posts.form.relatedProductsSearch')" />
+              <div v-if="productSearch.trim()" class="mt-2 max-h-60 overflow-y-auto rounded-md border border-border">
+                <div v-if="productSearchLoading" class="px-3 py-3 text-center text-xs text-muted-foreground">
+                  ...
+                </div>
+                <div
+                  v-else-if="!productSearchResults.length"
+                  class="px-3 py-3 text-center text-sm text-muted-foreground"
+                >
+                  {{ t('admin.posts.form.relatedProductsNoResults') }}
+                </div>
+                <div
+                  v-for="p in productSearchResults"
+                  :key="p.id"
+                  class="flex items-center gap-3 border-b border-border px-3 py-2 last:border-b-0 hover:bg-muted/40"
+                >
+                  <div
+                    v-if="p.image"
+                    class="h-10 w-10 shrink-0 overflow-hidden rounded border border-border bg-muted/40"
+                  >
+                    <img :src="getImageUrl(p.image)" class="h-full w-full object-cover" />
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="truncate text-sm font-medium text-foreground">{{ getLocalizedText(p.title) }}</div>
+                    <div class="truncate font-mono text-xs text-muted-foreground">/{{ p.slug }}</div>
+                  </div>
+                  <Button
+                    v-if="!form.product_ids.includes(p.id)"
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    @click="addRelatedProduct(p)"
+                  >
+                    {{ t('admin.posts.form.relatedProductsAdd') }}
+                  </Button>
+                  <span v-else class="text-xs text-muted-foreground">✓</span>
+                </div>
+              </div>
             </div>
 
             <div class="col-span-1 flex items-center gap-2 border-t border-border pt-4 md:col-span-2">
