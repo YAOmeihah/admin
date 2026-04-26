@@ -7,7 +7,10 @@ import MediaPicker from '@/components/admin/MediaPicker.vue'
 import RichEditor from '@/components/RichEditor.vue'
 // image utils removed - MediaPicker handles image display
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogScrollContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -848,10 +851,10 @@ watch(
                   </Select>
                 </div>
                 <div class="flex items-end">
-                  <label class="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                    <input v-model="field.required" type="checkbox" class="h-4 w-4 accent-primary" :disabled="editingIsMapped" />
-                    {{ t('admin.products.form.manualFormFieldRequired') }}
-                  </label>
+                  <div class="inline-flex items-center gap-2">
+                    <Switch v-model="field.required" :disabled="editingIsMapped" />
+                    <Label class="text-sm text-muted-foreground">{{ t('admin.products.form.manualFormFieldRequired') }}</Label>
+                  </div>
                 </div>
               </div>
 
@@ -949,10 +952,10 @@ watch(
                     <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.products.form.skuSortTip') }}</p>
                   </div>
                   <div class="flex items-end">
-                    <label class="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                      <input v-model="sku.is_active" type="checkbox" class="h-4 w-4 accent-primary" />
-                      {{ t('admin.products.form.skuActive') }}
-                    </label>
+                    <div class="inline-flex items-center gap-2">
+                      <Switch v-model="sku.is_active" />
+                      <Label class="text-sm text-muted-foreground">{{ t('admin.products.form.skuActive') }}</Label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1037,23 +1040,27 @@ watch(
           <div v-if="paymentChannels.length > 0" class="col-span-1 md:col-span-2">
             <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.products.form.paymentChannels') }}</label>
             <div class="flex flex-wrap gap-2">
-              <label v-for="ch in paymentChannels" :key="ch.id" class="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs cursor-pointer select-none" :class="form.payment_channel_ids.includes(ch.id) ? 'bg-primary/10 border-primary text-primary' : 'text-muted-foreground hover:border-primary/40'">
-                <input type="checkbox" :checked="form.payment_channel_ids.includes(ch.id)" class="h-3.5 w-3.5 accent-primary" @change="togglePaymentChannel(ch.id)" />
+              <div v-for="ch in paymentChannels" :key="ch.id" class="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs cursor-pointer select-none" :class="form.payment_channel_ids.includes(ch.id) ? 'bg-primary/10 border-primary text-primary' : 'text-muted-foreground hover:border-primary/40'" @click="togglePaymentChannel(ch.id)">
+                <Checkbox
+                  :model-value="form.payment_channel_ids.includes(ch.id)"
+                  @update:model-value="() => togglePaymentChannel(ch.id)"
+                  @click.stop
+                />
                 {{ ch.name }}
-              </label>
+              </div>
             </div>
             <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.products.form.paymentChannelsTip') }}</p>
           </div>
 
           <div class="col-span-1 md:col-span-2 flex flex-col items-start gap-4 border-t border-border pt-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
-            <label class="inline-flex items-center gap-2">
-              <input id="is_affiliate_enabled" v-model="form.is_affiliate_enabled" type="checkbox" class="h-4 w-4 accent-primary" />
-              <span class="text-sm text-muted-foreground select-none">{{ t('admin.products.form.affiliateEnabled') }}</span>
-            </label>
-            <label class="inline-flex items-center gap-2">
-              <input id="is_active" v-model="form.is_active" type="checkbox" class="h-4 w-4 accent-primary" />
-              <span class="text-sm text-muted-foreground select-none">{{ t('admin.products.form.activeNow') }}</span>
-            </label>
+            <div class="inline-flex items-center gap-2">
+              <Switch id="is_affiliate_enabled" v-model="form.is_affiliate_enabled" />
+              <Label for="is_affiliate_enabled" class="text-sm text-muted-foreground select-none">{{ t('admin.products.form.affiliateEnabled') }}</Label>
+            </div>
+            <div class="inline-flex items-center gap-2">
+              <Switch id="is_active" v-model="form.is_active" />
+              <Label for="is_active" class="text-sm text-muted-foreground select-none">{{ t('admin.products.form.activeNow') }}</Label>
+            </div>
           </div>
         </div>
 

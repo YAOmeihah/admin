@@ -5,7 +5,9 @@ import { adminAPI } from '@/api/admin'
 import type { AdminProduct } from '@/api/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { getLocalizedText } from '@/utils/format'
 import { notifyError, notifySuccess } from '@/utils/notify'
@@ -363,10 +365,10 @@ defineExpose({ save, submitting })
               <h3 class="text-sm font-semibold">{{ t('admin.settings.notification.channels.email.title') }}</h3>
             </div>
             <div class="space-y-3 p-4">
-              <label class="flex items-center gap-2 text-sm">
-                <input v-model="form.channels.email.enabled" type="checkbox" class="h-4 w-4 accent-primary" />
-                {{ t('admin.settings.notification.channels.email.enabled') }}
-              </label>
+              <div class="flex items-center gap-2">
+                <Switch v-model="form.channels.email.enabled" />
+                <Label class="text-sm">{{ t('admin.settings.notification.channels.email.enabled') }}</Label>
+              </div>
               <div class="space-y-2">
                 <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.notification.channels.email.recipients') }}</label>
                 <Textarea
@@ -383,10 +385,10 @@ defineExpose({ save, submitting })
               <h3 class="text-sm font-semibold">{{ t('admin.settings.notification.channels.telegram.title') }}</h3>
             </div>
             <div class="space-y-3 p-4">
-              <label class="flex items-center gap-2 text-sm">
-                <input v-model="form.channels.telegram.enabled" type="checkbox" class="h-4 w-4 accent-primary" />
-                {{ t('admin.settings.notification.channels.telegram.enabled') }}
-              </label>
+              <div class="flex items-center gap-2">
+                <Switch v-model="form.channels.telegram.enabled" />
+                <Label class="text-sm">{{ t('admin.settings.notification.channels.telegram.enabled') }}</Label>
+              </div>
               <div class="space-y-2">
                 <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.notification.channels.telegram.recipients') }}</label>
                 <Textarea
@@ -402,22 +404,22 @@ defineExpose({ save, submitting })
         <div class="rounded-xl border border-border bg-muted/20 p-4">
           <h3 class="text-sm font-semibold">{{ t('admin.settings.notification.scenes.title') }}</h3>
           <div class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label class="flex items-center gap-2 text-sm">
-              <input v-model="form.scenes.wallet_recharge_success" type="checkbox" class="h-4 w-4 accent-primary" />
-              {{ t('admin.settings.notification.scenes.walletRechargeSuccess') }}
-            </label>
-            <label class="flex items-center gap-2 text-sm">
-              <input v-model="form.scenes.order_paid_success" type="checkbox" class="h-4 w-4 accent-primary" />
-              {{ t('admin.settings.notification.scenes.orderPaidSuccess') }}
-            </label>
-            <label class="flex items-center gap-2 text-sm">
-              <input v-model="form.scenes.manual_fulfillment_pending" type="checkbox" class="h-4 w-4 accent-primary" />
-              {{ t('admin.settings.notification.scenes.manualFulfillmentPending') }}
-            </label>
-            <label class="flex items-center gap-2 text-sm">
-              <input v-model="form.scenes.exception_alert" type="checkbox" class="h-4 w-4 accent-primary" />
-              {{ t('admin.settings.notification.scenes.exceptionAlert') }}
-            </label>
+            <div class="flex items-center gap-2 text-sm">
+              <Switch v-model="form.scenes.wallet_recharge_success" />
+              <Label class="text-sm">{{ t('admin.settings.notification.scenes.walletRechargeSuccess') }}</Label>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <Switch v-model="form.scenes.order_paid_success" />
+              <Label class="text-sm">{{ t('admin.settings.notification.scenes.orderPaidSuccess') }}</Label>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <Switch v-model="form.scenes.manual_fulfillment_pending" />
+              <Label class="text-sm">{{ t('admin.settings.notification.scenes.manualFulfillmentPending') }}</Label>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <Switch v-model="form.scenes.exception_alert" />
+              <Label class="text-sm">{{ t('admin.settings.notification.scenes.exceptionAlert') }}</Label>
+            </div>
           </div>
           <p class="mt-3 text-xs text-muted-foreground">{{ t('admin.settings.notification.scenes.exceptionThresholdHint') }}</p>
         </div>
