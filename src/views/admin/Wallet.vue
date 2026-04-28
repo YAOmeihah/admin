@@ -4,6 +4,9 @@ import { useI18n } from 'vue-i18n'
 import { adminAPI } from '@/api/admin'
 import type { AdminPaymentChannel } from '@/api/types'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { notifyError, notifySuccess } from '@/utils/notify'
 
 const { t } = useI18n()
@@ -86,18 +89,18 @@ onMounted(() => {
       <div class="space-y-4 p-6">
         <div class="flex items-center justify-between">
           <div>
-            <label for="wallet-only-payment" class="text-sm font-medium">{{ t('admin.settings.wallet.walletOnlyPayment') }}</label>
+            <Label for="wallet-only-payment" class="text-sm font-medium">{{ t('admin.settings.wallet.walletOnlyPayment') }}</Label>
             <p class="text-xs text-muted-foreground mt-0.5">{{ t('admin.settings.wallet.walletOnlyPaymentTip') }}</p>
           </div>
-          <input id="wallet-only-payment" v-model="form.wallet_only_payment" type="checkbox" class="h-4 w-4 accent-primary" />
+          <Switch id="wallet-only-payment" v-model="form.wallet_only_payment" />
         </div>
         <div class="border-t border-border pt-4">
-          <label class="block text-xs font-medium text-muted-foreground mb-2">{{ t('admin.settings.wallet.rechargeChannels') }}</label>
+          <Label class="block text-xs font-medium text-muted-foreground mb-2">{{ t('admin.settings.wallet.rechargeChannels') }}</Label>
           <div v-if="channels.length > 0" class="flex flex-wrap gap-2">
-            <label v-for="ch in channels" :key="ch.id" class="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs cursor-pointer select-none" :class="form.recharge_channel_ids.includes(ch.id) ? 'bg-primary/10 border-primary text-primary' : 'text-muted-foreground hover:border-primary/40'">
-              <input type="checkbox" :checked="form.recharge_channel_ids.includes(ch.id)" class="h-3.5 w-3.5 accent-primary" @change="toggleChannel(ch.id)" />
+            <Label v-for="ch in channels" :key="ch.id" class="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs cursor-pointer select-none" :class="form.recharge_channel_ids.includes(ch.id) ? 'bg-primary/10 border-primary text-primary' : 'text-muted-foreground hover:border-primary/40'">
+              <Checkbox :model-value="form.recharge_channel_ids.includes(ch.id)" @update:model-value="() => toggleChannel(ch.id)" />
               {{ ch.name }}
-            </label>
+            </Label>
           </div>
           <p v-else class="text-xs text-muted-foreground">{{ t('admin.settings.wallet.noChannels') }}</p>
           <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.wallet.rechargeChannelsTip') }}</p>

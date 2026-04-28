@@ -52,6 +52,7 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { useAdminAuthStore } from '@/stores/auth'
 import { useI18n } from 'vue-i18n'
 import { adminAPI } from '@/api/admin'
+import { applySiteIcon } from '@/utils/favicon'
 
 interface NavGroupItem {
   label: string
@@ -592,7 +593,9 @@ onMounted(() => {
 
   // Fetch app version
   adminAPI.getPublicConfig().then((res) => {
-    const ver = res.data?.data?.app_version
+    const payload = res.data?.data
+    applySiteIcon(payload?.brand?.site_icon)
+    const ver = payload?.app_version
     if (typeof ver === 'string') {
       appVersion.value = ver
     }

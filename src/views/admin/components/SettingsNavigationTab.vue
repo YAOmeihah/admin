@@ -3,6 +3,9 @@ import { onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { adminAPI } from '@/api/admin'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { notifyError, notifySuccess } from '@/utils/notify'
 
 const { t } = useI18n()
@@ -161,18 +164,18 @@ defineExpose({ save, submitting })
         <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.navigation.builtin.subtitle') }}</p>
       </div>
       <div class="divide-y divide-border px-6">
-        <label class="flex items-center justify-between py-4">
-          <span class="text-sm font-medium">{{ t('admin.settings.navigation.builtin.blog') }}</span>
-          <input v-model="form.builtin.blog" type="checkbox" class="h-4 w-4 accent-primary" />
-        </label>
-        <label class="flex items-center justify-between py-4">
-          <span class="text-sm font-medium">{{ t('admin.settings.navigation.builtin.notice') }}</span>
-          <input v-model="form.builtin.notice" type="checkbox" class="h-4 w-4 accent-primary" />
-        </label>
-        <label class="flex items-center justify-between py-4">
-          <span class="text-sm font-medium">{{ t('admin.settings.navigation.builtin.about') }}</span>
-          <input v-model="form.builtin.about" type="checkbox" class="h-4 w-4 accent-primary" />
-        </label>
+        <div class="flex items-center justify-between py-4">
+          <Label class="text-sm font-medium">{{ t('admin.settings.navigation.builtin.blog') }}</Label>
+          <Switch v-model="form.builtin.blog" />
+        </div>
+        <div class="flex items-center justify-between py-4">
+          <Label class="text-sm font-medium">{{ t('admin.settings.navigation.builtin.notice') }}</Label>
+          <Switch v-model="form.builtin.notice" />
+        </div>
+        <div class="flex items-center justify-between py-4">
+          <Label class="text-sm font-medium">{{ t('admin.settings.navigation.builtin.about') }}</Label>
+          <Switch v-model="form.builtin.about" />
+        </div>
       </div>
     </div>
 
@@ -203,10 +206,10 @@ defineExpose({ save, submitting })
           <div class="flex items-center justify-between">
             <span class="text-sm font-medium text-muted-foreground">#{{ index + 1 }}</span>
             <div class="flex items-center gap-3">
-              <label class="flex items-center gap-2 text-xs">
-                <input v-model="item.enabled" type="checkbox" class="h-4 w-4 accent-primary" />
-                {{ t('admin.settings.navigation.custom.fields.enabled') }}
-              </label>
+              <div class="flex items-center gap-2 text-xs">
+                <Switch v-model="item.enabled" />
+                <Label class="text-xs">{{ t('admin.settings.navigation.custom.fields.enabled') }}</Label>
+              </div>
               <button
                 class="text-xs text-destructive hover:underline"
                 @click="removeItem(index)"
@@ -252,10 +255,15 @@ defineExpose({ save, submitting })
               <label class="mb-1 block text-xs font-medium text-muted-foreground">
                 {{ t('admin.settings.navigation.custom.fields.linkType') }}
               </label>
-              <select v-model="item.link_type" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
-                <option value="internal">{{ t('admin.settings.navigation.custom.fields.linkTypeInternal') }}</option>
-                <option value="external">{{ t('admin.settings.navigation.custom.fields.linkTypeExternal') }}</option>
-              </select>
+              <Select v-model="item.link_type">
+                <SelectTrigger class="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="internal">{{ t('admin.settings.navigation.custom.fields.linkTypeInternal') }}</SelectItem>
+                  <SelectItem value="external">{{ t('admin.settings.navigation.custom.fields.linkTypeExternal') }}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <!-- URL -->
@@ -274,10 +282,15 @@ defineExpose({ save, submitting })
               <label class="mb-1 block text-xs font-medium text-muted-foreground">
                 {{ t('admin.settings.navigation.custom.fields.target') }}
               </label>
-              <select v-model="item.target" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
-                <option value="_self">{{ t('admin.settings.navigation.custom.fields.targetSelf') }}</option>
-                <option value="_blank">{{ t('admin.settings.navigation.custom.fields.targetBlank') }}</option>
-              </select>
+              <Select v-model="item.target">
+                <SelectTrigger class="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_self">{{ t('admin.settings.navigation.custom.fields.targetSelf') }}</SelectItem>
+                  <SelectItem value="_blank">{{ t('admin.settings.navigation.custom.fields.targetBlank') }}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <!-- 排序 -->

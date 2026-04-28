@@ -7,6 +7,7 @@ import type { AdminPromotion, AdminProduct } from '@/api/types'
 import IdCell from '@/components/IdCell.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import { Dialog, DialogHeader, DialogScrollContent, DialogTitle } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
@@ -679,7 +680,7 @@ watch(
               <Input v-model="form.ends_at" type="datetime-local" />
             </div>
             <div class="flex flex-col gap-2 md:col-span-2 sm:flex-row sm:items-center">
-              <input v-model="form.is_active" type="checkbox" class="h-4 w-4 accent-primary" />
+              <Switch v-model="form.is_active" />
               <span class="text-xs text-muted-foreground">{{ t('admin.common.enabled') }}</span>
             </div>
           </div>

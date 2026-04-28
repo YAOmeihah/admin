@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { adminAPI } from '@/api/admin'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import FileInput from '@/components/FileInput.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -39,8 +40,6 @@ const importForm = ref({
 const importSubmitting = ref(false)
 const importError = ref('')
 const importSuccess = ref('')
-const fileInput = ref<HTMLInputElement | null>(null)
-const importFileLabel = computed(() => importForm.value.file?.name || t('admin.cardSecrets.csvPlaceholder'))
 
 const resetBatchForm = () => {
   batchForm.value.secrets = ''
@@ -89,19 +88,12 @@ const handleBatchCreate = async () => {
   }
 }
 
-const handleFileChange = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files && target.files[0]
-  importForm.value.file = file || null
-}
-
-const triggerImportFile = () => {
-  fileInput.value?.click()
+const handleFileChange = (files: FileList | null) => {
+  importForm.value.file = (files && files[0]) || null
 }
 
 const clearImportFile = () => {
   importForm.value.file = null
-  if (fileInput.value) fileInput.value.value = ''
 }
 
 const resetImportForm = () => {
@@ -110,7 +102,6 @@ const resetImportForm = () => {
   importForm.value.note = ''
   importError.value = ''
   importSuccess.value = ''
-  if (fileInput.value) fileInput.value.value = ''
 }
 
 const handleImport = async () => {
@@ -192,12 +183,14 @@ const handleImport = async () => {
       <form class="space-y-4" @submit.prevent="handleImport">
         <div>
           <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.cardSecrets.csvLabel') }} *</label>
-          <div class="flex flex-wrap items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm">
-            <Button type="button" size="sm" variant="outline" @click="triggerImportFile">{{ t('admin.cardSecrets.csvChoose') }}</Button>
-            <span class="flex-1 truncate" :class="importForm.file ? 'text-foreground' : 'text-muted-foreground'">{{ importFileLabel }}</span>
+          <div class="flex flex-wrap items-center gap-2">
+            <FileInput
+              accept=".csv"
+              :button-text="t('admin.cardSecrets.csvChoose')"
+              @change="handleFileChange"
+            />
             <Button v-if="importForm.file" type="button" size="sm" variant="ghost" @click="clearImportFile">{{ t('admin.cardSecrets.csvClear') }}</Button>
           </div>
-          <input ref="fileInput" type="file" accept=".csv" class="hidden" @change="handleFileChange" />
           <p class="mt-2 text-xs text-muted-foreground">{{ t('admin.cardSecrets.csvHint') }}</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

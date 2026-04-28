@@ -8,6 +8,8 @@ import type { AdminBanner, LocalizedText } from '@/api/types'
 import IdCell from '@/components/IdCell.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { Dialog, DialogHeader, DialogScrollContent, DialogTitle } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
@@ -501,14 +503,14 @@ watch(
             </div>
 
             <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
-              <label class="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                <input v-model="form.is_active" type="checkbox" class="h-4 w-4 accent-primary" />
+              <Label class="inline-flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+                <Switch v-model="form.is_active" />
                 {{ t('admin.banners.form.activeNow') }}
-              </label>
-              <label class="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                <input v-model="form.open_in_new_tab" type="checkbox" class="h-4 w-4 accent-primary" />
+              </Label>
+              <Label class="inline-flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+                <Switch v-model="form.open_in_new_tab" />
                 {{ t('admin.banners.form.openInNewTab') }}
-              </label>
+              </Label>
             </div>
           </div>
 

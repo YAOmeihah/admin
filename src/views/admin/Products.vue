@@ -9,6 +9,7 @@ import IdCell from '@/components/IdCell.vue'
 import { getFirstImageUrl } from '@/utils/image'
 import { formatMoney, getLocalizedText } from '@/utils/format'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -476,7 +477,7 @@ watch(
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="w-10 px-3 py-3">
-              <input type="checkbox" :checked="allSelected" :indeterminate="selectedIds.size > 0 && !allSelected" class="h-4 w-4 rounded border-border accent-primary cursor-pointer" @change="toggleSelectAll" />
+              <Checkbox :model-value="allSelected ? true : (selectedIds.size > 0 ? 'indeterminate' : false)" @update:model-value="toggleSelectAll" />
             </TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.products.table.id') }}</TableHead>
             <TableHead class="px-6 py-3 min-w-[320px]">{{ t('admin.products.table.name') }}</TableHead>
@@ -498,7 +499,7 @@ watch(
           </TableRow>
           <TableRow v-for="product in products" :key="product.id" class="hover:bg-muted/30">
             <TableCell class="w-10 px-3 py-4">
-              <input type="checkbox" :checked="selectedIds.has(product.id)" class="h-4 w-4 rounded border-border accent-primary cursor-pointer" @click.stop="toggleSelect(product.id)" />
+              <Checkbox :model-value="selectedIds.has(product.id)" @update:model-value="() => toggleSelect(product.id)" />
             </TableCell>
             <TableCell class="px-6 py-4">
               <IdCell :value="product.id" />

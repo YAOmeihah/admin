@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { ArrowDown, ArrowUp, Loader2, Plus, Save, Trash2 } from 'lucide-vue-next'
 
 const { t } = useI18n()
@@ -87,12 +88,7 @@ onMounted(() => {
         >
           <div class="space-y-3">
             <div class="flex items-center gap-2">
-              <input
-                :id="`menu-enabled-${index}`"
-                v-model="item.enabled"
-                type="checkbox"
-                class="h-4 w-4 shrink-0 accent-primary"
-              />
+              <Switch :id="`menu-enabled-${index}`" v-model="item.enabled" />
               <Input
                 v-model="item.key"
                 :placeholder="t('telegramBot.settings.menuKeyPlaceholder')"

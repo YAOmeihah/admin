@@ -3,6 +3,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { adminAPI } from '@/api/admin'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { notifyError, notifySuccess } from '@/utils/notify'
 
 const { t } = useI18n()
@@ -103,22 +104,22 @@ onMounted(load)
         <div class="grid grid-cols-1 gap-6">
           <div class="space-y-2">
             <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.callbackRoutes.paymentCallback') }}</label>
-            <input v-model="form.payment_callback" type="text" class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" :placeholder="t('admin.settings.callbackRoutes.paymentCallbackPlaceholder')" />
+            <Input v-model="form.payment_callback" type="text" :placeholder="t('admin.settings.callbackRoutes.paymentCallbackPlaceholder')" />
             <p class="text-xs text-muted-foreground">{{ t('admin.settings.callbackRoutes.defaultPath') }}: /api/v1/payments/callback</p>
           </div>
           <div class="space-y-2">
             <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.callbackRoutes.paypalWebhook') }}</label>
-            <input v-model="form.paypal_webhook" type="text" class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" :placeholder="t('admin.settings.callbackRoutes.webhookPlaceholder')" />
+            <Input v-model="form.paypal_webhook" type="text" :placeholder="t('admin.settings.callbackRoutes.webhookPlaceholder')" />
             <p class="text-xs text-muted-foreground">{{ t('admin.settings.callbackRoutes.defaultPath') }}: /api/v1/payments/webhook/paypal</p>
           </div>
           <div class="space-y-2">
             <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.callbackRoutes.stripeWebhook') }}</label>
-            <input v-model="form.stripe_webhook" type="text" class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" :placeholder="t('admin.settings.callbackRoutes.webhookPlaceholder')" />
+            <Input v-model="form.stripe_webhook" type="text" :placeholder="t('admin.settings.callbackRoutes.webhookPlaceholder')" />
             <p class="text-xs text-muted-foreground">{{ t('admin.settings.callbackRoutes.defaultPath') }}: /api/v1/payments/webhook/stripe</p>
           </div>
           <div class="space-y-2">
             <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.callbackRoutes.upstreamCallback') }}</label>
-            <input v-model="form.upstream_callback" type="text" class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" :placeholder="t('admin.settings.callbackRoutes.callbackPlaceholder')" />
+            <Input v-model="form.upstream_callback" type="text" :placeholder="t('admin.settings.callbackRoutes.callbackPlaceholder')" />
             <p class="text-xs text-muted-foreground">{{ t('admin.settings.callbackRoutes.defaultPath') }}: /api/v1/upstream/callback</p>
           </div>
         </div>

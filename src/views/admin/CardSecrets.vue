@@ -8,7 +8,9 @@ import type { AdminProduct, AdminProductSKU, AdminCardSecret, AdminCardSecretBat
 import { Upload, PackagePlus } from 'lucide-vue-next'
 import IdCell from '@/components/IdCell.vue'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { toggleArrayMember } from '@/lib/utils'
 import ListPagination from '@/components/ListPagination.vue'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
@@ -269,6 +271,10 @@ const toggleSelectAllSecrets = () => {
   selectedSecretIds.value = cardSecrets.value
     .map((item: AdminCardSecret) => Number(item?.id || 0))
     .filter((item: number) => Number.isFinite(item) && item > 0)
+}
+
+const toggleSecretSelected = (id: number, v: boolean | 'indeterminate') => {
+  toggleArrayMember(selectedSecretIds, id, v)
 }
 
 const clearBatchFilter = () => {
@@ -1071,7 +1077,7 @@ onMounted(async () => {
             <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
               <TableRow>
                 <TableHead class="px-4 py-3">
-                  <input type="checkbox" class="h-4 w-4 accent-primary" :checked="allCurrentPageSelected" @change="toggleSelectAllSecrets" />
+                  <Checkbox :model-value="allCurrentPageSelected" @update:model-value="toggleSelectAllSecrets" />
                 </TableHead>
                 <TableHead class="px-4 py-3">{{ t('admin.cardSecrets.listTable.id') }}</TableHead>
                 <TableHead class="min-w-[100px] px-4 py-3">{{ t('admin.cardSecrets.listTable.secret') }}</TableHead>
@@ -1095,7 +1101,7 @@ onMounted(async () => {
               </TableRow>
               <TableRow v-for="secret in cardSecrets" :key="secret.id" class="hover:bg-muted/30">
                 <TableCell class="px-4 py-3">
-                  <input v-model="selectedSecretIds" type="checkbox" :value="secret.id" class="h-4 w-4 accent-primary" />
+                  <Checkbox :model-value="selectedSecretIds.includes(secret.id)" @update:model-value="(v) => toggleSecretSelected(secret.id, v)" />
                 </TableCell>
                 <TableCell class="px-4 py-3">
                   <IdCell :value="secret.id" />

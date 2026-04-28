@@ -6,7 +6,9 @@ import { adminAPI } from '@/api/admin'
 import { AFFILIATE_PROFILE_STATUS_ACTIVE, AFFILIATE_PROFILE_STATUS_DISABLED } from '@/constants/affiliate'
 import IdCell from '@/components/IdCell.vue'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { toggleArrayMember } from '@/lib/utils'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -139,6 +141,10 @@ const toggleSelectAll = () => {
     .filter((id) => id > 0)
 }
 
+const toggleAffiliateUserSelected = (id: number, v: boolean | 'indeterminate') => {
+  toggleArrayMember(selectedIds, id, v)
+}
+
 const toggleProfileStatus = async (row: Record<string, unknown>) => {
   const profileID = resolveProfileID(row)
   if (profileID <= 0) return
@@ -263,7 +269,7 @@ onMounted(() => {
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-6 py-3">
-              <input type="checkbox" :checked="allSelected" class="h-4 w-4 accent-primary" @change="toggleSelectAll" />
+              <Checkbox :model-value="allSelected" @update:model-value="toggleSelectAll" />
             </TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.affiliatesUsers.table.id') }}</TableHead>
             <TableHead class="min-w-[160px] px-6 py-3">{{ t('admin.affiliatesUsers.table.user') }}</TableHead>
@@ -290,12 +296,10 @@ onMounted(() => {
           </TableRow>
           <TableRow v-for="item in rows" :key="item?.profile?.id || item?.id" class="hover:bg-muted/30">
             <TableCell class="px-6 py-4">
-              <input
-                type="checkbox"
-                :value="resolveProfileID(item)"
-                v-model="selectedIds"
-                class="h-4 w-4 accent-primary"
+              <Checkbox
+                :model-value="selectedIds.includes(resolveProfileID(item))"
                 :disabled="resolveProfileID(item) <= 0"
+                @update:model-value="(v) => toggleAffiliateUserSelected(resolveProfileID(item), v)"
               />
             </TableCell>
             <TableCell class="px-6 py-4">

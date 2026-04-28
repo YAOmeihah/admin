@@ -1,5 +1,11 @@
 import { defineStore } from 'pinia'
-import { adminAPI, type AdminAuthzPolicy, type AdminLoginRequest } from '@/api/admin'
+import {
+  adminAPI,
+  type AdminAuthzPolicy,
+  type AdminLoginRequest,
+  type AdminLoginChallengeResponse,
+  type AdminLoginPasswordResponse,
+} from '@/api/admin'
 
 const TOKEN_KEY = 'admin_token'
 const ROLES_KEY = 'admin_roles'
@@ -81,19 +87,62 @@ export const useAdminAuthStore = defineStore('adminAuth', {
     roles: readArrayStorage(ROLES_KEY),
     permissions: readArrayStorage(PERMISSIONS_KEY),
     permissionsLoaded: false,
+    challengeToken: '' as string,
+    challengeExpiresAt: '' as string,
+    requiresTotp: false as boolean,
   }),
   actions: {
-    async login(payload: AdminLoginRequest) {
+    async login(payload: AdminLoginRequest): Promise<{ requiresTotp: boolean }> {
       this.loading = true
       try {
         const response = await adminAPI.login(payload)
-        const { token } = response.data.data
-        this.token = token
-        localStorage.setItem(TOKEN_KEY, token)
+        const data = response.data.data as AdminLoginChallengeResponse | AdminLoginPasswordResponse
+        if ((data as AdminLoginChallengeResponse).requires_totp) {
+          const challenge = data as AdminLoginChallengeResponse
+          this.challengeToken = challenge.challenge_token
+          this.challengeExpiresAt = challenge.challenge_expires_at
+          this.requiresTotp = true
+          return { requiresTotp: true }
+        }
+        const ok = data as AdminLoginPasswordResponse
+        this.token = ok.token
+        localStorage.setItem(TOKEN_KEY, ok.token)
+        this.requiresTotp = false
+        this.challengeToken = ''
+        this.challengeExpiresAt = ''
+        await this.loadAuthz()
+        return { requiresTotp: false }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async verify2FA(payload: { code?: string; recovery_code?: string }) {
+      if (!this.challengeToken) {
+        throw new Error('No active 2FA challenge')
+      }
+      this.loading = true
+      try {
+        const response = await adminAPI.verify2FA({
+          challenge_token: this.challengeToken,
+          ...payload,
+        })
+        const data = response.data.data as AdminLoginPasswordResponse
+        this.token = data.token
+        localStorage.setItem(TOKEN_KEY, data.token)
+        this.requiresTotp = false
+        this.challengeToken = ''
+        this.challengeExpiresAt = ''
         await this.loadAuthz()
       } finally {
         this.loading = false
       }
+    },
+
+    clearChallenge() {
+      this.requiresTotp = false
+      this.challengeToken = ''
+      this.challengeExpiresAt = ''
     },
 
     async loadAuthz() {

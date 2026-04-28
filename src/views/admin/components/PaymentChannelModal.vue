@@ -7,6 +7,8 @@ import { getLocalizedText } from '@/utils/format'
 import MediaPicker from '@/components/admin/MediaPicker.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogScrollContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -1063,8 +1065,8 @@ const closeModal = () => {
             <Input v-model="form.max_amount" type="number" step="0.01" min="0" :placeholder="t('admin.paymentChannels.modal.maxAmountPlaceholder')" />
           </div>
           <div class="mt-2 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:items-center">
-            <input v-model="form.hide_amount_out_range" type="checkbox" class="h-4 w-4 accent-primary" />
-            <span class="text-xs text-muted-foreground">{{ t('admin.paymentChannels.modal.hideAmountOutRange') }}</span>
+            <Switch v-model="form.hide_amount_out_range" />
+            <Label class="text-xs text-muted-foreground">{{ t('admin.paymentChannels.modal.hideAmountOutRange') }}</Label>
           </div>
           <div class="min-w-0 md:col-span-2">
             <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.paymentTypes') }}</label>
@@ -1092,8 +1094,8 @@ const closeModal = () => {
             />
           </div>
           <div class="mt-2 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:items-center">
-            <input v-model="form.is_active" type="checkbox" class="h-4 w-4 accent-primary" />
-            <span class="text-xs text-muted-foreground">{{ t('admin.common.enabled') }}</span>
+            <Switch v-model="form.is_active" />
+            <Label class="text-xs text-muted-foreground">{{ t('admin.common.enabled') }}</Label>
           </div>
         </div>
 

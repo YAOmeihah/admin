@@ -2,9 +2,14 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { adminAPI, type AdminAuthzAdmin, type AdminAuthzPolicy, type AdminPermissionCatalogItem } from '@/api/admin'
+import { useAdminAuthStore } from '@/stores/auth'
 import IdCell from '@/components/IdCell.vue'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { notifyError, notifySuccess } from '@/utils/notify'
 import { confirmAction } from '@/utils/confirm'
@@ -49,8 +54,15 @@ const textMap = {
     adminTableUsername: '账号',
     adminTableRoles: '角色',
     adminTableSuper: '超管',
+    adminTableTotp: '2FA',
     adminTableCreatedAt: '创建时间',
     adminTableLastLoginAt: '最近登录',
+    adminTotpEnabled: '已启用',
+    adminTotpDisabled: '未启用',
+    adminTotpReset: '重置 2FA',
+    adminTotpResetConfirm: '确认重置 {name} 的两步验证？目标将被强制下线。',
+    adminTotpResetSuccess: '已重置',
+    adminTotpResetFailed: '重置失败',
     adminRolesEmpty: '未分配',
     adminSelectRoleTarget: '设为角色分配对象',
     adminRoleTargetSelected: '已选择',
@@ -140,8 +152,15 @@ const textMap = {
     adminTableUsername: '帳號',
     adminTableRoles: '角色',
     adminTableSuper: '超管',
+    adminTableTotp: '2FA',
     adminTableCreatedAt: '建立時間',
     adminTableLastLoginAt: '最近登入',
+    adminTotpEnabled: '已啟用',
+    adminTotpDisabled: '未啟用',
+    adminTotpReset: '重設 2FA',
+    adminTotpResetConfirm: '確認重設 {name} 的兩步驗證？目標將被強制登出。',
+    adminTotpResetSuccess: '已重設',
+    adminTotpResetFailed: '重設失敗',
     adminRolesEmpty: '未分配',
     adminSelectRoleTarget: '設為角色分配對象',
     adminRoleTargetSelected: '已選擇',
@@ -231,8 +250,15 @@ const textMap = {
     adminTableUsername: 'Username',
     adminTableRoles: 'Roles',
     adminTableSuper: 'Super',
+    adminTableTotp: '2FA',
     adminTableCreatedAt: 'Created At',
     adminTableLastLoginAt: 'Last Login',
+    adminTotpEnabled: 'Enabled',
+    adminTotpDisabled: 'Disabled',
+    adminTotpReset: 'Reset 2FA',
+    adminTotpResetConfirm: 'Reset 2FA for {name}? They will be forced to sign in again.',
+    adminTotpResetSuccess: 'Reset',
+    adminTotpResetFailed: 'Reset failed',
     adminRolesEmpty: 'Unassigned',
     adminSelectRoleTarget: 'Set as role target',
     adminRoleTargetSelected: 'Selected',
@@ -321,6 +347,7 @@ const permissionCatalog = ref<AdminPermissionCatalogItem[]>([])
 const collapsedModules = ref<string[]>([])
 
 const admins = ref<AdminAuthzAdmin[]>([])
+const authStore = useAdminAuthStore()
 const selectedAdminId = ref<number>(0)
 const selectedAdminRoles = ref<string[]>([])
 const adminKeyword = ref('')
@@ -508,9 +535,9 @@ const fetchSelectedAdminRoles = async () => {
 
 const isRoleChecked = (role: string) => selectedAdminRoles.value.includes(role)
 
-const toggleAdminRole = (role: string, checked: boolean) => {
+const toggleAdminRole = (role: string, v: boolean | 'indeterminate') => {
   const next = new Set(selectedAdminRoles.value)
-  if (checked) {
+  if (v === true) {
     next.add(role)
   } else {
     next.delete(role)
@@ -735,6 +762,23 @@ const handleDeleteAdmin = async (admin: AdminAuthzAdmin) => {
   }
 }
 
+const resetAdmin2FA = async (admin: AdminAuthzAdmin) => {
+  const confirmed = await confirmAction({
+    description: formatText(text.value.adminTotpResetConfirm, { name: admin.username }),
+    variant: 'destructive',
+  })
+  if (!confirmed) return
+  try {
+    await adminAPI.resetAdmin2FA(admin.id)
+    notifySuccess(text.value.adminTotpResetSuccess)
+    await fetchAdmins()
+  } catch (err: any) {
+    if (!err?.__notified) {
+      notifyError(text.value.adminTotpResetFailed)
+    }
+  }
+}
+
 const handleSaveAdminRoles = async () => {
   if (!selectedAdminId.value) {
     notifyError(text.value.selectAdminFirst)
@@ -800,6 +844,7 @@ onMounted(async () => {
                   <TableHead class="min-w-[140px] px-4 py-3">{{ text.adminTableUsername }}</TableHead>
                   <TableHead class="min-w-[160px] px-4 py-3">{{ text.adminTableRoles }}</TableHead>
                   <TableHead class="min-w-[90px] px-4 py-3">{{ text.adminTableSuper }}</TableHead>
+                  <TableHead class="min-w-[90px] px-4 py-3">{{ text.adminTableTotp }}</TableHead>
                   <TableHead class="min-w-[140px] px-4 py-3">{{ text.adminTableCreatedAt }}</TableHead>
                   <TableHead class="min-w-[140px] px-4 py-3">{{ text.adminTableLastLoginAt }}</TableHead>
                   <TableHead class="min-w-[160px] px-4 py-3 text-right">{{ text.tableOperation }}</TableHead>
@@ -829,6 +874,9 @@ onMounted(async () => {
                   <TableCell class="min-w-[90px] px-4 py-3 text-xs">
                     <span :class="item.is_super ? 'text-emerald-600' : 'text-muted-foreground'">{{ item.is_super ? text.yes : text.no }}</span>
                   </TableCell>
+                  <TableCell class="min-w-[90px] px-4 py-3 text-xs">
+                    <span :class="item.totp_enabled ? 'text-emerald-600' : 'text-muted-foreground'">{{ item.totp_enabled ? text.adminTotpEnabled : text.adminTotpDisabled }}</span>
+                  </TableCell>
                   <TableCell class="min-w-[140px] px-4 py-3 text-xs text-muted-foreground">{{ formatDateTime(item.created_at) }}</TableCell>
                   <TableCell class="min-w-[140px] px-4 py-3 text-xs text-muted-foreground">{{ formatDateTime(item.last_login_at) }}</TableCell>
                   <TableCell class="min-w-[160px] px-4 py-3">
@@ -838,6 +886,14 @@ onMounted(async () => {
                       </Button>
                       <Button size="sm" variant="outline" @click="openAdminEditForm(item)">
                         {{ text.edit }}
+                      </Button>
+                      <Button
+                        v-if="authStore.isSuper && item.totp_enabled"
+                        size="sm"
+                        variant="outline"
+                        @click="resetAdmin2FA(item)"
+                      >
+                        {{ text.adminTotpReset }}
                       </Button>
                       <Button size="sm" variant="outline" class="text-destructive" @click="handleDeleteAdmin(item)">
                         {{ text.delete }}
@@ -867,10 +923,10 @@ onMounted(async () => {
               :placeholder="adminFormMode === 'create' ? text.adminPasswordPlaceholderCreate : text.adminPasswordPlaceholderEdit"
             />
           </div>
-          <label class="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm">
-            <input v-model="adminForm.isSuper" type="checkbox" class="h-4 w-4">
+          <Label class="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm cursor-pointer">
+            <Switch v-model="adminForm.isSuper" />
             <span>{{ text.adminIsSuper }}</span>
-          </label>
+          </Label>
           <Button class="w-full" :disabled="savingAdminForm" @click="handleSubmitAdminForm">
             {{ savingAdminForm ? text.loading : adminSubmitLabel }}
           </Button>
@@ -920,9 +976,14 @@ onMounted(async () => {
         <template v-else>
           <div class="grid grid-cols-1 md:grid-cols-[1fr_140px_auto] gap-2">
             <Input v-model="policyForm.object" :placeholder="text.objectPlaceholder" />
-            <select v-model="policyForm.action" class="h-10 rounded-md border border-input bg-background px-3 text-sm">
-              <option v-for="action in actionOptions" :key="action" :value="action">{{ action }}</option>
-            </select>
+            <Select v-model="policyForm.action">
+              <SelectTrigger class="h-10">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="action in actionOptions" :key="action" :value="action">{{ action }}</SelectItem>
+              </SelectContent>
+            </Select>
             <Button @click="handleGrantPolicy">{{ text.addPolicy }}</Button>
           </div>
 
@@ -1015,12 +1076,17 @@ onMounted(async () => {
       <div class="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4">
         <div class="space-y-2">
           <label class="text-sm text-muted-foreground">{{ text.adminLabel }}</label>
-          <select v-model.number="selectedAdminId" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
-            <option :value="0">{{ text.selectAdmin }}</option>
-            <option v-for="admin in admins" :key="admin.id" :value="admin.id">
-              {{ admin.username }}{{ admin.is_super ? ' (super)' : '' }}
-            </option>
-          </select>
+          <Select :model-value="String(selectedAdminId)" @update:model-value="selectedAdminId = Number($event)">
+            <SelectTrigger class="h-10 w-full">
+              <SelectValue :placeholder="text.selectAdmin" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0">{{ text.selectAdmin }}</SelectItem>
+              <SelectItem v-for="admin in admins" :key="admin.id" :value="String(admin.id)">
+                {{ admin.username }}{{ admin.is_super ? ' (super)' : '' }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
           <div v-if="loadingAdmins" class="text-xs text-muted-foreground">{{ text.loading }}</div>
           <div v-else-if="selectedAdmin" class="rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground space-y-1">
             <div class="flex items-center justify-between">
@@ -1037,19 +1103,17 @@ onMounted(async () => {
         <div class="space-y-3">
           <div class="text-sm text-muted-foreground">{{ text.rolesLabel }}</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            <label
+            <Label
               v-for="role in normalizedRoleOptions"
               :key="`admin-role-${role}`"
-              class="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm"
+              class="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm cursor-pointer"
             >
-              <input
-                type="checkbox"
-                class="h-4 w-4"
-                :checked="isRoleChecked(role)"
-                @change="toggleAdminRole(role, ($event.target as HTMLInputElement).checked)"
-              >
+              <Checkbox
+                :model-value="isRoleChecked(role)"
+                @update:model-value="(v) => toggleAdminRole(role, v)"
+              />
               <span>{{ stripRolePrefix(role) }}</span>
-            </label>
+            </Label>
           </div>
           <div class="flex items-center justify-end">
             <Button :disabled="savingAdminRoles" @click="handleSaveAdminRoles">

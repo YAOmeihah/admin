@@ -3,6 +3,9 @@ import { reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { adminAPI } from '@/api/admin'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { notifyError, notifySuccess } from '@/utils/notify'
 
 const { t } = useI18n()
@@ -157,39 +160,41 @@ defineExpose({ save, submitting })
       <div class="space-y-6 p-6">
         <div class="space-y-2">
           <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.captcha.provider') }}</label>
-          <select
-            v-model="form.provider"
-            class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-          >
-            <option value="none">{{ t('admin.settings.captcha.providerNone') }}</option>
-            <option value="image">{{ t('admin.settings.captcha.providerImage') }}</option>
-            <option value="turnstile">{{ t('admin.settings.captcha.providerTurnstile') }}</option>
-          </select>
+          <Select v-model="form.provider">
+            <SelectTrigger class="h-10">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">{{ t('admin.settings.captcha.providerNone') }}</SelectItem>
+              <SelectItem value="image">{{ t('admin.settings.captcha.providerImage') }}</SelectItem>
+              <SelectItem value="turnstile">{{ t('admin.settings.captcha.providerTurnstile') }}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div class="rounded-xl border border-border bg-muted/20 p-4">
           <h3 class="text-sm font-semibold">{{ t('admin.settings.captcha.scenesTitle') }}</h3>
           <div class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label class="flex items-center gap-2 text-sm">
-              <input v-model="form.scenes.login" type="checkbox" class="h-4 w-4 accent-primary" />
-              {{ t('admin.settings.captcha.scenes.login') }}
-            </label>
-            <label class="flex items-center gap-2 text-sm">
-              <input v-model="form.scenes.register_send_code" type="checkbox" class="h-4 w-4 accent-primary" />
-              {{ t('admin.settings.captcha.scenes.registerSendCode') }}
-            </label>
-            <label class="flex items-center gap-2 text-sm">
-              <input v-model="form.scenes.reset_send_code" type="checkbox" class="h-4 w-4 accent-primary" />
-              {{ t('admin.settings.captcha.scenes.resetSendCode') }}
-            </label>
-            <label class="flex items-center gap-2 text-sm">
-              <input v-model="form.scenes.guest_create_order" type="checkbox" class="h-4 w-4 accent-primary" />
-              {{ t('admin.settings.captcha.scenes.guestCreateOrder') }}
-            </label>
-            <label class="flex items-center gap-2 text-sm">
-              <input v-model="form.scenes.gift_card_redeem" type="checkbox" class="h-4 w-4 accent-primary" />
-              {{ t('admin.settings.captcha.scenes.giftCardRedeem') }}
-            </label>
+            <div class="flex items-center gap-2 text-sm">
+              <Switch v-model="form.scenes.login" />
+              <Label class="text-sm">{{ t('admin.settings.captcha.scenes.login') }}</Label>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <Switch v-model="form.scenes.register_send_code" />
+              <Label class="text-sm">{{ t('admin.settings.captcha.scenes.registerSendCode') }}</Label>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <Switch v-model="form.scenes.reset_send_code" />
+              <Label class="text-sm">{{ t('admin.settings.captcha.scenes.resetSendCode') }}</Label>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <Switch v-model="form.scenes.guest_create_order" />
+              <Label class="text-sm">{{ t('admin.settings.captcha.scenes.guestCreateOrder') }}</Label>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <Switch v-model="form.scenes.gift_card_redeem" />
+              <Label class="text-sm">{{ t('admin.settings.captcha.scenes.giftCardRedeem') }}</Label>
+            </div>
           </div>
         </div>
 

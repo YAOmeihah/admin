@@ -6,14 +6,16 @@ import { adminAPI } from '@/api/admin'
 import type { AdminTelegramBroadcastUser } from '@/api/types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { notifyError, notifySuccess } from '@/utils/notify'
-import { formatDate } from '@/utils/format'
-import { Loader2, Paperclip, Search, Send, Trash2, Users, ImageIcon } from 'lucide-vue-next'
+import { formatDate, toRFC3339 } from '@/utils/format'
+import { Loader2, Search, Send, Trash2, Users, ImageIcon } from 'lucide-vue-next'
 import MediaPicker from '@/components/admin/MediaPicker.vue'
+import FileInput from '@/components/FileInput.vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -21,7 +23,6 @@ const router = useRouter()
 const submitting = ref(false)
 const uploading = ref(false)
 const loadingUsers = ref(false)
-const fileInput = ref<HTMLInputElement | null>(null)
 
 const form = reactive({
   title: '',
@@ -64,8 +65,8 @@ const fetchUsers = async (page = 1) => {
       display_name: filters.display_name || undefined,
       telegram_username: filters.telegram_username || undefined,
       telegram_user_id: filters.telegram_user_id || undefined,
-      created_from: filters.created_from || undefined,
-      created_to: filters.created_to || undefined,
+      created_from: toRFC3339(filters.created_from),
+      created_to: toRFC3339(filters.created_to),
     })
     users.value = res.data?.data || []
     pagination.value = res.data?.pagination || pagination.value
@@ -100,9 +101,9 @@ const toggleSelectAll = () => {
   selectedUserIds.value = Array.from(next)
 }
 
-const toggleUser = (userID: number, checked: boolean) => {
+const toggleUser = (userID: number, v: boolean | 'indeterminate') => {
   const next = new Set(selectedUserIds.value)
-  if (checked) {
+  if (v === true) {
     next.add(userID)
   } else {
     next.delete(userID)
@@ -112,10 +113,6 @@ const toggleUser = (userID: number, checked: boolean) => {
 
 const mediaPickerRef = ref<InstanceType<typeof MediaPicker> | null>(null)
 const mediaPickerValue = ref('')
-
-const openFilePicker = () => {
-  fileInput.value?.click()
-}
 
 const handleMediaSelected = (value: string | string[]) => {
   const path = Array.isArray(value) ? value[0] : value
@@ -131,11 +128,10 @@ const handleMediaSelected = (value: string | string[]) => {
 const clearAttachment = () => {
   form.attachment_url = ''
   form.attachment_name = ''
-  if (fileInput.value) fileInput.value.value = ''
 }
 
-const handleAttachmentChange = async (event: Event) => {
-  const file = (event.target as HTMLInputElement).files?.[0]
+const handleAttachmentChange = async (files: FileList | null) => {
+  const file = files?.[0]
   if (!file) return
 
   uploading.value = true
@@ -153,7 +149,6 @@ const handleAttachmentChange = async (event: Event) => {
     }
   } finally {
     uploading.value = false
-    if (fileInput.value) fileInput.value.value = ''
   }
 }
 
@@ -179,8 +174,8 @@ const handleSubmit = async () => {
             display_name: filters.display_name,
             telegram_username: filters.telegram_username,
             telegram_user_id: filters.telegram_user_id,
-            created_from: filters.created_from,
-            created_to: filters.created_to,
+            created_from: toRFC3339(filters.created_from),
+            created_to: toRFC3339(filters.created_to),
           }
         : {},
       attachment_url: form.attachment_url || undefined,
@@ -266,7 +261,6 @@ onMounted(() => {
         <div class="space-y-2">
           <Label>{{ t('telegramBot.broadcasts.fieldAttachment') }}</Label>
           <div class="rounded-lg border border-dashed p-4">
-            <input ref="fileInput" type="file" class="hidden" @change="handleAttachmentChange" />
             <div v-if="form.attachment_url" class="flex flex-wrap items-center justify-between gap-3">
               <div class="space-y-1">
                 <div class="font-medium">{{ form.attachment_name || t('telegramBot.broadcasts.attachmentUploaded') }}</div>
@@ -278,10 +272,11 @@ onMounted(() => {
               </Button>
             </div>
             <div v-else class="flex flex-wrap items-center gap-3">
-              <Button variant="outline" type="button" :disabled="uploading" @click="openFilePicker">
-                <Paperclip class="h-4 w-4 mr-2" />
-                {{ uploading ? t('admin.common.loading') : t('telegramBot.broadcasts.uploadAttachment') }}
-              </Button>
+              <FileInput
+                :button-text="uploading ? t('admin.common.loading') : t('telegramBot.broadcasts.uploadAttachment')"
+                :disabled="uploading"
+                @change="handleAttachmentChange"
+              />
               <Button variant="outline" type="button" @click="mediaPickerRef?.openPicker()">
                 <ImageIcon class="h-4 w-4 mr-2" />
                 {{ t('admin.mediaPicker.selectFromLibrary') }}
@@ -319,8 +314,8 @@ onMounted(() => {
           <Input v-model="filters.display_name" :placeholder="t('telegramBot.broadcasts.filterDisplayName')" />
           <Input v-model="filters.telegram_username" :placeholder="t('telegramBot.broadcasts.filterTelegramUsername')" />
           <Input v-model="filters.telegram_user_id" :placeholder="t('telegramBot.broadcasts.filterTelegramUserId')" />
-          <Input v-model="filters.created_from" type="date" />
-          <Input v-model="filters.created_to" type="date" />
+          <Input v-model="filters.created_from" type="datetime-local" />
+          <Input v-model="filters.created_to" type="datetime-local" />
         </div>
 
         <div class="flex flex-wrap gap-2">
@@ -338,7 +333,7 @@ onMounted(() => {
             <TableHeader>
               <TableRow>
                 <TableHead class="w-12">
-                  <input type="checkbox" :checked="allPageSelected" @change="toggleSelectAll" />
+                  <Checkbox :model-value="allPageSelected" @update:model-value="toggleSelectAll" />
                 </TableHead>
                 <TableHead class="min-w-[180px]">{{ t('telegramBot.broadcasts.userDisplayName') }}</TableHead>
                 <TableHead class="min-w-[180px]">{{ t('telegramBot.broadcasts.userTelegramUsername') }}</TableHead>
@@ -360,10 +355,9 @@ onMounted(() => {
               </TableRow>
               <TableRow v-for="item in users" :key="item.user_id">
                 <TableCell>
-                  <input
-                    type="checkbox"
-                    :checked="selectedUserIds.includes(item.user_id)"
-                    @change="toggleUser(item.user_id, ($event.target as HTMLInputElement).checked)"
+                  <Checkbox
+                    :model-value="selectedUserIds.includes(item.user_id)"
+                    @update:model-value="(v) => toggleUser(item.user_id, v)"
                   />
                 </TableCell>
                 <TableCell class="min-w-[180px]">

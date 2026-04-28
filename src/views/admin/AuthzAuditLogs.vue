@@ -6,6 +6,7 @@ import { adminAPI, type AdminAuthzAuditLog } from '@/api/admin'
 import IdCell from '@/components/IdCell.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
 import { notifyError } from '@/utils/notify'
@@ -142,10 +143,10 @@ const pagination = ref({
 const filters = reactive({
   operator_admin_id: '',
   target_admin_id: '',
-  action: '',
+  action: '__all__',
   role: '',
   object: '',
-  method: '',
+  method: '__all__',
   created_from: '',
   created_to: '',
 })
@@ -168,10 +169,10 @@ const fetchLogs = async (page = 1) => {
       page_size: pagination.value.page_size,
       operator_admin_id: filters.operator_admin_id || undefined,
       target_admin_id: filters.target_admin_id || undefined,
-      action: filters.action || undefined,
+      action: filters.action !== '__all__' ? filters.action || undefined : undefined,
       role: filters.role || undefined,
       object: filters.object || undefined,
-      method: filters.method || undefined,
+      method: filters.method !== '__all__' ? filters.method || undefined : undefined,
       created_from: toRFC3339(filters.created_from),
       created_to: toRFC3339(filters.created_to),
     })
@@ -193,10 +194,10 @@ const debouncedSearch = useDebounceFn(handleSearch, 300)
 const handleReset = () => {
   filters.operator_admin_id = ''
   filters.target_admin_id = ''
-  filters.action = ''
+  filters.action = '__all__'
   filters.role = ''
   filters.object = ''
-  filters.method = ''
+  filters.method = '__all__'
   filters.created_from = ''
   filters.created_to = ''
   fetchLogs(1)
@@ -223,19 +224,29 @@ onMounted(() => {
       <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Input v-model="filters.operator_admin_id" type="number" min="1" :placeholder="text.filters.operator" class="h-9" @update:modelValue="debouncedSearch" />
         <Input v-model="filters.target_admin_id" type="number" min="1" :placeholder="text.filters.target" class="h-9" @update:modelValue="debouncedSearch" />
-        <select v-model="filters.action" class="h-9 rounded-md border border-input bg-background px-3 text-sm">
-          <option value="">{{ text.filters.allActions }}</option>
-          <option v-for="item in actionOptions" :key="item" :value="item">{{ item }}</option>
-        </select>
+        <Select v-model="filters.action">
+          <SelectTrigger class="h-9">
+            <SelectValue :placeholder="text.filters.allActions" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">{{ text.filters.allActions }}</SelectItem>
+            <SelectItem v-for="item in actionOptions" :key="item" :value="item">{{ item }}</SelectItem>
+          </SelectContent>
+        </Select>
         <Input v-model="filters.role" type="text" :placeholder="text.filters.role" class="h-9" @update:modelValue="debouncedSearch" />
       </div>
 
       <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Input v-model="filters.object" type="text" :placeholder="text.filters.object" class="h-9" @update:modelValue="debouncedSearch" />
-        <select v-model="filters.method" class="h-9 rounded-md border border-input bg-background px-3 text-sm">
-          <option value="">{{ text.filters.allMethods }}</option>
-          <option v-for="item in methodOptions" :key="item" :value="item">{{ item }}</option>
-        </select>
+        <Select v-model="filters.method">
+          <SelectTrigger class="h-9">
+            <SelectValue :placeholder="text.filters.allMethods" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">{{ text.filters.allMethods }}</SelectItem>
+            <SelectItem v-for="item in methodOptions" :key="item" :value="item">{{ item }}</SelectItem>
+          </SelectContent>
+        </Select>
         <Input v-model="filters.created_from" type="datetime-local" class="h-9" :placeholder="text.filters.createdFrom" />
         <Input v-model="filters.created_to" type="datetime-local" class="h-9" :placeholder="text.filters.createdTo" />
       </div>

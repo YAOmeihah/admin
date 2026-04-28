@@ -4,7 +4,10 @@ import { useI18n } from 'vue-i18n'
 import { adminAPI } from '@/api/admin'
 import type { AdminProductMapping, AdminSiteConnection, AdminCategory, AdminProduct, AdminProductSKU } from '@/api/types'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { Dialog, DialogScrollContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { confirmAction } from '@/utils/confirm'
@@ -516,15 +519,14 @@ const toggleCategoryExpand = (catId: number) => {
   expandedCategoryIds.value = s
 }
 
-const selectAllInCategory = (catId: number) => {
+const selectAllInCategory = (catId: number, v: boolean | 'indeterminate') => {
   const products = productsByCategory.value.get(catId) || []
   const s = new Set(selectedProductIds.value)
   const nonMapped = products.filter(p => !mappedUpstreamIds.value.has(p.id))
-  const allSelected = nonMapped.every(p => s.has(p.id))
-  if (allSelected) {
-    for (const p of nonMapped) s.delete(p.id)
-  } else {
+  if (v === true) {
     for (const p of nonMapped) s.add(p.id)
+  } else {
+    for (const p of nonMapped) s.delete(p.id)
   }
   selectedProductIds.value = s
 }
@@ -695,7 +697,7 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
         {{ t('productMappings.empty') }}
       </div>
       <div v-if="!loading && mappings.length > 0" class="flex items-center gap-2 px-1">
-        <input type="checkbox" :checked="allMappingsSelected" :indeterminate="selectedMappingIds.size > 0 && !allMappingsSelected" class="h-4 w-4 rounded border-border accent-primary cursor-pointer" @change="toggleAllMappings" />
+        <Checkbox :model-value="allMappingsSelected ? true : (selectedMappingIds.size > 0 ? 'indeterminate' : false)" @update:model-value="toggleAllMappings" />
         <span class="text-xs text-muted-foreground">{{ t('productMappings.batch.selectAll') }}</span>
       </div>
 
@@ -711,7 +713,9 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
           @click="toggleMappingExpand(mapping)"
         >
           <!-- Checkbox -->
-          <input type="checkbox" :checked="selectedMappingIds.has(mapping.id)" class="h-4 w-4 shrink-0 rounded border-border accent-primary cursor-pointer" @click.stop="toggleMappingSelect(mapping.id)" />
+          <div @click.stop>
+            <Checkbox :model-value="selectedMappingIds.has(mapping.id)" @update:model-value="() => toggleMappingSelect(mapping.id)" />
+          </div>
           <!-- Expand arrow -->
           <svg
             class="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200"
@@ -910,8 +914,8 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
           <!-- Category options: auto-create + local category selector -->
           <div v-if="importConnectionId" class="flex flex-col gap-4 lg:flex-row lg:items-end">
             <div v-if="importViewMode === 'category' && upstreamCategoriesSupported" class="flex items-center gap-2">
-              <input id="auto-create-cat" type="checkbox" v-model="autoCreateCategory" class="h-4 w-4 rounded border-border accent-primary cursor-pointer" />
-              <label for="auto-create-cat" class="text-xs font-medium text-muted-foreground cursor-pointer">{{ t('productMappings.import.autoCreateCategory') }}</label>
+              <Switch id="auto-create-cat" v-model="autoCreateCategory" />
+              <Label for="auto-create-cat" class="text-xs font-medium text-muted-foreground cursor-pointer">{{ t('productMappings.import.autoCreateCategory') }}</Label>
             </div>
             <div v-if="!autoCreateCategory || importViewMode === 'flat'" class="min-w-[200px] flex-1">
               <label class="mb-1.5 block text-xs font-medium text-muted-foreground">{{ t('productMappings.import.category') }}</label>
@@ -951,11 +955,9 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
                     <span v-if="catItem.nonMappedCount < catItem.productCount" class="ml-1 text-xs text-amber-600">({{ catItem.productCount - catItem.nonMappedCount }} {{ t('productMappings.import.alreadyMapped') }})</span>
                   </div>
                   <div class="flex items-center gap-2 shrink-0" @click.stop>
-                    <input
-                      type="checkbox"
-                      :checked="isCategoryAllSelected(catItem.category.id)"
-                      class="h-4 w-4 rounded border-border accent-primary cursor-pointer"
-                      @change="selectAllInCategory(catItem.category.id)"
+                    <Checkbox
+                      :model-value="isCategoryAllSelected(catItem.category.id)"
+                      @update:model-value="(v) => selectAllInCategory(catItem.category.id, v)"
                     />
                     <Button
                       size="sm"
@@ -976,7 +978,9 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
                     :class="[selectedProductIds.has(product.id) ? 'bg-primary/5' : '', mappedUpstreamIds.has(product.id) ? 'opacity-50' : '']"
                   >
                     <div class="flex items-center gap-3 px-4 pl-11 py-2.5" :class="mappedUpstreamIds.has(product.id) ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-muted/20'" @click="toggleProduct(product.id)">
-                      <input type="checkbox" :checked="selectedProductIds.has(product.id)" :disabled="mappedUpstreamIds.has(product.id)" class="h-4 w-4 shrink-0 rounded border-border accent-primary" :class="mappedUpstreamIds.has(product.id) ? 'cursor-not-allowed' : 'cursor-pointer'" @click.stop="toggleProduct(product.id)" />
+                      <div @click.stop>
+                        <Checkbox :model-value="selectedProductIds.has(product.id)" :disabled="mappedUpstreamIds.has(product.id)" @update:model-value="() => toggleProduct(product.id)" />
+                      </div>
                       <div class="min-w-0 flex-1">
                         <div class="flex flex-wrap items-center gap-2">
                           <span class="break-words text-sm text-foreground sm:truncate">{{ getLocalizedText(product.title) }}</span>
@@ -1016,13 +1020,15 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
             <div v-else-if="upstreamProducts.length === 0" class="px-6 py-12 text-center text-sm text-muted-foreground">{{ t('productMappings.import.noUpstreamProducts') }}</div>
             <div v-else>
               <div class="flex items-center gap-3 border-b border-border bg-muted/40 px-4 py-2.5">
-                <input type="checkbox" :checked="allSelected" :indeterminate="selectedProductIds.size > 0 && !allSelected" class="h-4 w-4 rounded border-border accent-primary cursor-pointer" @change="toggleSelectAll" />
+                <Checkbox :model-value="allSelected ? true : (selectedProductIds.size > 0 ? 'indeterminate' : false)" @update:model-value="toggleSelectAll" />
                 <span class="text-xs font-medium text-muted-foreground">{{ t('productMappings.import.selectAll') }} ({{ upstreamProducts.length }}/{{ upstreamTotal }})</span>
               </div>
               <div class="divide-y divide-border max-h-[50vh] overflow-y-auto">
                 <div v-for="product in upstreamProducts" :key="product.id" class="transition-colors" :class="[selectedProductIds.has(product.id) ? 'bg-primary/5' : '', mappedUpstreamIds.has(product.id) ? 'opacity-50' : '']">
                   <div class="flex items-center gap-3 px-4 py-3" :class="mappedUpstreamIds.has(product.id) ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-muted/20'" @click="toggleProduct(product.id)">
-                    <input type="checkbox" :checked="selectedProductIds.has(product.id)" :disabled="mappedUpstreamIds.has(product.id)" class="h-4 w-4 shrink-0 rounded border-border accent-primary" :class="mappedUpstreamIds.has(product.id) ? 'cursor-not-allowed' : 'cursor-pointer'" @click.stop="toggleProduct(product.id)" />
+                    <div @click.stop>
+                      <Checkbox :model-value="selectedProductIds.has(product.id)" :disabled="mappedUpstreamIds.has(product.id)" @update:model-value="() => toggleProduct(product.id)" />
+                    </div>
                     <div class="min-w-0 flex-1">
                       <div class="flex flex-wrap items-center gap-2">
                         <span class="break-words text-sm font-medium text-foreground sm:truncate">{{ getLocalizedText(product.title) }}</span>

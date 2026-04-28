@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ArrowDown, ArrowUp, Loader2, Plus, Save, Trash2 } from 'lucide-vue-next'
 
@@ -73,7 +74,7 @@ onMounted(() => {
       </CardHeader>
       <CardContent class="space-y-4">
         <div class="flex flex-col gap-3 rounded-lg border border-border bg-muted/10 px-4 py-3 sm:flex-row sm:items-center">
-          <input id="help-enabled" v-model="form.help.enabled" type="checkbox" class="h-4 w-4 accent-primary" />
+          <Switch id="help-enabled" v-model="form.help.enabled" />
           <Label for="help-enabled">{{ t('telegramBot.settings.helpEnabled') }}</Label>
         </div>
         <div class="space-y-2">
@@ -101,12 +102,7 @@ onMounted(() => {
           class="space-y-3 rounded-lg border border-border p-4"
         >
           <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-            <input
-              :id="`help-enabled-${index}`"
-              v-model="item.enabled"
-              type="checkbox"
-              class="h-4 w-4 accent-primary"
-            />
+            <Switch :id="`help-enabled-${index}`" v-model="item.enabled" />
             <Input
               v-model="item.key"
               :placeholder="t('telegramBot.settings.helpKeyPlaceholder')"
@@ -152,7 +148,7 @@ onMounted(() => {
               <Input v-model.number="item.order" type="number" />
             </div>
             <div class="flex items-center gap-2 pt-6">
-              <input :id="`help-support-link-${index}`" v-model="item.show_support_link" type="checkbox" class="h-4 w-4 accent-primary" />
+              <Switch :id="`help-support-link-${index}`" v-model="item.show_support_link" />
               <Label :for="`help-support-link-${index}`">{{ t('telegramBot.settings.helpShowSupportLink') }}</Label>
             </div>
           </div>

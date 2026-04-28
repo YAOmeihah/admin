@@ -14,3 +14,16 @@ export function valueUpdater<T extends Updater<any>>(updaterOrValue: T, ref: Ref
       ? updaterOrValue(ref.value)
       : updaterOrValue
 }
+
+export function toggleArrayMember<T>(
+  arr: Ref<T[]>,
+  item: T,
+  v: boolean | 'indeterminate',
+) {
+  if (v === true) {
+    if (!arr.value.includes(item)) arr.value.push(item)
+  } else {
+    const i = arr.value.indexOf(item)
+    if (i >= 0) arr.value.splice(i, 1)
+  }
+}

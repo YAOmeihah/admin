@@ -10,12 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { getImageUrl } from '@/utils/image'
 import { notifyError, notifySuccess } from '@/utils/notify'
 import { confirmAction } from '@/utils/confirm'
+import FileInput from '@/components/FileInput.vue'
 
 const { t } = useI18n()
 const loading = ref(false)
 const uploading = ref(false)
 const uploadProgress = ref({ current: 0, total: 0 })
-const fileInput = ref<HTMLInputElement | null>(null)
 
 const items = ref<AdminMedia[]>([])
 const pagination = reactive({
@@ -95,12 +95,7 @@ function formatFileSize(bytes: number): string {
 }
 
 // Upload
-function triggerUpload() {
-  fileInput.value?.click()
-}
-
-async function handleFileChange(e: Event) {
-  const files = (e.target as HTMLInputElement).files
+async function handleFileChange(files: FileList | null) {
   if (!files || files.length === 0) return
   uploading.value = true
   const total = files.length
@@ -130,7 +125,6 @@ async function handleFileChange(e: Event) {
   }
   fetchMedia(1)
   uploading.value = false
-  if (fileInput.value) fileInput.value.value = ''
 }
 
 // Inline rename
@@ -188,10 +182,13 @@ onMounted(() => fetchMedia(1))
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between gap-4">
       <h1 class="text-2xl font-bold">{{ t('admin.media.title') }}</h1>
-      <Button @click="triggerUpload" :disabled="uploading">
-        {{ uploading ? t('admin.media.uploadProgress', uploadProgress) : t('admin.media.uploadNew') }}
-      </Button>
-      <input ref="fileInput" type="file" class="hidden" accept="image/*" multiple @change="handleFileChange" />
+      <FileInput
+        accept="image/*"
+        :multiple="true"
+        :disabled="uploading"
+        :button-text="uploading ? t('admin.media.uploadProgress', uploadProgress) : t('admin.media.uploadNew')"
+        @change="handleFileChange"
+      />
     </div>
 
     <!-- Filters -->

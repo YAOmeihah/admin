@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import MediaPicker from '@/components/admin/MediaPicker.vue'
@@ -62,7 +63,7 @@ onMounted(() => {
       <CardContent class="space-y-4">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div class="flex flex-col gap-3 rounded-lg border border-border bg-muted/10 px-4 py-3 sm:flex-row sm:items-center">
-            <input id="bot-enabled" v-model="form.enabled" type="checkbox" class="h-4 w-4 accent-primary" />
+            <Switch id="bot-enabled" v-model="form.enabled" />
             <Label for="bot-enabled">{{ t('telegramBot.settings.enabled') }}</Label>
           </div>
           <div class="space-y-2">
@@ -124,7 +125,7 @@ onMounted(() => {
       </CardHeader>
       <CardContent class="space-y-4">
         <div class="flex flex-col gap-3 rounded-lg border border-border bg-muted/10 px-4 py-3 sm:flex-row sm:items-center">
-          <input id="welcome-enabled" v-model="form.welcome.enabled" type="checkbox" class="h-4 w-4 accent-primary" />
+          <Switch id="welcome-enabled" v-model="form.welcome.enabled" />
           <Label for="welcome-enabled">{{ t('telegramBot.settings.welcomeEnabled') }}</Label>
         </div>
         <div class="space-y-2">

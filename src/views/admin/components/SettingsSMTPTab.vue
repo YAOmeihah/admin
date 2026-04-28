@@ -4,6 +4,8 @@ import { useI18n } from 'vue-i18n'
 import { adminAPI } from '@/api/admin'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { notifyError, notifySuccess } from '@/utils/notify'
 
 const { t } = useI18n()
@@ -154,22 +156,22 @@ defineExpose({ save, submitting, smtpTesting })
       <div class="space-y-6 p-6">
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div class="flex items-center gap-3 rounded-lg border border-border bg-muted/20 px-4 py-3">
-            <input id="smtp-enabled" v-model="form.enabled" type="checkbox" class="h-4 w-4 accent-primary" />
-            <label for="smtp-enabled" class="text-sm font-medium">{{ t('admin.settings.smtp.enabled') }}</label>
+            <Switch id="smtp-enabled" v-model="form.enabled" />
+            <Label for="smtp-enabled" class="text-sm font-medium">{{ t('admin.settings.smtp.enabled') }}</Label>
           </div>
           <div class="flex items-center gap-3 rounded-lg border border-border bg-muted/20 px-4 py-3">
-            <input id="smtp-tls" v-model="form.use_tls" type="checkbox" class="h-4 w-4 accent-primary" />
-            <label for="smtp-tls" class="text-sm font-medium">{{ t('admin.settings.smtp.useTLS') }}</label>
-            <input id="smtp-ssl" v-model="form.use_ssl" type="checkbox" class="ml-4 h-4 w-4 accent-primary" />
-            <label for="smtp-ssl" class="text-sm font-medium">{{ t('admin.settings.smtp.useSSL') }}</label>
+            <Switch id="smtp-tls" v-model="form.use_tls" />
+            <Label for="smtp-tls" class="text-sm font-medium">{{ t('admin.settings.smtp.useTLS') }}</Label>
+            <Switch id="smtp-ssl" v-model="form.use_ssl" class="ml-4" />
+            <Label for="smtp-ssl" class="text-sm font-medium">{{ t('admin.settings.smtp.useSSL') }}</Label>
           </div>
         </div>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div class="flex items-center gap-3 rounded-lg border border-border bg-muted/20 px-4 py-3">
-            <input id="smtp-order-notification" v-model="form.order_notification_enabled" type="checkbox" class="h-4 w-4 accent-primary" :disabled="!form.enabled" />
+            <Switch id="smtp-order-notification" v-model="form.order_notification_enabled" :disabled="!form.enabled" />
             <div>
-              <label for="smtp-order-notification" class="text-sm font-medium">{{ t('admin.settings.smtp.orderNotificationEnabled') }}</label>
+              <Label for="smtp-order-notification" class="text-sm font-medium">{{ t('admin.settings.smtp.orderNotificationEnabled') }}</Label>
               <p class="text-xs text-muted-foreground">{{ t('admin.settings.smtp.orderNotificationHint') }}</p>
             </div>
           </div>

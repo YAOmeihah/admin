@@ -5,6 +5,8 @@ import { adminAPI, type AdminAffiliateSetting } from '@/api/admin'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { notifyError, notifySuccess } from '@/utils/notify'
 
 const { t } = useI18n()
@@ -108,8 +110,8 @@ onMounted(fetchSettings)
       </div>
       <div class="space-y-6 p-6">
         <div class="flex flex-col gap-3 rounded-lg border border-border bg-muted/20 px-4 py-3 sm:flex-row sm:items-center">
-          <input id="affiliate-enabled" v-model="form.enabled" type="checkbox" class="h-4 w-4 accent-primary" />
-          <label for="affiliate-enabled" class="text-sm font-medium">{{ t('admin.settings.affiliate.enabled') }}</label>
+          <Switch id="affiliate-enabled" v-model="form.enabled" />
+          <Label for="affiliate-enabled" class="text-sm font-medium">{{ t('admin.settings.affiliate.enabled') }}</Label>
         </div>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">

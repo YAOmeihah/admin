@@ -12,9 +12,28 @@ const cfAsyncModuleScriptPlugin = () => ({
   },
 })
 
+const adminBaseInjector = () => ({
+  name: 'inject-admin-base-placeholder',
+  transformIndexHtml(html: string) {
+    // 在 <head> 开标签后立即插入 <base>。占位符 __DJ_ADMIN_BASE__
+    // 由后端 internal/web 包在启动时一次性替换为实际 admin path。
+    return html.replace(
+      /<head[^>]*>/,
+      (m) => `${m}\n    <base href="__DJ_ADMIN_BASE__/">`,
+    )
+  },
+})
+
+const isFullstack = process.env.VITE_FULLSTACK === '1'
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue(), cfAsyncModuleScriptPlugin()],
+  base: isFullstack ? './' : '/',
+  plugins: [
+    vue(),
+    cfAsyncModuleScriptPlugin(),
+    ...(isFullstack ? [adminBaseInjector()] : []),
+  ],
   server: {
     host: '0.0.0.0',
     port: 5174,

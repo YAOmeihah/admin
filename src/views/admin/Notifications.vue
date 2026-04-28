@@ -6,6 +6,7 @@ import { adminAPI } from '@/api/admin'
 import type { AdminNotificationLog } from '@/api/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
 import { formatDate, toRFC3339 } from '@/utils/format'
@@ -337,22 +338,26 @@ onMounted(async () => {
       <div class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-4">
         <div class="space-y-2">
           <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.notification.test.channel') }}</label>
-          <select
-            v-model="testForm.channel"
-            class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-            @change="syncTestTarget(true)"
-          >
-            <option value="email">{{ t('admin.settings.notification.channels.email.title') }}</option>
-            <option value="telegram">{{ t('admin.settings.notification.channels.telegram.title') }}</option>
-          </select>
+          <Select v-model="testForm.channel" @update:modelValue="syncTestTarget(true)">
+            <SelectTrigger class="h-10 w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="email">{{ t('admin.settings.notification.channels.email.title') }}</SelectItem>
+              <SelectItem value="telegram">{{ t('admin.settings.notification.channels.telegram.title') }}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div class="space-y-2">
           <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.notification.test.scene') }}</label>
-          <select v-model="testForm.scene" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
-            <option v-for="scene in testScenes" :key="scene.value" :value="scene.value">
-              {{ scene.label }}
-            </option>
-          </select>
+          <Select v-model="testForm.scene">
+            <SelectTrigger class="h-10 w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="scene in testScenes" :key="scene.value" :value="scene.value">{{ scene.label }}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div class="space-y-2 lg:col-span-2">
           <div class="flex min-h-6 items-center justify-between gap-3">
@@ -395,43 +400,45 @@ onMounted(async () => {
       </div>
 
       <div class="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <select
-          v-model="notificationLogFilters.channel"
-          class="h-10 rounded-md border border-input bg-background px-3 text-sm"
-          @change="handleNotificationLogSearch"
-        >
-          <option value="__all__">{{ t('admin.settings.notification.logs.filters.allChannels') }}</option>
-          <option value="email">{{ t('admin.settings.notification.channels.email.title') }}</option>
-          <option value="telegram">{{ t('admin.settings.notification.channels.telegram.title') }}</option>
-        </select>
-        <select
-          v-model="notificationLogFilters.status"
-          class="h-10 rounded-md border border-input bg-background px-3 text-sm"
-          @change="handleNotificationLogSearch"
-        >
-          <option value="__all__">{{ t('admin.settings.notification.logs.filters.allStatuses') }}</option>
-          <option value="success">{{ t('admin.settings.notification.logs.status.success') }}</option>
-          <option value="failed">{{ t('admin.settings.notification.logs.status.failed') }}</option>
-        </select>
-        <select
-          v-model="notificationLogFilters.eventType"
-          class="h-10 rounded-md border border-input bg-background px-3 text-sm"
-          @change="handleNotificationLogSearch"
-        >
-          <option value="__all__">{{ t('admin.settings.notification.logs.filters.allScenes') }}</option>
-          <option v-for="scene in testScenes" :key="scene.value" :value="scene.value">
-            {{ scene.label }}
-          </option>
-        </select>
-        <select
-          v-model="notificationLogFilters.isTest"
-          class="h-10 rounded-md border border-input bg-background px-3 text-sm"
-          @change="handleNotificationLogSearch"
-        >
-          <option value="__all__">{{ t('admin.settings.notification.logs.filters.allTypes') }}</option>
-          <option value="false">{{ t('admin.settings.notification.logs.type.live') }}</option>
-          <option value="true">{{ t('admin.settings.notification.logs.type.test') }}</option>
-        </select>
+        <Select v-model="notificationLogFilters.channel" @update:modelValue="handleNotificationLogSearch">
+          <SelectTrigger class="h-10">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">{{ t('admin.settings.notification.logs.filters.allChannels') }}</SelectItem>
+            <SelectItem value="email">{{ t('admin.settings.notification.channels.email.title') }}</SelectItem>
+            <SelectItem value="telegram">{{ t('admin.settings.notification.channels.telegram.title') }}</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select v-model="notificationLogFilters.status" @update:modelValue="handleNotificationLogSearch">
+          <SelectTrigger class="h-10">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">{{ t('admin.settings.notification.logs.filters.allStatuses') }}</SelectItem>
+            <SelectItem value="success">{{ t('admin.settings.notification.logs.status.success') }}</SelectItem>
+            <SelectItem value="failed">{{ t('admin.settings.notification.logs.status.failed') }}</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select v-model="notificationLogFilters.eventType" @update:modelValue="handleNotificationLogSearch">
+          <SelectTrigger class="h-10">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">{{ t('admin.settings.notification.logs.filters.allScenes') }}</SelectItem>
+            <SelectItem v-for="scene in testScenes" :key="scene.value" :value="scene.value">{{ scene.label }}</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select v-model="notificationLogFilters.isTest" @update:modelValue="handleNotificationLogSearch">
+          <SelectTrigger class="h-10">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">{{ t('admin.settings.notification.logs.filters.allTypes') }}</SelectItem>
+            <SelectItem value="false">{{ t('admin.settings.notification.logs.type.live') }}</SelectItem>
+            <SelectItem value="true">{{ t('admin.settings.notification.logs.type.test') }}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div class="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">

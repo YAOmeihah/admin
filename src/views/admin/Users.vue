@@ -6,9 +6,11 @@ import { adminAPI } from '@/api/admin'
 import type { AdminUser, AdminMemberLevel } from '@/api/types'
 import IdCell from '@/components/IdCell.vue'
 import { userStatusClass, userStatusLabel } from '@/utils/status'
-import { formatDate, formatMoney, getLocalizedText } from '@/utils/format'
+import { formatDate, formatMoney, getLocalizedText, toRFC3339 } from '@/utils/format'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { toggleArrayMember } from '@/lib/utils'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogHeader, DialogScrollContent, DialogTitle } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -66,10 +68,10 @@ const fetchUsers = async (page = 1) => {
       page_size: pagination.value.page_size,
       keyword: filters.keyword || undefined,
       status: normalizeFilterValue(filters.status) || undefined,
-      created_from: filters.createdFrom || undefined,
-      created_to: filters.createdTo || undefined,
-      last_login_from: filters.lastLoginFrom || undefined,
-      last_login_to: filters.lastLoginTo || undefined,
+      created_from: toRFC3339(filters.createdFrom),
+      created_to: toRFC3339(filters.createdTo),
+      last_login_from: toRFC3339(filters.lastLoginFrom),
+      last_login_to: toRFC3339(filters.lastLoginTo),
     })
     users.value = response.data.data || []
     pagination.value = response.data.pagination || pagination.value
@@ -147,6 +149,10 @@ const toggleSelectAll = () => {
     return
   }
   selectedIds.value = users.value.map((item) => item.id)
+}
+
+const toggleUserSelected = (id: number, v: boolean | 'indeterminate') => {
+  toggleArrayMember(selectedIds, id, v)
 }
 
 const batchUpdateStatus = async (status: string) => {
@@ -267,7 +273,7 @@ onMounted(() => {
           <span class="text-xs text-muted-foreground whitespace-nowrap">{{ t('admin.users.filterCreatedRange') }}</span>
           <Input
             v-model="filters.createdFrom"
-            type="date"
+            type="datetime-local"
             class="h-9 w-full md:w-auto"
             :placeholder="t('admin.users.filterCreatedFrom')"
             @update:modelValue="handleSearch"
@@ -275,7 +281,7 @@ onMounted(() => {
           <span class="hidden text-muted-foreground md:inline">-</span>
           <Input
             v-model="filters.createdTo"
-            type="date"
+            type="datetime-local"
             class="h-9 w-full md:w-auto"
             :placeholder="t('admin.users.filterCreatedTo')"
             @update:modelValue="handleSearch"
@@ -285,7 +291,7 @@ onMounted(() => {
           <span class="text-xs text-muted-foreground whitespace-nowrap">{{ t('admin.users.filterLastLoginRange') }}</span>
           <Input
             v-model="filters.lastLoginFrom"
-            type="date"
+            type="datetime-local"
             class="h-9 w-full md:w-auto"
             :placeholder="t('admin.users.filterLastLoginFrom')"
             @update:modelValue="handleSearch"
@@ -293,7 +299,7 @@ onMounted(() => {
           <span class="hidden text-muted-foreground md:inline">-</span>
           <Input
             v-model="filters.lastLoginTo"
-            type="date"
+            type="datetime-local"
             class="h-9 w-full md:w-auto"
             :placeholder="t('admin.users.filterLastLoginTo')"
             @update:modelValue="handleSearch"
@@ -312,7 +318,7 @@ onMounted(() => {
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-6 py-3">
-              <input type="checkbox" :checked="allSelected" class="h-4 w-4 accent-primary" @change="toggleSelectAll" />
+              <Checkbox :model-value="allSelected" @update:model-value="toggleSelectAll" />
             </TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.users.table.id') }}</TableHead>
             <TableHead class="px-6 py-3 min-w-[140px]">{{ t('admin.users.table.email') }}</TableHead>
@@ -338,7 +344,7 @@ onMounted(() => {
           </TableRow>
           <TableRow v-for="user in users" :key="user.id" class="hover:bg-muted/30">
             <TableCell class="px-6 py-4">
-              <input type="checkbox" :value="user.id" v-model="selectedIds" class="h-4 w-4 accent-primary" />
+              <Checkbox :model-value="selectedIds.includes(user.id)" @update:model-value="(v) => toggleUserSelected(user.id, v)" />
             </TableCell>
             <TableCell class="px-6 py-4">
               <IdCell :value="user.id" />

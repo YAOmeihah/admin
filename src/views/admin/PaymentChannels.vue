@@ -266,7 +266,7 @@ watch(
           <TableRow v-else-if="channels.length === 0">
             <TableCell colspan="8" class="px-6 py-8 text-center text-muted-foreground">{{ t('admin.paymentChannels.empty') }}</TableCell>
           </TableRow>
-          <TableRow v-for="channel in channels" :key="channel.id" class="hover:bg-muted/30 group">
+          <TableRow v-for="channel in channels" :key="channel.id" class="hover:bg-muted/30">
             <TableCell class="px-6 py-4">
               <IdCell :value="channel.id" />
             </TableCell>
@@ -289,7 +289,7 @@ watch(
             </TableCell>
             <TableCell class="min-w-[120px] px-6 py-4 text-xs text-muted-foreground">{{ channel.sort_order }}</TableCell>
             <TableCell class="min-w-[160px] px-6 py-4 text-right">
-              <div class="flex flex-wrap items-center justify-end gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+              <div class="flex flex-wrap items-center justify-end gap-2">
                 <Button size="sm" variant="outline" @click="openEditModal(channel)">
                   {{ t('admin.common.edit') }}
                 </Button>

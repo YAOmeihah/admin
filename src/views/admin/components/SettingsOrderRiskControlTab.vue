@@ -3,6 +3,8 @@ import { onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { adminAPI } from '@/api/admin'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { notifyError, notifySuccess } from '@/utils/notify'
 
@@ -111,13 +113,13 @@ onMounted(() => {
 
     <!-- 总开关 -->
     <div class="rounded-lg border p-6">
-      <label class="flex items-center gap-3 cursor-pointer">
-        <input v-model="form.enabled" type="checkbox" class="h-4 w-4 accent-primary" />
+      <div class="flex items-center gap-3">
+        <Switch v-model="form.enabled" />
         <div>
-          <span class="text-sm font-medium">{{ t('admin.settings.orderRiskControl.enabled') }}</span>
+          <Label class="text-sm font-medium">{{ t('admin.settings.orderRiskControl.enabled') }}</Label>
           <p class="text-xs text-muted-foreground">{{ t('admin.settings.orderRiskControl.enabledHint') }}</p>
         </div>
-      </label>
+      </div>
     </div>
 
     <!-- 并发待支付订单限制 -->
@@ -148,10 +150,10 @@ onMounted(() => {
         <h3 class="text-sm font-semibold">{{ t('admin.settings.orderRiskControl.rateLimit.title') }}</h3>
         <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.orderRiskControl.rateLimit.subtitle') }}</p>
       </div>
-      <label class="flex items-center gap-3 cursor-pointer">
-        <input v-model="form.order_rate_limit.enabled" type="checkbox" class="h-4 w-4 accent-primary" />
-        <span class="text-sm font-medium">{{ t('admin.settings.orderRiskControl.rateLimit.enabled') }}</span>
-      </label>
+      <div class="flex items-center gap-3">
+        <Switch v-model="form.order_rate_limit.enabled" />
+        <Label class="text-sm font-medium">{{ t('admin.settings.orderRiskControl.rateLimit.enabled') }}</Label>
+      </div>
       <div v-show="form.order_rate_limit.enabled" class="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div class="space-y-1">
           <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.orderRiskControl.rateLimit.windowSeconds') }}</label>
