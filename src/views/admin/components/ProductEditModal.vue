@@ -151,6 +151,7 @@ const form = reactive({
   images: [] as string[],
   tags: [] as string[],
   purchase_type: 'member',
+  min_purchase_quantity: '' as number | '',
   max_purchase_quantity: '' as number | '',
   fulfillment_type: 'manual',
   requires_shipping_address: false,
@@ -484,6 +485,7 @@ const resetForm = () => {
     images: [],
     tags: [],
     purchase_type: 'member',
+    min_purchase_quantity: '',
     max_purchase_quantity: '',
     fulfillment_type: 'manual',
     requires_shipping_address: false,
@@ -531,6 +533,7 @@ const populateForm = (product: AdminProduct) => {
     images: imagesList,
     tags: tagsList,
     purchase_type: product.purchase_type || 'member',
+    min_purchase_quantity: Number(product.min_purchase_quantity || 0) > 0 ? Math.floor(Number(product.min_purchase_quantity || 0)) : '',
     max_purchase_quantity: Number(product.max_purchase_quantity || 0) > 0 ? Math.floor(Number(product.max_purchase_quantity || 0)) : '',
     fulfillment_type: product.fulfillment_type || 'manual',
     requires_shipping_address: Boolean(product.requires_shipping_address),
@@ -569,7 +572,17 @@ const handleSubmit = async () => {
       effectivePrice = Number(priceSource.price_amount)
       effectiveCostPrice = Number(priceSource.cost_price_amount || 0)
     }
+    const normalizedMinPurchaseQuantity = Number(form.min_purchase_quantity)
     const normalizedMaxPurchaseQuantity = Number(form.max_purchase_quantity)
+    const minPurchaseQuantityValue = Number.isFinite(normalizedMinPurchaseQuantity) && normalizedMinPurchaseQuantity > 0
+      ? Math.floor(normalizedMinPurchaseQuantity)
+      : 0
+    const maxPurchaseQuantityValue = Number.isFinite(normalizedMaxPurchaseQuantity) && normalizedMaxPurchaseQuantity > 0
+      ? Math.floor(normalizedMaxPurchaseQuantity)
+      : 0
+    if (minPurchaseQuantityValue > 0 && maxPurchaseQuantityValue > 0 && minPurchaseQuantityValue > maxPurchaseQuantityValue) {
+      throw new Error(t('admin.products.form.purchaseLimitInvalid'))
+    }
     const effectiveManualStockTotal = normalizedSKUs.length
       ? (() => {
           const activeRows = normalizedSKUs.filter((item) => item.is_active)
@@ -593,9 +606,8 @@ const handleSubmit = async () => {
       images: form.images,
       tags: form.tags,
       purchase_type: form.purchase_type,
-      max_purchase_quantity: Number.isFinite(normalizedMaxPurchaseQuantity) && normalizedMaxPurchaseQuantity > 0
-        ? Math.floor(normalizedMaxPurchaseQuantity)
-        : 0,
+      min_purchase_quantity: minPurchaseQuantityValue,
+      max_purchase_quantity: maxPurchaseQuantityValue,
       fulfillment_type: form.fulfillment_type,
       requires_shipping_address: form.requires_shipping_address,
       manual_stock_total: effectiveManualStockTotal,
@@ -772,6 +784,17 @@ watch(
                 <SelectItem value="guest">{{ t('admin.products.purchaseType.guest') }}</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div class="col-span-1">
+            <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.products.form.minPurchaseQuantity') }}</label>
+            <Input
+              v-model.number="form.min_purchase_quantity"
+              type="number"
+              min="1"
+              :placeholder="t('admin.products.form.minPurchaseQuantityPlaceholder')"
+            />
+            <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.products.form.minPurchaseQuantityTip') }}</p>
           </div>
 
           <div class="col-span-1">

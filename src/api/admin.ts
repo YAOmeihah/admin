@@ -342,6 +342,9 @@ export const adminAPI = {
   updateAffiliateSettings: (data: AdminAffiliateSetting) => api.put('/admin/settings/affiliate', data),
   getPublicConfig: () => api.get('/public/config'),
   getImageCaptcha: () => api.get('/public/captcha/image'),
+  getSystemVersion: () => api.get('/admin/system/version'),
+  checkSystemUpdate: (params?: { owner?: string; repo?: string }) =>
+    api.get('/admin/system/version/check', { params }),
   getDashboardOverview: (params?: Record<string, unknown>) => api.get('/admin/dashboard/overview', { params }),
   getDashboardTrends: (params?: Record<string, unknown>) => api.get('/admin/dashboard/trends', { params }),
   getDashboardRankings: (params?: Record<string, unknown>) => api.get('/admin/dashboard/rankings', { params }),
@@ -371,6 +374,7 @@ export const adminAPI = {
   adjustUserWallet: (id: number, data: AdminAdjustWalletPayload) =>
     api.post(`/admin/users/${id}/wallet/adjust`, data),
   updateUser: (id: number, data: Partial<AdminUser>) => api.put(`/admin/users/${id}`, data),
+  resetUser2FA: (id: number) => api.delete(`/admin/users/${id}/2fa`),
   batchUpdateUserStatus: (data: { user_ids: number[]; status: string }) => api.put('/admin/users/batch-status', data),
   getUserCouponUsages: (id: number, params?: Record<string, unknown>) => api.get(`/admin/users/${id}/coupon-usages`, { params }),
   getAffiliateUsers: (params?: Record<string, unknown>) => api.get('/admin/affiliates/users', { params }),
