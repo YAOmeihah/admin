@@ -2621,6 +2621,7 @@ const messages = {
           providerNone: '关闭验证码',
           providerImage: '图片验证码（base64Captcha）',
           providerTurnstile: 'Cloudflare Turnstile',
+          providerCap: 'Cap（自托管验证）',
           scenesTitle: '启用场景',
           scenes: {
             login: '登录验证（前台+后台）',
@@ -2648,6 +2649,16 @@ const messages = {
             secretHintEmpty: '当前尚未配置 Secret Key',
             verifyURL: '校验地址',
             timeoutMS: '超时毫秒',
+          },
+          cap: {
+            title: 'Cap 参数',
+            endpoint: 'Cap Endpoint',
+            siteKey: 'Site Key',
+            secretKey: 'Secret Key',
+            secretKeyPlaceholder: '留空则保持现有 Secret Key',
+            secretHintKeep: '已保存 Secret Key，留空不会覆盖',
+            secretHintEmpty: '尚未保存 Secret Key',
+            timeoutMS: '校验超时时间（毫秒）',
           },
         },
         telegram: {
@@ -5889,6 +5900,7 @@ const messages = {
           providerNone: '關閉驗證碼',
           providerImage: '圖片驗證碼（base64Captcha）',
           providerTurnstile: 'Cloudflare Turnstile',
+          providerCap: 'Cap（自託管驗證）',
           scenesTitle: '啟用場景',
           scenes: {
             login: '登入驗證（前台+後台）',
@@ -5916,6 +5928,16 @@ const messages = {
             secretHintEmpty: '目前尚未配置 Secret Key',
             verifyURL: '校驗地址',
             timeoutMS: '超時毫秒',
+          },
+          cap: {
+            title: 'Cap 參數',
+            endpoint: 'Cap Endpoint',
+            siteKey: 'Site Key',
+            secretKey: 'Secret Key',
+            secretKeyPlaceholder: '留空則保持現有 Secret Key',
+            secretHintKeep: '已儲存 Secret Key，留空不會覆蓋',
+            secretHintEmpty: '尚未儲存 Secret Key',
+            timeoutMS: '校驗逾時時間（毫秒）',
           },
         },
         telegram: {
@@ -9157,6 +9179,7 @@ const messages = {
           providerNone: 'Disabled',
           providerImage: 'Image captcha (base64Captcha)',
           providerTurnstile: 'Cloudflare Turnstile',
+          providerCap: 'Cap (self-hosted)',
           scenesTitle: 'Enabled scenes',
           scenes: {
             login: 'Login verification (web + admin)',
@@ -9184,6 +9207,16 @@ const messages = {
             secretHintEmpty: 'Secret key is not configured yet.',
             verifyURL: 'Verify URL',
             timeoutMS: 'Timeout (ms)',
+          },
+          cap: {
+            title: 'Cap settings',
+            endpoint: 'Cap Endpoint',
+            siteKey: 'Site Key',
+            secretKey: 'Secret Key',
+            secretKeyPlaceholder: 'Leave blank to keep the saved Secret Key',
+            secretHintKeep: 'Secret Key is saved; leave blank to keep it',
+            secretHintEmpty: 'Secret Key has not been saved',
+            timeoutMS: 'Verify timeout (ms)',
           },
         },
         telegram: {

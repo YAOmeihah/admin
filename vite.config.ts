@@ -30,7 +30,13 @@ const isFullstack = process.env.VITE_FULLSTACK === '1'
 export default defineConfig({
   base: isFullstack ? './' : '/',
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => tag.startsWith('cap-'),
+        },
+      },
+    }),
     cfAsyncModuleScriptPlugin(),
     ...(isFullstack ? [adminBaseInjector()] : []),
   ],
