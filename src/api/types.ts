@@ -56,6 +56,7 @@ export interface AdminProduct {
   images: string[]
   tags: string[]
   purchase_type: string
+  min_purchase_quantity: number
   max_purchase_quantity: number
   fulfillment_type: string
   requires_shipping_address: boolean
