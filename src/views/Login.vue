@@ -11,6 +11,7 @@ import { adminAPI, type CaptchaPayload } from '@/api/admin'
 import { applySiteIcon } from '@/utils/favicon'
 import ImageCaptcha from '@/components/captcha/ImageCaptcha.vue'
 import TurnstileCaptcha from '@/components/captcha/TurnstileCaptcha.vue'
+import CapCaptcha from '@/components/captcha/CapCaptcha.vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -29,8 +30,10 @@ const loadingCaptcha = ref(false)
 const captchaConfig = ref<any>(null)
 const captchaPayload = ref<CaptchaPayload>({})
 const turnstileToken = ref('')
+const capToken = ref('')
 const imageCaptchaRef = ref<InstanceType<typeof ImageCaptcha> | null>(null)
 const turnstileRef = ref<InstanceType<typeof TurnstileCaptcha> | null>(null)
+const capRef = ref<InstanceType<typeof CapCaptcha> | null>(null)
 
 const captchaProvider = computed(() => String(captchaConfig.value?.provider || 'none'))
 const loginCaptchaEnabled = computed(() => {
@@ -38,6 +41,8 @@ const loginCaptchaEnabled = computed(() => {
   return loginScene && captchaProvider.value !== 'none'
 })
 const turnstileSiteKey = computed(() => String(captchaConfig.value?.turnstile?.site_key || ''))
+const capEndpoint = computed(() => String(captchaConfig.value?.cap?.endpoint || ''))
+const capSiteKey = computed(() => String(captchaConfig.value?.cap?.site_key || ''))
 
 const challengeRemaining = ref(0)
 let countdownTimer: ReturnType<typeof setInterval> | null = null
@@ -79,6 +84,9 @@ const getCaptchaPayload = (): CaptchaPayload | undefined => {
   if (captchaProvider.value === 'turnstile') {
     return { turnstile_token: turnstileToken.value }
   }
+  if (captchaProvider.value === 'cap') {
+    return { cap_token: capToken.value }
+  }
   return undefined
 }
 
@@ -92,6 +100,12 @@ const submitPassword = async () => {
   }
   if (loginCaptchaEnabled.value && captchaProvider.value === 'turnstile') {
     if (!turnstileToken.value) {
+      error.value = t('admin.login.captchaRequired')
+      return
+    }
+  }
+  if (loginCaptchaEnabled.value && captchaProvider.value === 'cap') {
+    if (!capToken.value) {
       error.value = t('admin.login.captchaRequired')
       return
     }
@@ -117,6 +131,10 @@ const submitPassword = async () => {
     if (captchaProvider.value === 'turnstile') {
       turnstileRef.value?.reset()
       turnstileToken.value = ''
+    }
+    if (captchaProvider.value === 'cap') {
+      capRef.value?.reset()
+      capToken.value = ''
     }
   }
 }
@@ -222,6 +240,13 @@ onUnmounted(() => {
                 ref="turnstileRef"
                 v-model="turnstileToken"
                 :site-key="turnstileSiteKey"
+              />
+              <CapCaptcha
+                v-else-if="captchaProvider === 'cap'"
+                ref="capRef"
+                v-model="capToken"
+                :endpoint="capEndpoint"
+                :site-key="capSiteKey"
               />
             </div>
 

@@ -19,6 +19,7 @@ export interface CaptchaPayload {
   captcha_id?: string
   captcha_code?: string
   turnstile_token?: string
+  cap_token?: string
 }
 
 export interface AdminLoginRequest {
