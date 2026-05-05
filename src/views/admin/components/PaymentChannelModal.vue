@@ -160,6 +160,7 @@ const okpayConfig = reactive({
 const vpayConfig = reactive({
   gateway_url: '',
   sign_key: '',
+  sign_type: 'MD5',
   notify_url: '',
   return_url: '',
 })
@@ -398,6 +399,7 @@ const resetOkpayConfig = () => {
 const resetVpayConfig = () => {
   vpayConfig.gateway_url = ''
   vpayConfig.sign_key = ''
+  vpayConfig.sign_type = 'MD5'
   vpayConfig.notify_url = 'https://api.yourdomain.com/api/v1/payments/callback'
   vpayConfig.return_url = 'https://yourdomain.com/pay'
 }
@@ -518,6 +520,7 @@ const applyOkpayConfig = (raw: Record<string, unknown>) => {
 const applyVpayConfig = (raw: Record<string, unknown>) => {
   vpayConfig.gateway_url = String(raw.gateway_url || '')
   vpayConfig.sign_key = String(raw.sign_key || raw.merchant_key || '')
+  vpayConfig.sign_type = String(raw.sign_type || 'MD5').toUpperCase()
   vpayConfig.notify_url = String(raw.notify_url || '')
   vpayConfig.return_url = String(raw.return_url || '')
 }
@@ -717,6 +720,7 @@ const buildVpayConfig = () => {
   }
   setIfNotEmpty('gateway_url', vpayConfig.gateway_url)
   setIfNotEmpty('sign_key', vpayConfig.sign_key)
+  setIfNotEmpty('sign_type', vpayConfig.sign_type)
   setIfNotEmpty('notify_url', vpayConfig.notify_url)
   setIfNotEmpty('return_url', vpayConfig.return_url)
   return config
@@ -1457,6 +1461,18 @@ const closeModal = () => {
             <div class="min-w-0 md:col-span-2">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.vpaySignKey') }}</label>
               <Input v-model="vpayConfig.sign_key" :placeholder="t('admin.paymentChannels.modal.vpaySignKeyPlaceholder')" />
+            </div>
+            <div class="min-w-0 md:col-span-2">
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.vpaySignType') }}</label>
+              <Select v-model="vpayConfig.sign_type">
+                <SelectTrigger class="h-9 w-full">
+                  <SelectValue placeholder="MD5" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="MD5">MD5</SelectItem>
+                  <SelectItem value="HMAC_SHA256">HMAC_SHA256</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.vpayNotifyUrl') }}</label>
