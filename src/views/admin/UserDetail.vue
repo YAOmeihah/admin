@@ -226,7 +226,8 @@ const changeOrdersPageSize = (size: number) => {
   fetchOrders(1)
 }
 
-const handleCopyOrderNo = async (orderNo: string) => {
+const handleCopyOrderNo = async (orderNo?: string) => {
+  if (!orderNo) return
   try { await copyText(orderNo) } catch {}
 }
 

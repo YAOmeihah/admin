@@ -185,7 +185,8 @@ const channelTypeLabel = (value?: string) => {
   return map[value] || value
 }
 
-const handleCopyOrderNo = async (orderNo: string) => {
+const handleCopyOrderNo = async (orderNo?: string) => {
+  if (!orderNo) return
   try { await copyText(orderNo) } catch {}
 }
 
