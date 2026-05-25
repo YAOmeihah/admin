@@ -15,19 +15,20 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
+import ListPagination from '@/components/ListPagination.vue'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { formatDate } from '@/utils/format'
 
 const { t } = useI18n()
 const loading = ref(true)
 const rows = ref<AdminAffiliateCommission[]>([])
-const jumpPage = ref('')
 const pagination = ref({
   page: 1,
   page_size: 20,
   total: 0,
   total_page: 1,
 })
+const adminPath = import.meta.env.VITE_ADMIN_PATH || ''
 
 const filters = reactive({
   keyword: '',
@@ -37,6 +38,8 @@ const filters = reactive({
 })
 
 const normalizeFilterValue = (value: string) => (value === '__all__' ? '' : value)
+const userDetailLink = (userId: number) => `${adminPath}/users/${userId}`
+const resolveAffiliateUserID = (item: AdminAffiliateCommission) => Number(item?.affiliate_profile?.user_id || item?.affiliate_profile?.user?.id || 0)
 
 const fetchRows = async (page = 1) => {
   loading.value = true
@@ -72,13 +75,12 @@ const changePage = (page: number) => {
   fetchRows(page)
 }
 
-const jumpToPage = () => {
-  if (!jumpPage.value) return
-  const raw = Number(jumpPage.value)
-  if (Number.isNaN(raw)) return
-  const target = Math.min(Math.max(Math.floor(raw), 1), pagination.value.total_page)
-  if (target === pagination.value.page) return
-  changePage(target)
+const pageSizeOptions = [10, 20, 50, 100]
+
+const changePageSize = (size: number) => {
+  if (size === pagination.value.page_size) return
+  pagination.value.page_size = size
+  fetchRows(1)
 }
 
 const statusLabel = (status?: string) => {
@@ -172,7 +174,19 @@ onMounted(() => {
                 <span class="break-words">{{ item?.affiliate_profile?.user?.display_name || '-' }}</span>
               </div>
               <div v-if="item?.affiliate_profile?.user?.email" class="mt-0.5 break-all">{{ item.affiliate_profile.user.email }}</div>
-              <div class="mt-0.5 break-all font-mono">#{{ item?.affiliate_profile?.id || '-' }} / {{ item?.affiliate_profile?.code || '-' }}</div>
+              <div class="mt-0.5 break-all">
+                <a
+                  v-if="resolveAffiliateUserID(item) > 0"
+                  :href="userDetailLink(resolveAffiliateUserID(item))"
+                  target="_blank"
+                  rel="noopener"
+                  class="font-mono text-primary underline-offset-4 hover:underline"
+                >
+                  #{{ resolveAffiliateUserID(item) }}
+                </a>
+                <span v-else class="font-mono text-foreground">-</span>
+                <span class="ml-1 font-mono text-muted-foreground">/ {{ item?.affiliate_profile?.code || '-' }}</span>
+              </div>
             </TableCell>
             <TableCell class="min-w-[160px] px-6 py-4 font-mono text-xs text-foreground break-all">
               {{ item?.order?.order_no || '-' }}
@@ -192,34 +206,15 @@ onMounted(() => {
         </TableBody>
       </Table>
 
-      <div v-if="pagination.total_page > 1" class="flex flex-wrap items-center justify-between gap-3 border-t border-border px-6 py-4">
-        <span class="text-xs text-muted-foreground">
-          {{ t('admin.common.pageInfo', { total: pagination.total, page: pagination.page, totalPage: pagination.total_page }) }}
-        </span>
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="flex items-center gap-2">
-            <Input
-              v-model="jumpPage"
-              type="number"
-              min="1"
-              :max="pagination.total_page"
-              class="h-8 w-20"
-              :placeholder="t('admin.common.jumpPlaceholder')"
-            />
-            <Button variant="outline" size="sm" class="h-8" @click="jumpToPage">
-              {{ t('admin.common.jumpTo') }}
-            </Button>
-          </div>
-          <div class="flex items-center gap-2">
-            <Button variant="outline" size="sm" class="h-8" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">
-              {{ t('admin.common.prevPage') }}
-            </Button>
-            <Button variant="outline" size="sm" class="h-8" :disabled="pagination.page >= pagination.total_page" @click="changePage(pagination.page + 1)">
-              {{ t('admin.common.nextPage') }}
-            </Button>
-          </div>
-        </div>
-      </div>
+      <ListPagination
+        :page="pagination.page"
+        :total-page="pagination.total_page"
+        :total="pagination.total"
+        :page-size="pagination.page_size"
+        :page-size-options="pageSizeOptions"
+        @change-page="changePage"
+        @change-page-size="changePageSize"
+      />
     </div>
   </div>
 </template>

@@ -14,7 +14,7 @@ import TableSkeleton from '@/components/TableSkeleton.vue'
 import MediaPicker from '@/components/admin/MediaPicker.vue'
 import { getLocalizedText } from '@/utils/format'
 import { getImageUrl } from '@/utils/image'
-import { notifyError } from '@/utils/notify'
+import { notifyError, notifySuccess } from '@/utils/notify'
 import { confirmAction } from '@/utils/confirm'
 import { buildAdminCategoryPath, createAdminCategoryMap, flattenAdminCategories } from '@/utils/category'
 import { useFormValidation, rules } from '@/composables/useFormValidation'
@@ -154,6 +154,18 @@ const handleSubmit = async () => {
   }
 }
 
+const toggleActive = async (category: AdminCategory) => {
+  const newStatus = !category.is_active
+  try {
+    category.is_active = newStatus
+    await adminAPI.patchCategoryActive(category.id, newStatus)
+    notifySuccess(newStatus ? t('admin.categories.status.activatedTip') : t('admin.categories.status.deactivatedTip'))
+  } catch (err: any) {
+    category.is_active = !newStatus
+    notifyError(t('admin.categories.errors.toggleFailed', { message: err?.message || '' }))
+  }
+}
+
 const handleDelete = async (category: AdminCategory) => {
   const confirmed = await confirmAction({ description: t('admin.categories.confirmDelete', { name: getLocalizedText(category.name) }), confirmText: t('admin.common.delete'), variant: 'destructive' })
   if (!confirmed) return
@@ -210,17 +222,18 @@ watch(
             <TableHead class="px-6 py-3 min-w-[260px]">{{ t('admin.categories.table.name') }}</TableHead>
             <TableHead class="px-6 py-3 min-w-[220px]">{{ t('admin.categories.table.slug') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.categories.table.sort') }}</TableHead>
+            <TableHead class="px-6 py-3">{{ t('admin.categories.table.status') }}</TableHead>
             <TableHead class="px-6 py-3 min-w-[140px] text-right">{{ t('admin.categories.table.action') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody class="divide-y divide-border">
           <TableRow v-if="loading">
-            <TableCell :colspan="6" class="p-0">
-              <TableSkeleton :columns="6" :rows="5" />
+            <TableCell :colspan="7" class="p-0">
+              <TableSkeleton :columns="7" :rows="5" />
             </TableCell>
           </TableRow>
           <TableRow v-else-if="categories.length === 0">
-            <TableCell colspan="6" class="px-6 py-8 text-center text-muted-foreground">{{ t('admin.categories.empty') }}</TableCell>
+            <TableCell colspan="7" class="px-6 py-8 text-center text-muted-foreground">{{ t('admin.categories.empty') }}</TableCell>
           </TableRow>
           <TableRow v-for="item in categoryHierarchyItems" :key="item.category.id" class="hover:bg-muted/30">
             <TableCell class="px-6 py-4">
@@ -248,6 +261,16 @@ watch(
             </TableCell>
             <TableCell class="min-w-[220px] px-6 py-4 font-mono text-muted-foreground break-all">{{ item.category.slug }}</TableCell>
             <TableCell class="px-6 py-4 font-mono text-muted-foreground">{{ item.category.sort_order }}</TableCell>
+            <TableCell class="px-6 py-4">
+              <span
+                class="inline-flex cursor-pointer rounded-full border px-2.5 py-1 text-xs transition-colors"
+                :class="item.category.is_active ? 'text-emerald-700 border-emerald-200 bg-emerald-50 hover:bg-emerald-100' : 'text-muted-foreground border-border bg-muted/30 hover:bg-muted/50'"
+                :title="item.category.is_active ? t('admin.categories.status.clickToDeactivate') : t('admin.categories.status.clickToActivate')"
+                @click="toggleActive(item.category)"
+              >
+                {{ item.category.is_active ? t('admin.categories.status.active') : t('admin.categories.status.inactive') }}
+              </span>
+            </TableCell>
             <TableCell class="min-w-[140px] px-6 py-4 text-right">
               <div class="flex items-center justify-end gap-2">
                 <Button size="sm" variant="outline" @click="openEditModal(item.category)">{{ t('admin.categories.actions.edit') }}</Button>

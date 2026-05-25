@@ -17,6 +17,7 @@ import { toggleArrayMember } from '@/lib/utils'
 import { Dialog, DialogHeader, DialogScrollContent, DialogTitle } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
+import ListPagination from '@/components/ListPagination.vue'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { formatDate } from '@/utils/format'
 import { confirmAction } from '@/utils/confirm'
@@ -43,8 +44,6 @@ const pagination = ref({
   total: 0,
   total_page: 1,
 })
-const jumpPage = ref('')
-
 const filters = reactive({
   code: '',
   status: '__all__',
@@ -228,13 +227,12 @@ const changePage = (page: number) => {
   fetchGiftCards(page)
 }
 
-const jumpToPage = () => {
-  if (!jumpPage.value) return
-  const raw = Number(jumpPage.value)
-  if (Number.isNaN(raw)) return
-  const target = Math.min(Math.max(Math.floor(raw), 1), pagination.value.total_page)
-  if (target === pagination.value.page) return
-  changePage(target)
+const pageSizeOptions = [10, 20, 50, 100]
+
+const changePageSize = (size: number) => {
+  if (size === pagination.value.page_size) return
+  pagination.value.page_size = size
+  fetchGiftCards(1)
 }
 
 const applyBatchStatus = async () => {
@@ -589,38 +587,19 @@ onMounted(() => {
         </TableBody>
       </Table>
 
-      <div
-        v-if="pagination.total_page > 1"
-        class="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-4"
+      <ListPagination
+        :page="pagination.page"
+        :total-page="pagination.total_page"
+        :total="pagination.total"
+        :page-size="pagination.page_size"
+        :page-size-options="pageSizeOptions"
+        @change-page="changePage"
+        @change-page-size="changePageSize"
       >
-        <span class="text-xs text-muted-foreground">
-          {{ t('admin.common.pageInfo', { total: pagination.total, page: pagination.page, totalPage: pagination.total_page }) }}
-        </span>
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="flex items-center gap-2">
-            <Input
-              v-model="jumpPage"
-              type="number"
-              min="1"
-              :max="pagination.total_page"
-              class="h-8 w-20"
-              :placeholder="t('admin.common.jumpPlaceholder')"
-            />
-            <Button variant="outline" size="sm" class="h-8" @click="jumpToPage">
-              {{ t('admin.common.jumpTo') }}
-            </Button>
-          </div>
-          <div class="flex items-center gap-2">
-            <Button variant="outline" size="sm" class="h-8" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">
-              {{ t('admin.common.prevPage') }}
-            </Button>
-            <Button variant="outline" size="sm" class="h-8" :disabled="pagination.page >= pagination.total_page" @click="changePage(pagination.page + 1)">
-              {{ t('admin.common.nextPage') }}
-            </Button>
-          </div>
+        <template #actions>
           <Button size="sm" variant="outline" class="h-8" @click="refresh">{{ t('admin.common.refresh') }}</Button>
-        </div>
-      </div>
+        </template>
+      </ListPagination>
     </div>
 
     <Dialog v-model:open="showGenerateModal" @update:open="(value) => { if (!value) closeGenerateModal() }">
