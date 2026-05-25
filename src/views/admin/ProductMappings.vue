@@ -5,7 +5,6 @@ import { adminAPI } from '@/api/admin'
 import type { AdminProductMapping, AdminSiteConnection, AdminCategory, AdminProduct, AdminProductSKU } from '@/api/types'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogScrollContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -15,6 +14,7 @@ import { notifyError, notifySuccess } from '@/utils/notify'
 import { getLocalizedText } from '@/utils/format'
 import { buildAdminCategoryPath, createAdminCategoryChildCountMap, createAdminCategoryMap, flattenAdminCategories, isAdminProductCategorySelectable } from '@/utils/category'
 import TableSkeleton from '@/components/TableSkeleton.vue'
+import ListPagination from '@/components/ListPagination.vue'
 
 const { t } = useI18n()
 const loading = ref(true)
@@ -28,7 +28,6 @@ const categoryOptions = computed(() => flattenAdminCategories(categories.value).
   selectable: isAdminProductCategorySelectable(item.category, categoryChildCountMap.value),
 })))
 const pagination = reactive({ page: 1, page_size: 20, total: 0, total_page: 1 })
-const jumpPage = ref('')
 const filters = reactive({ connection_id: '__all__' })
 const syncingId = ref<number | null>(null)
 
@@ -232,12 +231,12 @@ const fetchMappings = async (page = 1) => {
 
 const changePage = (page: number) => { if (page >= 1 && page <= pagination.total_page) fetchMappings(page) }
 
-const jumpToPage = () => {
-  if (!jumpPage.value) return
-  const raw = Number(jumpPage.value)
-  if (Number.isNaN(raw)) return
-  const target = Math.min(Math.max(Math.floor(raw), 1), pagination.total_page)
-  if (target !== pagination.page) changePage(target)
+const pageSizeOptions = [10, 20, 50, 100]
+
+const changePageSize = (size: number) => {
+  if (size === pagination.page_size) return
+  pagination.page_size = size
+  fetchMappings(1)
 }
 
 const handleFilterChange = () => fetchMappings(1)
@@ -736,6 +735,18 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
               >
                 {{ mapping.is_active ? t('productMappings.status.active') : t('productMappings.status.inactive') }}
               </span>
+              <span
+                v-if="mapping.upstream_status === 'inactive'"
+                class="shrink-0 inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-700"
+              >
+                {{ t('productMappings.upstreamStatus.inactive') }}
+              </span>
+              <span
+                v-else-if="mapping.upstream_status === 'deleted'"
+                class="shrink-0 inline-flex rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] text-red-700"
+              >
+                {{ t('productMappings.upstreamStatus.deleted') }}
+              </span>
             </div>
             <div class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
               <span>{{ t('productMappings.columns.connection') }}: <span class="text-foreground">{{ getConnectionName(mapping.connection_id) }}</span></span>
@@ -865,17 +876,15 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
       </div>
 
       <!-- Pagination -->
-      <div v-if="pagination.total_page > 1" class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-6 py-4">
-        <span class="text-xs text-muted-foreground">
-          {{ t('admin.common.pageInfo', { total: pagination.total, page: pagination.page, totalPage: pagination.total_page }) }}
-        </span>
-        <div class="flex flex-wrap items-center gap-2">
-          <Input v-model="jumpPage" type="number" min="1" :max="pagination.total_page" class="h-8 w-20" :placeholder="t('admin.common.jumpPlaceholder')" />
-          <Button variant="outline" size="sm" class="h-8" @click="jumpToPage">{{ t('admin.common.jumpTo') }}</Button>
-          <Button variant="outline" size="sm" class="h-8" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">{{ t('admin.common.prevPage') }}</Button>
-          <Button variant="outline" size="sm" class="h-8" :disabled="pagination.page >= pagination.total_page" @click="changePage(pagination.page + 1)">{{ t('admin.common.nextPage') }}</Button>
-        </div>
-      </div>
+      <ListPagination
+        :page="pagination.page"
+        :total-page="pagination.total_page"
+        :total="pagination.total"
+        :page-size="pagination.page_size"
+        :page-size-options="pageSizeOptions"
+        @change-page="changePage"
+        @change-page-size="changePageSize"
+      />
     </div>
 
     <!-- Import Dialog -->

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
+import ListPagination from '@/components/ListPagination.vue'
 import { formatDate, getLocalizedText, toRFC3339 } from '@/utils/format'
 import { formatSkuDisplayLabel } from '@/utils/sku'
 
@@ -22,7 +23,6 @@ const pagination = ref({
   total: 0,
   total_page: 1,
 })
-const jumpPage = ref('')
 const adminPath = import.meta.env.VITE_ADMIN_PATH || ''
 const route = useRoute()
 const { t, locale } = useI18n()
@@ -47,6 +47,7 @@ const orderLink = (orderId?: number) => {
   if (!orderId) return ''
   return `${adminPath}/orders?order_id=${orderId}`
 }
+const userDetailLink = (userId: number) => `${adminPath}/users/${userId}`
 
 const refundTypeLabel = (item: AdminOrderRefund | null) => {
   if (!item) return '-'
@@ -94,13 +95,12 @@ const changePage = (page: number) => {
   fetchRefunds(page)
 }
 
-const jumpToPage = () => {
-  if (!jumpPage.value) return
-  const raw = Number(jumpPage.value)
-  if (Number.isNaN(raw)) return
-  const target = Math.min(Math.max(Math.floor(raw), 1), pagination.value.total_page)
-  if (target === pagination.value.page) return
-  changePage(target)
+const pageSizeOptions = [10, 20, 50, 100]
+
+const changePageSize = (size: number) => {
+  if (size === pagination.value.page_size) return
+  pagination.value.page_size = size
+  fetchRefunds(1)
 }
 
 const openDetail = (refund: { id: number }) => {
@@ -249,7 +249,16 @@ watch(
               <div v-else-if="item.user_id">
                 <div class="break-words text-foreground">{{ item.user_display_name || '-' }}</div>
                 <div class="break-all">{{ item.user_email || '-' }}</div>
-                <div class="mt-0.5 text-primary">#{{ item.user_id }}</div>
+                <div class="mt-0.5">
+                  <a
+                    :href="userDetailLink(item.user_id)"
+                    target="_blank"
+                    rel="noopener"
+                    class="text-primary underline-offset-4 hover:underline"
+                  >
+                    #{{ item.user_id }}
+                  </a>
+                </div>
               </div>
               <div v-else>-</div>
             </TableCell>
@@ -271,45 +280,15 @@ watch(
         </TableBody>
       </Table>
 
-      <div
-        v-if="pagination.total_page > 1"
-        class="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div class="flex items-center gap-3">
-          <span class="text-xs text-muted-foreground">
-            {{ t('admin.common.pageInfo', { total: pagination.total, page: pagination.page, totalPage: pagination.total_page }) }}
-          </span>
-        </div>
-        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
-          <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <Input
-              v-model="jumpPage"
-              type="number"
-              min="1"
-              :max="pagination.total_page"
-              class="h-8 w-full sm:w-20"
-              :placeholder="t('admin.common.jumpPlaceholder')"
-            />
-            <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" @click="jumpToPage">
-              {{ t('admin.common.jumpTo') }}
-            </Button>
-          </div>
-          <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">
-              {{ t('admin.common.prevPage') }}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              class="h-8 w-full sm:w-auto"
-              :disabled="pagination.page >= pagination.total_page"
-              @click="changePage(pagination.page + 1)"
-            >
-              {{ t('admin.common.nextPage') }}
-            </Button>
-          </div>
-        </div>
-      </div>
+      <ListPagination
+        :page="pagination.page"
+        :total-page="pagination.total_page"
+        :total="pagination.total"
+        :page-size="pagination.page_size"
+        :page-size-options="pageSizeOptions"
+        @change-page="changePage"
+        @change-page-size="changePageSize"
+      />
     </div>
 
     <OrderRefundsDialog

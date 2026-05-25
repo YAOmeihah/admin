@@ -129,11 +129,22 @@ const wechatConfig = reactive({
   exchange_rate: '',
 })
 
-const epusdtConfig = reactive({
+const bepusdtConfig = reactive({
   gateway_url: '',
   auth_token: '',
   trade_type: 'usdt.trc20',
   fiat: 'CNY',
+  notify_url: '',
+  return_url: '',
+})
+
+const epusdtConfig = reactive({
+  gateway_url: '',
+  pid: '',
+  secret_key: '',
+  token: 'usdt',
+  network: 'tron',
+  currency: 'cny',
   notify_url: '',
   return_url: '',
 })
@@ -178,7 +189,7 @@ const officialChannelOptions = [
   { value: 'wechat', label: 'admin.paymentChannels.channelTypes.wechat' },
 ]
 
-const epusdtChannelOptions = [
+const bepusdtChannelOptions = [
   { value: 'usdt-trc20', label: 'admin.paymentChannels.channelTypes.usdtTrc20' },
   { value: 'usdc-trc20', label: 'admin.paymentChannels.channelTypes.usdcTrc20' },
   { value: 'trx', label: 'admin.paymentChannels.channelTypes.trx' },
@@ -225,8 +236,11 @@ const formChannelOptions = computed(() => {
   if (form.provider_type === 'official') {
     return officialChannelOptions
   }
+  if (form.provider_type === 'bepusdt') {
+    return bepusdtChannelOptions
+  }
   if (form.provider_type === 'epusdt') {
-    return epusdtChannelOptions
+    return bepusdtChannelOptions
   }
   if (form.provider_type === 'okpay') {
     return okpayChannelOptions
@@ -241,6 +255,11 @@ const interactionModeOptions = computed(() => {
   if (form.provider_type === 'epay') {
     return [
       { value: 'qr', label: 'admin.paymentChannels.interactionModes.qr' },
+      { value: 'redirect', label: 'admin.paymentChannels.interactionModes.redirect' },
+    ]
+  }
+  if (form.provider_type === 'bepusdt') {
+    return [
       { value: 'redirect', label: 'admin.paymentChannels.interactionModes.redirect' },
     ]
   }
@@ -368,11 +387,22 @@ const resetWechatConfig = () => {
   wechatConfig.exchange_rate = ''
 }
 
+const resetBepusdtConfig = () => {
+  bepusdtConfig.gateway_url = ''
+  bepusdtConfig.auth_token = ''
+  bepusdtConfig.trade_type = 'usdt.trc20'
+  bepusdtConfig.fiat = 'CNY'
+  bepusdtConfig.notify_url = 'https://api.yourdomain.com/api/v1/payments/callback'
+  bepusdtConfig.return_url = 'https://yourdomain.com/pay'
+}
+
 const resetEpusdtConfig = () => {
   epusdtConfig.gateway_url = ''
-  epusdtConfig.auth_token = ''
-  epusdtConfig.trade_type = 'usdt.trc20'
-  epusdtConfig.fiat = 'CNY'
+  epusdtConfig.pid = ''
+  epusdtConfig.secret_key = ''
+  epusdtConfig.token = 'usdt'
+  epusdtConfig.network = 'tron'
+  epusdtConfig.currency = 'cny'
   epusdtConfig.notify_url = 'https://api.yourdomain.com/api/v1/payments/callback'
   epusdtConfig.return_url = 'https://yourdomain.com/pay'
 }
@@ -410,6 +440,7 @@ const resetAllConfigs = () => {
   resetStripeConfig()
   resetAlipayConfig()
   resetWechatConfig()
+  resetBepusdtConfig()
   resetEpusdtConfig()
   resetTokenpayConfig()
   resetOkpayConfig()
@@ -489,11 +520,22 @@ const applyWechatConfig = (raw: Record<string, unknown>) => {
   wechatConfig.exchange_rate = String(raw.exchange_rate || '')
 }
 
+const applyBepusdtConfig = (raw: Record<string, unknown>) => {
+  bepusdtConfig.gateway_url = String(raw.gateway_url || '')
+  bepusdtConfig.auth_token = String(raw.auth_token || '')
+  bepusdtConfig.trade_type = String(raw.trade_type || 'usdt.trc20')
+  bepusdtConfig.fiat = String(raw.fiat || 'CNY')
+  bepusdtConfig.notify_url = String(raw.notify_url || '')
+  bepusdtConfig.return_url = String(raw.return_url || '')
+}
+
 const applyEpusdtConfig = (raw: Record<string, unknown>) => {
   epusdtConfig.gateway_url = String(raw.gateway_url || '')
-  epusdtConfig.auth_token = String(raw.auth_token || '')
-  epusdtConfig.trade_type = String(raw.trade_type || 'usdt.trc20')
-  epusdtConfig.fiat = String(raw.fiat || 'CNY')
+  epusdtConfig.pid = String(raw.pid || '')
+  epusdtConfig.secret_key = String(raw.secret_key || '')
+  epusdtConfig.token = String(raw.token || 'usdt')
+  epusdtConfig.network = String(raw.network || 'tron')
+  epusdtConfig.currency = String(raw.currency || 'cny')
   epusdtConfig.notify_url = String(raw.notify_url || '')
   epusdtConfig.return_url = String(raw.return_url || '')
 }
@@ -643,30 +685,43 @@ const buildWechatConfig = () => {
   return config
 }
 
-const buildEpusdtConfig = () => {
+const buildBepusdtConfig = () => {
   const config: Record<string, unknown> = {}
 
   // Required fields
-  config.gateway_url = String(epusdtConfig.gateway_url || '').trim()
-  config.auth_token = String(epusdtConfig.auth_token || '').trim()
+  config.gateway_url = String(bepusdtConfig.gateway_url || '').trim()
+  config.auth_token = String(bepusdtConfig.auth_token || '').trim()
 
   // notify_url and return_url: ensure always have value
-  const notifyUrl = String(epusdtConfig.notify_url || '').trim()
-  const returnUrl = String(epusdtConfig.return_url || '').trim()
+  const notifyUrl = String(bepusdtConfig.notify_url || '').trim()
+  const returnUrl = String(bepusdtConfig.return_url || '').trim()
 
   config.notify_url = notifyUrl || 'https://api.yourdomain.com/api/v1/payments/callback'
   config.return_url = returnUrl || 'https://yourdomain.com/pay'
 
   // Optional fields
-  const tradeType = String(epusdtConfig.trade_type || '').trim()
+  const tradeType = String(bepusdtConfig.trade_type || '').trim()
   if (tradeType !== '') {
     config.trade_type = tradeType
   }
-  const fiat = String(epusdtConfig.fiat || '').trim()
+  const fiat = String(bepusdtConfig.fiat || '').trim()
   if (fiat !== '') {
     config.fiat = fiat
   }
 
+  return config
+}
+
+const buildEpusdtConfig = () => {
+  const config: Record<string, unknown> = {}
+  config.gateway_url = String(epusdtConfig.gateway_url || '').trim()
+  config.pid = String(epusdtConfig.pid || '').trim()
+  config.secret_key = String(epusdtConfig.secret_key || '').trim()
+  config.token = String(epusdtConfig.token || '').trim().toLowerCase()
+  config.network = String(epusdtConfig.network || '').trim().toLowerCase()
+  config.currency = String(epusdtConfig.currency || '').trim().toLowerCase()
+  config.notify_url = String(epusdtConfig.notify_url || '').trim()
+  config.return_url = String(epusdtConfig.return_url || '').trim()
   return config
 }
 
@@ -744,8 +799,13 @@ watch(
       if (!allowed.includes(form.channel_type)) {
         form.channel_type = allowed[0] || 'paypal'
       }
+    } else if (value === 'bepusdt') {
+      const allowed = bepusdtChannelOptions.map((option) => option.value)
+      if (!allowed.includes(form.channel_type)) {
+        form.channel_type = allowed[0] || 'usdt-trc20'
+      }
     } else if (value === 'epusdt') {
-      const allowed = epusdtChannelOptions.map((option) => option.value)
+      const allowed = bepusdtChannelOptions.map((option) => option.value)
       if (!allowed.includes(form.channel_type)) {
         form.channel_type = allowed[0] || 'usdt-trc20'
       }
@@ -855,6 +915,7 @@ watch(
           applyStripeConfig(channel.config_json)
           applyAlipayConfig(channel.config_json)
           applyWechatConfig(channel.config_json)
+          applyBepusdtConfig(channel.config_json)
           applyEpusdtConfig(channel.config_json)
           applyTokenpayConfig(channel.config_json)
           applyOkpayConfig(channel.config_json)
@@ -929,6 +990,11 @@ const handleSubmit = async () => {
       ...configJson,
       ...buildWechatConfig(),
     }
+  } else if (form.provider_type === 'bepusdt') {
+    configJson = {
+      ...configJson,
+      ...buildBepusdtConfig(),
+    }
   } else if (form.provider_type === 'epusdt') {
     configJson = {
       ...configJson,
@@ -959,7 +1025,7 @@ const handleSubmit = async () => {
     channel_type:
       form.provider_type === 'tokenpay'
         ? 'usdt'
-        : form.provider_type === 'epusdt'
+        : form.provider_type === 'bepusdt'
           ? 'usdt-trc20'
           : form.channel_type,
     interaction_mode: form.interaction_mode,
@@ -1015,6 +1081,7 @@ const closeModal = () => {
               <SelectContent>
                 <SelectItem value="official">{{ t('admin.paymentChannels.providerTypes.official') }}</SelectItem>
                 <SelectItem value="epay">{{ t('admin.paymentChannels.providerTypes.epay') }}</SelectItem>
+                <SelectItem value="bepusdt">{{ t('admin.paymentChannels.providerTypes.bepusdt') }}</SelectItem>
                 <SelectItem value="epusdt">{{ t('admin.paymentChannels.providerTypes.epusdt') }}</SelectItem>
                 <SelectItem value="okpay">{{ t('admin.paymentChannels.providerTypes.okpay') }}</SelectItem>
                 <SelectItem value="tokenpay">{{ t('admin.paymentChannels.providerTypes.tokenpay') }}</SelectItem>
@@ -1022,7 +1089,7 @@ const closeModal = () => {
               </SelectContent>
             </Select>
           </div>
-          <div v-if="form.provider_type !== 'tokenpay' && form.provider_type !== 'epusdt'" class="min-w-0">
+          <div v-if="form.provider_type !== 'tokenpay' && form.provider_type !== 'bepusdt'" class="min-w-0">
             <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.channelType') }}</label>
             <Select v-model="form.channel_type">
               <SelectTrigger class="h-9 w-full">
@@ -1354,6 +1421,37 @@ const closeModal = () => {
           <div class="mt-3 text-xs text-muted-foreground">{{ t('admin.paymentChannels.modal.alipayHint') }}</div>
         </div>
 
+        <div v-if="form.provider_type === 'bepusdt'" class="min-w-0 rounded-xl border border-border bg-muted/20 p-4 overflow-hidden">
+          <div class="text-sm font-semibold text-foreground mb-3">{{ t('admin.paymentChannels.modal.bepusdtSection') }}</div>
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 [&>*]:min-w-0">
+            <div class="min-w-0 md:col-span-2">
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.bepusdtGatewayUrl') }}</label>
+              <Input v-model="bepusdtConfig.gateway_url" :placeholder="t('admin.paymentChannels.modal.bepusdtGatewayUrlPlaceholder')" />
+            </div>
+            <div class="min-w-0 md:col-span-2">
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.bepusdtAuthToken') }}</label>
+              <Input v-model="bepusdtConfig.auth_token" :placeholder="t('admin.paymentChannels.modal.bepusdtAuthTokenPlaceholder')" />
+            </div>
+            <div class="min-w-0">
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.bepusdtTradeType') }}</label>
+              <Input v-model="bepusdtConfig.trade_type" :placeholder="t('admin.paymentChannels.modal.bepusdtTradeTypePlaceholder')" />
+            </div>
+            <div class="min-w-0">
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.bepusdtFiat') }}</label>
+              <Input v-model="bepusdtConfig.fiat" :placeholder="t('admin.paymentChannels.modal.bepusdtFiatPlaceholder')" />
+            </div>
+            <div class="min-w-0">
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.bepusdtNotifyUrl') }}</label>
+              <Input v-model="bepusdtConfig.notify_url" :placeholder="t('admin.paymentChannels.modal.bepusdtNotifyUrlPlaceholder')" />
+            </div>
+            <div class="min-w-0">
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.bepusdtReturnUrl') }}</label>
+              <Input v-model="bepusdtConfig.return_url" :placeholder="t('admin.paymentChannels.modal.bepusdtReturnUrlPlaceholder')" />
+            </div>
+          </div>
+          <div class="mt-3 text-xs text-muted-foreground">{{ t('admin.paymentChannels.modal.bepusdtHint') }}</div>
+        </div>
+
         <div v-if="form.provider_type === 'epusdt'" class="min-w-0 rounded-xl border border-border bg-muted/20 p-4 overflow-hidden">
           <div class="text-sm font-semibold text-foreground mb-3">{{ t('admin.paymentChannels.modal.epusdtSection') }}</div>
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2 [&>*]:min-w-0">
@@ -1361,17 +1459,25 @@ const closeModal = () => {
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epusdtGatewayUrl') }}</label>
               <Input v-model="epusdtConfig.gateway_url" :placeholder="t('admin.paymentChannels.modal.epusdtGatewayUrlPlaceholder')" />
             </div>
-            <div class="min-w-0 md:col-span-2">
-              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epusdtAuthToken') }}</label>
-              <Input v-model="epusdtConfig.auth_token" :placeholder="t('admin.paymentChannels.modal.epusdtAuthTokenPlaceholder')" />
+            <div class="min-w-0">
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epusdtPid') }}</label>
+              <Input v-model="epusdtConfig.pid" :placeholder="t('admin.paymentChannels.modal.epusdtPidPlaceholder')" />
             </div>
             <div class="min-w-0">
-              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epusdtTradeType') }}</label>
-              <Input v-model="epusdtConfig.trade_type" :placeholder="t('admin.paymentChannels.modal.epusdtTradeTypePlaceholder')" />
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epusdtSecretKey') }}</label>
+              <Input v-model="epusdtConfig.secret_key" :placeholder="t('admin.paymentChannels.modal.epusdtSecretKeyPlaceholder')" />
             </div>
             <div class="min-w-0">
-              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epusdtFiat') }}</label>
-              <Input v-model="epusdtConfig.fiat" :placeholder="t('admin.paymentChannels.modal.epusdtFiatPlaceholder')" />
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epusdtToken') }}</label>
+              <Input v-model="epusdtConfig.token" :placeholder="t('admin.paymentChannels.modal.epusdtTokenPlaceholder')" />
+            </div>
+            <div class="min-w-0">
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epusdtNetwork') }}</label>
+              <Input v-model="epusdtConfig.network" :placeholder="t('admin.paymentChannels.modal.epusdtNetworkPlaceholder')" />
+            </div>
+            <div class="min-w-0">
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epusdtCurrency') }}</label>
+              <Input v-model="epusdtConfig.currency" :placeholder="t('admin.paymentChannels.modal.epusdtCurrencyPlaceholder')" />
             </div>
             <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.epusdtNotifyUrl') }}</label>

@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogHeader, DialogScrollContent, DialogTitle } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
+import ListPagination from '@/components/ListPagination.vue'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { confirmAction } from '@/utils/confirm'
 import { useFormValidation, rules } from '@/composables/useFormValidation'
@@ -30,8 +31,8 @@ const pagination = ref({
   total: 0,
   total_page: 1,
 })
-const jumpPage = ref('')
 const filters = reactive({
+  userId: '',
   keyword: '',
   status: '__all__',
   createdFrom: '',
@@ -51,6 +52,7 @@ const form = reactive({
   nickname: '',
   password: '',
   locale: 'zh-CN',
+  email_verified: 'unverified',
   status: 'active',
   admin_note: '',
 })
@@ -66,6 +68,7 @@ const fetchUsers = async (page = 1) => {
     const response = await adminAPI.getUsers({
       page,
       page_size: pagination.value.page_size,
+      user_id: filters.userId || undefined,
       keyword: filters.keyword || undefined,
       status: normalizeFilterValue(filters.status) || undefined,
       created_from: toRFC3339(filters.createdFrom),
@@ -127,6 +130,7 @@ const refresh = () => {
 }
 
 const resetFilters = () => {
+  filters.userId = ''
   filters.keyword = ''
   filters.status = '__all__'
   filters.createdFrom = ''
@@ -175,13 +179,12 @@ const changePage = (page: number) => {
   fetchUsers(page)
 }
 
-const jumpToPage = () => {
-  if (!jumpPage.value) return
-  const raw = Number(jumpPage.value)
-  if (Number.isNaN(raw)) return
-  const target = Math.min(Math.max(Math.floor(raw), 1), pagination.value.total_page)
-  if (target === pagination.value.page) return
-  changePage(target)
+const pageSizeOptions = [10, 20, 50, 100]
+
+const changePageSize = (size: number) => {
+  if (size === pagination.value.page_size) return
+  pagination.value.page_size = size
+  fetchUsers(1)
 }
 
 const openEditModal = (user: AdminUser) => {
@@ -190,6 +193,7 @@ const openEditModal = (user: AdminUser) => {
   form.nickname = user.display_name || ''
   form.password = ''
   form.locale = user.locale || 'zh-CN'
+  form.email_verified = user.email_verified_at ? 'verified' : 'unverified'
   form.status = user.status || 'active'
   form.admin_note = (user.admin_note as string) || ''
   error.value = ''
@@ -214,6 +218,7 @@ const handleSubmit = async () => {
       nickname: form.nickname,
       password: form.password || undefined,
       locale: form.locale,
+      email_verified: form.email_verified === 'verified',
       status: form.status,
       admin_note: form.admin_note,
     })
@@ -254,6 +259,9 @@ onMounted(() => {
 
     <div class="rounded-xl border border-border bg-card p-4 shadow-sm">
       <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <div class="w-full md:w-32">
+          <Input v-model="filters.userId" :placeholder="t('admin.users.filterUserId')" @update:modelValue="debouncedSearch" />
+        </div>
         <div class="w-full md:w-64">
           <Input v-model="filters.keyword" :placeholder="t('admin.users.filterKeyword')" @update:modelValue="debouncedSearch" />
         </div>
@@ -376,14 +384,16 @@ onMounted(() => {
         </TableBody>
       </Table>
 
-      <div
-        v-if="pagination.total_page > 1"
-        class="flex flex-wrap items-center justify-between gap-3 border-t border-border px-6 py-4"
+      <ListPagination
+        :page="pagination.page"
+        :total-page="pagination.total_page"
+        :total="pagination.total"
+        :page-size="pagination.page_size"
+        :page-size-options="pageSizeOptions"
+        @change-page="changePage"
+        @change-page-size="changePageSize"
       >
-        <div class="flex items-center gap-3">
-          <span class="text-xs text-muted-foreground">
-            {{ t('admin.common.pageInfo', { total: pagination.total, page: pagination.page, totalPage: pagination.total_page }) }}
-          </span>
+        <template #actions>
           <div v-if="selectedIds.length > 0" class="flex items-center gap-2">
             <Button
               size="sm"
@@ -402,37 +412,8 @@ onMounted(() => {
               {{ t('admin.users.batch.disable') }}
             </Button>
           </div>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="flex items-center gap-2">
-            <Input
-              v-model="jumpPage"
-              type="number"
-              min="1"
-              :max="pagination.total_page"
-              class="h-8 w-20"
-              :placeholder="t('admin.common.jumpPlaceholder')"
-            />
-            <Button variant="outline" size="sm" class="h-8" @click="jumpToPage">
-              {{ t('admin.common.jumpTo') }}
-            </Button>
-          </div>
-          <div class="flex items-center gap-2">
-            <Button variant="outline" size="sm" class="h-8" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">
-              {{ t('admin.common.prevPage') }}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              class="h-8"
-              :disabled="pagination.page >= pagination.total_page"
-              @click="changePage(pagination.page + 1)"
-            >
-              {{ t('admin.common.nextPage') }}
-            </Button>
-          </div>
-        </div>
-      </div>
+        </template>
+      </ListPagination>
     </div>
 
     <Dialog v-model:open="showModal" @update:open="(value) => { if (!value) closeModal() }">
@@ -467,6 +448,18 @@ onMounted(() => {
                   <SelectItem value="zh-CN">{{ t('admin.common.lang.zhCN') }}</SelectItem>
                   <SelectItem value="zh-TW">{{ t('admin.common.lang.zhTW') }}</SelectItem>
                   <SelectItem value="en-US">{{ t('admin.common.lang.enUS') }}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.users.form.emailVerifiedStatus') }}</label>
+              <Select v-model="form.email_verified">
+                <SelectTrigger class="h-9 w-full">
+                  <SelectValue :placeholder="t('admin.users.emailVerification.verified')" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="verified">{{ t('admin.users.emailVerification.verified') }}</SelectItem>
+                  <SelectItem value="unverified">{{ t('admin.users.emailVerification.unverified') }}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

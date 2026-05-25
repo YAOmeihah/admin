@@ -7,6 +7,7 @@ import type { AdminProcurementOrder, AdminSiteConnection } from '@/api/types'
 import { getLocalizedText, formatMoney, hasPositiveAmount, toRFC3339 } from '@/utils/format'
 import { orderStatusLabel } from '@/utils/status'
 import TableSkeleton from '@/components/TableSkeleton.vue'
+import ListPagination from '@/components/ListPagination.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogScrollContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -55,8 +56,6 @@ const pagination = reactive({
   total: 0,
   total_page: 1,
 })
-const jumpPage = ref('')
-
 const filters = reactive({
   status: '__all__',
   connection_id: '__all__',
@@ -189,13 +188,12 @@ const changePage = (page: number) => {
   fetchOrders(page)
 }
 
-const jumpToPage = () => {
-  if (!jumpPage.value) return
-  const raw = Number(jumpPage.value)
-  if (Number.isNaN(raw)) return
-  const target = Math.min(Math.max(Math.floor(raw), 1), pagination.total_page)
-  if (target === pagination.page) return
-  changePage(target)
+const pageSizeOptions = [10, 20, 50, 100]
+
+const changePageSize = (size: number) => {
+  if (size === pagination.page_size) return
+  pagination.page_size = size
+  fetchOrders(1)
 }
 
 const handleSearch = () => {
@@ -655,21 +653,15 @@ onMounted(() => {
     </div>
 
     <!-- Pagination -->
-    <div v-if="pagination.total_page > 1" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <span class="text-xs text-muted-foreground">
-        {{ t('admin.common.pageInfo', { total: pagination.total, page: pagination.page, totalPage: pagination.total_page }) }}
-      </span>
-      <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
-        <Input v-model="jumpPage" type="number" min="1" :max="pagination.total_page" class="h-8 w-full sm:w-20" :placeholder="t('admin.common.jumpPlaceholder')" />
-        <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" @click="jumpToPage">{{ t('admin.common.jumpTo') }}</Button>
-        <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">
-          {{ t('admin.common.prevPage') }}
-        </Button>
-        <Button variant="outline" size="sm" class="h-8 w-full sm:w-auto" :disabled="pagination.page >= pagination.total_page" @click="changePage(pagination.page + 1)">
-          {{ t('admin.common.nextPage') }}
-        </Button>
-      </div>
-    </div>
+    <ListPagination
+      :page="pagination.page"
+      :total-page="pagination.total_page"
+      :total="pagination.total"
+      :page-size="pagination.page_size"
+      :page-size-options="pageSizeOptions"
+      @change-page="changePage"
+      @change-page-size="changePageSize"
+    />
 
     <!-- Detail Dialog -->
     <Dialog v-model:open="showDetail" @update:open="(value: boolean) => { if (!value) closeDetail() }">

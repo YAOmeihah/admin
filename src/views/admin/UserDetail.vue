@@ -3,14 +3,18 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { adminAPI, type AdminWalletAccount, type AdminWalletTransaction } from '@/api/admin'
-import type { AdminUser, AdminOrder, AdminPayment, AdminMemberLevel } from '@/api/types'
+import type { AdminUser, AdminOrder, AdminPayment, AdminMemberLevel, AdminUserOAuthIdentity } from '@/api/types'
 import IdCell from '@/components/IdCell.vue'
+import { BadgeCheck, Copy, BadgeAlert } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import ListPagination from '@/components/ListPagination.vue'
 import type { AcceptableValue } from 'reka-ui'
+import { copyText } from '@/utils/clipboard'
+import { confirmAction } from '@/utils/confirm'
 import {
   orderStatusClass as orderStatusClassMap,
   orderStatusLabel as orderStatusLabelMap,
@@ -51,23 +55,21 @@ const tabs = computed<Array<{ key: 'orders' | 'payments' | 'coupons' | 'wallet';
 const orders = ref<AdminOrder[]>([])
 const ordersLoading = ref(false)
 const ordersPagination = ref({ page: 1, page_size: 20, total: 0, total_page: 1 })
-const ordersJumpPage = ref('')
 
 const payments = ref<AdminPayment[]>([])
 const paymentsLoading = ref(false)
 const paymentsPagination = ref({ page: 1, page_size: 20, total: 0, total_page: 1 })
-const paymentsJumpPage = ref('')
 
 const couponUsages = ref<UserDetailCouponUsage[]>([])
 const couponsLoading = ref(false)
 const couponsPagination = ref({ page: 1, page_size: 20, total: 0, total_page: 1 })
-const couponsJumpPage = ref('')
 
 const walletAccount = ref<AdminWalletAccount | null>(null)
 const walletTransactions = ref<AdminWalletTransaction[]>([])
 const walletLoading = ref(false)
 const walletPagination = ref({ page: 1, page_size: 20, total: 0, total_page: 1 })
-const walletJumpPage = ref('')
+
+const pageSizeOptions = [10, 20, 50, 100]
 const walletSubmitting = ref(false)
 const walletError = ref('')
 const walletSuccess = ref('')
@@ -214,40 +216,57 @@ const loadWalletData = async (page = walletPagination.value.page) => {
   }
 }
 
-const jumpOrdersPage = () => {
-  if (!ordersJumpPage.value) return
-  const raw = Number(ordersJumpPage.value)
-  if (Number.isNaN(raw)) return
-  const target = Math.min(Math.max(Math.floor(raw), 1), ordersPagination.value.total_page)
-  if (target === ordersPagination.value.page) return
-  fetchOrders(target)
+const changeOrdersPage = (page: number) => {
+  if (page < 1 || page > ordersPagination.value.total_page) return
+  fetchOrders(page)
 }
 
-const jumpPaymentsPage = () => {
-  if (!paymentsJumpPage.value) return
-  const raw = Number(paymentsJumpPage.value)
-  if (Number.isNaN(raw)) return
-  const target = Math.min(Math.max(Math.floor(raw), 1), paymentsPagination.value.total_page)
-  if (target === paymentsPagination.value.page) return
-  fetchPayments(target)
+const changeOrdersPageSize = (size: number) => {
+  if (size === ordersPagination.value.page_size) return
+  ordersPagination.value.page_size = size
+  fetchOrders(1)
 }
 
-const jumpCouponsPage = () => {
-  if (!couponsJumpPage.value) return
-  const raw = Number(couponsJumpPage.value)
-  if (Number.isNaN(raw)) return
-  const target = Math.min(Math.max(Math.floor(raw), 1), couponsPagination.value.total_page)
-  if (target === couponsPagination.value.page) return
-  fetchCoupons(target)
+const handleCopyOrderNo = async (orderNo?: string) => {
+  if (!orderNo) return
+  try { await copyText(orderNo) } catch {}
 }
 
-const jumpWalletPage = () => {
-  if (!walletJumpPage.value) return
-  const raw = Number(walletJumpPage.value)
-  if (Number.isNaN(raw)) return
-  const target = Math.min(Math.max(Math.floor(raw), 1), walletPagination.value.total_page)
-  if (target === walletPagination.value.page) return
-  fetchWalletTransactions(target)
+const handleCopyRechargeNo = async (rechargeNo: string) => {
+  try { await copyText(rechargeNo) } catch {}
+}
+
+const changePaymentsPage = (page: number) => {
+  if (page < 1 || page > paymentsPagination.value.total_page) return
+  fetchPayments(page)
+}
+
+const changePaymentsPageSize = (size: number) => {
+  if (size === paymentsPagination.value.page_size) return
+  paymentsPagination.value.page_size = size
+  fetchPayments(1)
+}
+
+const changeCouponsPage = (page: number) => {
+  if (page < 1 || page > couponsPagination.value.total_page) return
+  fetchCoupons(page)
+}
+
+const changeCouponsPageSize = (size: number) => {
+  if (size === couponsPagination.value.page_size) return
+  couponsPagination.value.page_size = size
+  fetchCoupons(1)
+}
+
+const changeWalletPage = (page: number) => {
+  if (page < 1 || page > walletPagination.value.total_page) return
+  fetchWalletTransactions(page)
+}
+
+const changeWalletPageSize = (size: number) => {
+  if (size === walletPagination.value.page_size) return
+  walletPagination.value.page_size = size
+  fetchWalletTransactions(1)
 }
 
 const changeTab = (tab: 'orders' | 'payments' | 'coupons' | 'wallet') => {
@@ -266,6 +285,7 @@ const changeTab = (tab: 'orders' | 'payments' | 'coupons' | 'wallet') => {
 }
 
 const orderLink = (orderId: number) => `${adminPath}/orders?order_id=${orderId}`
+const paymentDetailLink = (paymentId: number) => `${adminPath}/payments?payment_id=${paymentId}`
 const orderListLink = computed(() => `${adminPath}/orders?user_id=${userId.value}`)
 const paymentListLink = computed(() => `${adminPath}/payments?user_id=${userId.value}`)
 
@@ -275,6 +295,10 @@ const orderStatusClass = (status?: string) => orderStatusClassMap(status)
 const orderStatusLabel = (status?: string) => orderStatusLabelMap(t, status)
 const paymentStatusClass = (status?: string) => paymentStatusClassMap(status)
 const paymentStatusLabel = (status?: string) => paymentStatusLabelMap(t, status)
+const emailVerified = computed(() => Boolean(user.value?.email_verified_at))
+const emailVerificationClass = computed(() => emailVerified.value ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-700')
+const emailVerificationIcon = computed(() => emailVerified.value ? BadgeCheck : BadgeAlert)
+const emailVerificationLabel = computed(() => emailVerified.value ? t('admin.userDetail.emailVerification.verified') : t('admin.userDetail.emailVerification.unverified'))
 
 const walletDirectionClass = (direction?: string) => {
   if (direction === 'in') return 'theme-badge-success'
@@ -360,6 +384,9 @@ const oauthIdentities = computed(() => {
   const list = user.value?.oauth_identities
   return Array.isArray(list) ? list : []
 })
+const oauthUnbindingId = ref<number | null>(null)
+const oauthError = ref('')
+const oauthSuccess = ref('')
 
 const twofaEnabled = computed(() => Boolean(user.value?.totp_enabled_at))
 const twofaEnabledAt = computed(() => (user.value?.totp_enabled_at as string | undefined) || '')
@@ -391,6 +418,33 @@ const formatProviderLabel = (provider?: string) => {
   const normalized = provider.trim().toLowerCase()
   if (normalized === 'telegram') return 'Telegram'
   return normalized
+}
+
+const isTelegramIdentity = (identity: AdminUserOAuthIdentity) => {
+  return identity.provider?.trim().toLowerCase() === 'telegram'
+}
+
+const handleUnbindTelegram = async (identity: AdminUserOAuthIdentity) => {
+  if (!Number.isFinite(userId.value) || userId.value <= 0 || !isTelegramIdentity(identity)) return
+  const account = identity.username ? `@${identity.username}` : identity.provider_user_id || 'Telegram'
+  const confirmed = await confirmAction({
+    description: t('admin.userDetail.oauth.confirmUnbindTelegram', { account }),
+    confirmText: t('admin.userDetail.oauth.unbindTelegram'),
+    variant: 'destructive',
+  })
+  if (!confirmed) return
+  oauthError.value = ''
+  oauthSuccess.value = ''
+  oauthUnbindingId.value = identity.id
+  try {
+    await adminAPI.unbindUserTelegram(userId.value)
+    await fetchUser()
+    oauthSuccess.value = t('admin.userDetail.oauth.unbindSuccess')
+  } catch (err: any) {
+    oauthError.value = err?.message || t('admin.userDetail.oauth.unbindFailed')
+  } finally {
+    oauthUnbindingId.value = null
+  }
 }
 
 onMounted(() => {
@@ -450,7 +504,13 @@ watch(
       <Card class="rounded-lg border-border bg-background shadow-none">
         <CardContent class="p-3">
           <div class="text-xs text-muted-foreground">{{ t('admin.userDetail.fields.email') }}</div>
-          <div class="text-sm text-foreground break-all">{{ user?.email || '-' }}</div>
+          <div class="flex flex-wrap items-center gap-2 text-sm text-foreground">
+            <span class="break-all">{{ user?.email || '-' }}</span>
+            <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs" :class="emailVerificationClass">
+              <component :is="emailVerificationIcon" class="h-3.5 w-3.5" />
+              {{ emailVerificationLabel }}
+            </span>
+          </div>
         </CardContent>
       </Card>
       <Card class="rounded-lg border-border bg-background shadow-none">
@@ -562,6 +622,8 @@ watch(
           <div class="text-xs text-muted-foreground">{{ t('admin.userDetail.oauth.title') }}</div>
           <div class="text-sm text-muted-foreground">{{ t('admin.userDetail.oauth.subtitle') }}</div>
         </div>
+        <div v-if="oauthError" class="text-xs text-destructive">{{ oauthError }}</div>
+        <div v-if="oauthSuccess" class="text-xs text-emerald-600">{{ oauthSuccess }}</div>
         <div v-if="oauthIdentities.length === 0" class="text-sm text-muted-foreground">
           {{ t('admin.userDetail.oauth.empty') }}
         </div>
@@ -571,19 +633,31 @@ watch(
             :key="identity.id"
             class="rounded-lg border border-border bg-card px-4 py-3"
           >
-            <div class="flex items-center gap-3">
-              <img
-                v-if="identity.avatar_url"
-                :src="identity.avatar_url"
-                :alt="identity.username || identity.provider_user_id"
-                class="h-10 w-10 rounded-full border border-border object-cover"
-              />
-              <div class="min-w-0">
-                <div class="text-sm font-medium text-foreground">{{ formatProviderLabel(identity.provider) }}</div>
-                <div class="truncate text-xs text-muted-foreground">
-                  {{ identity.username ? `@${identity.username}` : identity.provider_user_id }}
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex min-w-0 items-center gap-3">
+                <img
+                  v-if="identity.avatar_url"
+                  :src="identity.avatar_url"
+                  :alt="identity.username || identity.provider_user_id"
+                  class="h-10 w-10 rounded-full border border-border object-cover"
+                />
+                <div class="min-w-0">
+                  <div class="text-sm font-medium text-foreground">{{ formatProviderLabel(identity.provider) }}</div>
+                  <div class="truncate text-xs text-muted-foreground">
+                    {{ identity.username ? `@${identity.username}` : identity.provider_user_id }}
+                  </div>
                 </div>
               </div>
+              <Button
+                v-if="isTelegramIdentity(identity)"
+                size="sm"
+                variant="destructive"
+                class="shrink-0 cursor-pointer"
+                :disabled="oauthUnbindingId === identity.id"
+                @click="handleUnbindTelegram(identity)"
+              >
+                {{ oauthUnbindingId === identity.id ? t('admin.userDetail.oauth.unbindingTelegram') : t('admin.userDetail.oauth.unbindTelegram') }}
+              </Button>
             </div>
             <div class="mt-3 space-y-1 text-xs text-muted-foreground">
               <div>{{ t('admin.userDetail.oauth.providerUserId') }}: <span class="font-mono text-foreground">{{ identity.provider_user_id || '-' }}</span></div>
@@ -629,7 +703,24 @@ watch(
             <TableCell class="px-6 py-4">
               <IdCell :value="order.id" />
             </TableCell>
-            <TableCell class="min-w-[220px] px-6 py-4 text-foreground font-mono break-all">{{ order.order_no }}</TableCell>
+            <TableCell class="min-w-[220px] px-6 py-4 text-foreground font-mono">
+              <div class="flex items-center gap-1.5">
+                <router-link
+                  :to="orderLink(order.id)"
+                  class="break-all text-primary underline-offset-4 hover:underline"
+                >
+                  {{ order.order_no }}
+                </router-link>
+                <button
+                  type="button"
+                  class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 text-muted-foreground hover:text-foreground hover:border-border"
+                  :title="t('admin.common.copy')"
+                  @click="handleCopyOrderNo(order.order_no)"
+                >
+                  <Copy class="h-3 w-3" />
+                </button>
+              </div>
+            </TableCell>
             <TableCell class="px-6 py-4 text-xs">
               <span class="inline-flex rounded-full border px-2.5 py-1 text-xs" :class="orderStatusClass(order.status)">
                 {{ orderStatusLabel(order.status) }}
@@ -640,51 +731,15 @@ watch(
           </TableRow>
         </TableBody>
       </Table>
-      <div
-        v-if="ordersPagination.total_page > 1"
-        class="flex flex-wrap items-center justify-between gap-3 border-t border-border px-6 py-4"
-      >
-        <div class="flex items-center gap-3">
-          <span class="text-xs text-muted-foreground">
-            {{ t('admin.common.pageInfo', { total: ordersPagination.total, page: ordersPagination.page, totalPage: ordersPagination.total_page }) }}
-          </span>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="flex items-center gap-2">
-            <Input
-              v-model="ordersJumpPage"
-              type="number"
-              min="1"
-              :max="ordersPagination.total_page"
-              class="h-8 w-20"
-              :placeholder="t('admin.common.jumpPlaceholder')"
-            />
-            <Button variant="outline" size="sm" class="h-8" @click="jumpOrdersPage">
-              {{ t('admin.common.jumpTo') }}
-            </Button>
-          </div>
-          <div class="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              class="h-8"
-              :disabled="ordersPagination.page <= 1"
-              @click="fetchOrders(ordersPagination.page - 1)"
-            >
-              {{ t('admin.common.prevPage') }}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              class="h-8"
-              :disabled="ordersPagination.page >= ordersPagination.total_page"
-              @click="fetchOrders(ordersPagination.page + 1)"
-            >
-              {{ t('admin.common.nextPage') }}
-            </Button>
-          </div>
-        </div>
-      </div>
+      <ListPagination
+        :page="ordersPagination.page"
+        :total-page="ordersPagination.total_page"
+        :total="ordersPagination.total"
+        :page-size="ordersPagination.page_size"
+        :page-size-options="pageSizeOptions"
+        @change-page="changeOrdersPage"
+        @change-page-size="changeOrdersPageSize"
+      />
     </div>
 
     <div v-if="activeTab === 'payments'" class="rounded-xl border border-border bg-card overflow-x-auto">
@@ -713,11 +768,35 @@ watch(
               <router-link
                 v-if="payment.order_id"
                 :to="orderLink(payment.order_id)"
-                class="text-primary underline-offset-4 hover:underline"
+                class="break-all text-primary underline-offset-4 hover:underline"
               >
-                #{{ payment.order_id }}
+                {{ payment.order_no }}
               </router-link>
-              <span v-else-if="payment.recharge_no" class="break-all">{{ payment.recharge_no }}</span>
+              <button
+                v-if="payment.order_id"
+                type="button"
+                class="ml-1.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 text-muted-foreground hover:text-foreground hover:border-border"
+                :title="t('admin.common.copy')"
+                @click="handleCopyOrderNo(payment.order_no)"
+              >
+                <Copy class="h-3 w-3" />
+              </button>
+              <div v-else-if="payment.recharge_no" class="flex items-center gap-1.5">
+                <router-link
+                  :to="paymentDetailLink(payment.id)"
+                  class="break-all text-primary underline-offset-4 hover:underline"
+                >
+                  {{ payment.recharge_no }}
+                </router-link>
+                <button
+                  type="button"
+                  class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 text-muted-foreground hover:text-foreground hover:border-border"
+                  :title="t('admin.common.copy')"
+                  @click="handleCopyRechargeNo(payment.recharge_no)"
+                >
+                  <Copy class="h-3 w-3" />
+                </button>
+              </div>
               <span v-else>-</span>
               <div v-if="payment.recharge_no" class="mt-1 text-xs text-muted-foreground">
                 {{ t('admin.payments.rechargeStatus') }}:
@@ -735,51 +814,15 @@ watch(
           </TableRow>
         </TableBody>
       </Table>
-      <div
-        v-if="paymentsPagination.total_page > 1"
-        class="flex flex-wrap items-center justify-between gap-3 border-t border-border px-6 py-4"
-      >
-        <div class="flex items-center gap-3">
-          <span class="text-xs text-muted-foreground">
-            {{ t('admin.common.pageInfo', { total: paymentsPagination.total, page: paymentsPagination.page, totalPage: paymentsPagination.total_page }) }}
-          </span>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="flex items-center gap-2">
-            <Input
-              v-model="paymentsJumpPage"
-              type="number"
-              min="1"
-              :max="paymentsPagination.total_page"
-              class="h-8 w-20"
-              :placeholder="t('admin.common.jumpPlaceholder')"
-            />
-            <Button variant="outline" size="sm" class="h-8" @click="jumpPaymentsPage">
-              {{ t('admin.common.jumpTo') }}
-            </Button>
-          </div>
-          <div class="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              class="h-8"
-              :disabled="paymentsPagination.page <= 1"
-              @click="fetchPayments(paymentsPagination.page - 1)"
-            >
-              {{ t('admin.common.prevPage') }}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              class="h-8"
-              :disabled="paymentsPagination.page >= paymentsPagination.total_page"
-              @click="fetchPayments(paymentsPagination.page + 1)"
-            >
-              {{ t('admin.common.nextPage') }}
-            </Button>
-          </div>
-        </div>
-      </div>
+      <ListPagination
+        :page="paymentsPagination.page"
+        :total-page="paymentsPagination.total_page"
+        :total="paymentsPagination.total"
+        :page-size="paymentsPagination.page_size"
+        :page-size-options="pageSizeOptions"
+        @change-page="changePaymentsPage"
+        @change-page-size="changePaymentsPageSize"
+      />
     </div>
 
     <div v-if="activeTab === 'coupons'" class="rounded-xl border border-border bg-card overflow-x-auto">
@@ -827,51 +870,15 @@ watch(
           </TableRow>
         </TableBody>
       </Table>
-      <div
-        v-if="couponsPagination.total_page > 1"
-        class="flex flex-wrap items-center justify-between gap-3 border-t border-border px-6 py-4"
-      >
-        <div class="flex items-center gap-3">
-          <span class="text-xs text-muted-foreground">
-            {{ t('admin.common.pageInfo', { total: couponsPagination.total, page: couponsPagination.page, totalPage: couponsPagination.total_page }) }}
-          </span>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="flex items-center gap-2">
-            <Input
-              v-model="couponsJumpPage"
-              type="number"
-              min="1"
-              :max="couponsPagination.total_page"
-              class="h-8 w-20"
-              :placeholder="t('admin.common.jumpPlaceholder')"
-            />
-            <Button variant="outline" size="sm" class="h-8" @click="jumpCouponsPage">
-              {{ t('admin.common.jumpTo') }}
-            </Button>
-          </div>
-          <div class="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              class="h-8"
-              :disabled="couponsPagination.page <= 1"
-              @click="fetchCoupons(couponsPagination.page - 1)"
-            >
-              {{ t('admin.common.prevPage') }}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              class="h-8"
-              :disabled="couponsPagination.page >= couponsPagination.total_page"
-              @click="fetchCoupons(couponsPagination.page + 1)"
-            >
-              {{ t('admin.common.nextPage') }}
-            </Button>
-          </div>
-        </div>
-      </div>
+      <ListPagination
+        :page="couponsPagination.page"
+        :total-page="couponsPagination.total_page"
+        :total="couponsPagination.total"
+        :page-size="couponsPagination.page_size"
+        :page-size-options="pageSizeOptions"
+        @change-page="changeCouponsPage"
+        @change-page-size="changeCouponsPageSize"
+      />
     </div>
 
     <div v-if="activeTab === 'wallet'" class="space-y-4">
@@ -962,49 +969,15 @@ watch(
             </TableRow>
           </TableBody>
         </Table>
-        <div
-          v-if="walletPagination.total_page > 1"
-          class="flex flex-wrap items-center justify-between gap-3 border-t border-border px-6 py-4"
-        >
-          <span class="text-xs text-muted-foreground">
-            {{ t('admin.common.pageInfo', { total: walletPagination.total, page: walletPagination.page, totalPage: walletPagination.total_page }) }}
-          </span>
-          <div class="flex flex-wrap items-center gap-2">
-            <div class="flex items-center gap-2">
-              <Input
-                v-model="walletJumpPage"
-                type="number"
-                min="1"
-                :max="walletPagination.total_page"
-                class="h-8 w-20"
-                :placeholder="t('admin.common.jumpPlaceholder')"
-              />
-              <Button variant="outline" size="sm" class="h-8" @click="jumpWalletPage">
-                {{ t('admin.common.jumpTo') }}
-              </Button>
-            </div>
-            <div class="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                class="h-8"
-                :disabled="walletPagination.page <= 1"
-                @click="fetchWalletTransactions(walletPagination.page - 1)"
-              >
-                {{ t('admin.common.prevPage') }}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                class="h-8"
-                :disabled="walletPagination.page >= walletPagination.total_page"
-                @click="fetchWalletTransactions(walletPagination.page + 1)"
-              >
-                {{ t('admin.common.nextPage') }}
-              </Button>
-            </div>
-          </div>
-        </div>
+        <ListPagination
+          :page="walletPagination.page"
+          :total-page="walletPagination.total_page"
+          :total="walletPagination.total"
+          :page-size="walletPagination.page_size"
+          :page-size-options="pageSizeOptions"
+          @change-page="changeWalletPage"
+          @change-page-size="changeWalletPageSize"
+        />
       </div>
     </div>
   </div>
