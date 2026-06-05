@@ -15,9 +15,11 @@ import { getLocalizedText } from '@/utils/format'
 import { buildAdminCategoryPath, createAdminCategoryChildCountMap, createAdminCategoryMap, flattenAdminCategories, isAdminProductCategorySelectable } from '@/utils/category'
 import TableSkeleton from '@/components/TableSkeleton.vue'
 import ListPagination from '@/components/ListPagination.vue'
+import { useListRefresh, type ListFetchOptions } from '@/composables/useListRefresh'
 
 const { t } = useI18n()
 const loading = ref(true)
+const { refreshing, refreshList } = useListRefresh()
 const mappings = ref<(AdminProductMapping & { product?: AdminProduct })[]>([])
 const connections = ref<AdminSiteConnection[]>([])
 const categories = ref<AdminCategory[]>([])
@@ -212,8 +214,8 @@ const fetchCategories = async () => {
   } catch { categories.value = [] }
 }
 
-const fetchMappings = async (page = 1) => {
-  loading.value = true
+const fetchMappings = async (page = 1, options: ListFetchOptions = {}) => {
+  if (!options.preserveRows) loading.value = true
   expandedMappingId.value = null
   detailData.value = null
   selectedMappingIds.value = new Set()
@@ -226,7 +228,15 @@ const fetchMappings = async (page = 1) => {
     mappings.value = (res.data.data as (AdminProductMapping & { product?: AdminProduct })[]) || []
     const p = res.data.pagination
     if (p) { pagination.page = p.page; pagination.page_size = p.page_size; pagination.total = p.total; pagination.total_page = p.total_page }
-  } catch { mappings.value = [] } finally { loading.value = false }
+  } catch {
+    if (!options.preserveRows) mappings.value = []
+  } finally {
+    if (!options.preserveRows) loading.value = false
+  }
+}
+
+const refresh = () => {
+  refreshList(() => fetchMappings(pagination.page, { preserveRows: true }))
 }
 
 const changePage = (page: number) => { if (page >= 1 && page <= pagination.total_page) fetchMappings(page) }
@@ -655,7 +665,7 @@ onMounted(() => { fetchConnections(); fetchCategories(); fetchMappings() })
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('productMappings.title') }}</h1>
       <div class="flex w-full gap-2 sm:w-auto">
-        <Button variant="outline" class="w-full sm:w-auto" :disabled="loading" @click="fetchMappings(pagination.page)">{{ t('productMappings.refresh') }}</Button>
+        <Button variant="outline" class="w-full sm:w-auto" :disabled="refreshing" @click="refresh">{{ t('productMappings.refresh') }}</Button>
         <Button class="w-full sm:w-auto" @click="openImportModal">{{ t('productMappings.importButton') }}</Button>
       </div>
     </div>

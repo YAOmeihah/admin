@@ -12,6 +12,7 @@ import { Dialog, DialogHeader, DialogScrollContent, DialogTitle } from '@/compon
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
 import ListPagination from '@/components/ListPagination.vue'
+import { useListRefresh, type ListFetchOptions } from '@/composables/useListRefresh'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { formatDate, getLocalizedText } from '@/utils/format'
 import { notifyError } from '@/utils/notify'
@@ -19,6 +20,7 @@ import { confirmAction } from '@/utils/confirm'
 import { useFormValidation, rules } from '@/composables/useFormValidation'
 
 const loading = ref(true)
+const { refreshing, refreshList } = useListRefresh()
 const promotions = ref<AdminPromotion[]>([])
 const pagination = ref({
   page: 1,
@@ -260,8 +262,8 @@ const formatPromotionScope = (rawScopeID: number | string) => {
   return `#${Math.floor(scopeID)}`
 }
 
-const fetchPromotions = async (page = 1) => {
-  loading.value = true
+const fetchPromotions = async (page = 1, options: ListFetchOptions = {}) => {
+  if (!options.preserveRows) loading.value = true
   try {
     const normalizedIsActive = normalizeFilterValue(filters.isActive)
     const normalizedScope = normalizeScopeFilterValue(filters.scopeRefId)
@@ -283,9 +285,9 @@ const fetchPromotions = async (page = 1) => {
       autoOpenId.value = null
     }
   } catch {
-    promotions.value = []
+    if (!options.preserveRows) promotions.value = []
   } finally {
-    loading.value = false
+    if (!options.preserveRows) loading.value = false
   }
 }
 
@@ -294,7 +296,7 @@ const handleSearch = () => {
 }
 
 const refresh = () => {
-  fetchPromotions(pagination.value.page)
+  refreshList(() => fetchPromotions(pagination.value.page, { preserveRows: true }))
 }
 
 const changePage = (page: number) => {
@@ -487,7 +489,7 @@ watch(
           </Select>
         </div>
         <div class="hidden flex-1 sm:block"></div>
-        <Button size="sm" class="w-full sm:w-auto" @click="refresh">{{ t('admin.common.refresh') }}</Button>
+        <Button size="sm" class="w-full sm:w-auto" :disabled="refreshing" @click="refresh">{{ t('admin.common.refresh') }}</Button>
       </div>
     </div>
 

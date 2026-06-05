@@ -9,10 +9,12 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
+import { useListRefresh, type ListFetchOptions } from '@/composables/useListRefresh'
 import { notifyError } from '@/utils/notify'
 import { formatDate, toRFC3339 } from '@/utils/format'
 
 const { locale } = useI18n()
+const { refreshing, refreshList } = useListRefresh()
 
 const messages = {
   'zh-CN': {
@@ -161,8 +163,8 @@ const actionOptions = [
 
 const methodOptions = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', '*']
 
-const fetchLogs = async (page = 1) => {
-  loading.value = true
+const fetchLogs = async (page = 1, options: ListFetchOptions = {}) => {
+  if (!options.preserveRows) loading.value = true
   try {
     const response = await adminAPI.listAuthzAuditLogs({
       page,
@@ -179,15 +181,15 @@ const fetchLogs = async (page = 1) => {
     logs.value = Array.isArray(response.data.data) ? response.data.data : []
     pagination.value = response.data.pagination || pagination.value
   } catch (err: any) {
-    logs.value = []
+    if (!options.preserveRows) logs.value = []
     notifyError(err?.message || 'Fetch audit logs failed')
   } finally {
-    loading.value = false
+    if (!options.preserveRows) loading.value = false
   }
 }
 
 const handleSearch = () => {
-  fetchLogs(1)
+  fetchLogs(1, { preserveRows: true })
 }
 const debouncedSearch = useDebounceFn(handleSearch, 300)
 
@@ -200,7 +202,11 @@ const handleReset = () => {
   filters.method = '__all__'
   filters.created_from = ''
   filters.created_to = ''
-  fetchLogs(1)
+  fetchLogs(1, { preserveRows: true })
+}
+
+const refresh = () => {
+  refreshList(() => fetchLogs(pagination.value.page, { preserveRows: true }))
 }
 
 const changePage = (next: number) => {
@@ -253,7 +259,7 @@ onMounted(() => {
 
       <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
         <Button size="sm" variant="outline" class="w-full sm:w-auto" @click="handleReset">{{ text.actions.reset }}</Button>
-        <Button size="sm" variant="outline" class="w-full sm:w-auto" @click="fetchLogs(pagination.page)">{{ text.actions.refresh }}</Button>
+        <Button size="sm" variant="outline" class="w-full sm:w-auto" :disabled="refreshing" @click="refresh">{{ text.actions.refresh }}</Button>
         <Button size="sm" class="w-full sm:w-auto" @click="handleSearch">{{ text.actions.search }}</Button>
       </div>
     </section>

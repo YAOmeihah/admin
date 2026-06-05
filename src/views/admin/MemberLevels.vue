@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch'
 import { Dialog, DialogHeader, DialogScrollContent, DialogTitle } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
+import { useListRefresh, type ListFetchOptions } from '@/composables/useListRefresh'
 import { formatDate, getLocalizedText } from '@/utils/format'
 import { getImageUrl } from '@/utils/image'
 import { notifyError, notifySuccess } from '@/utils/notify'
@@ -21,6 +22,7 @@ const isImagePath = (val: string) => !!val && val.includes('/')
 const { t } = useI18n()
 
 const loading = ref(true)
+const { refreshing, refreshList } = useListRefresh()
 const levels = ref<AdminMemberLevel[]>([])
 const pagination = ref({
   page: 1,
@@ -74,8 +76,8 @@ const resetForm = () => {
   iconCache.image = ''
 }
 
-const fetchLevels = async () => {
-  loading.value = true
+const fetchLevels = async (options: ListFetchOptions = {}) => {
+  if (!options.preserveRows) loading.value = true
   try {
     const response = await adminAPI.getMemberLevels({
       page: pagination.value.page,
@@ -86,14 +88,14 @@ const fetchLevels = async () => {
       pagination.value = response.data.pagination
     }
   } catch {
-    levels.value = []
+    if (!options.preserveRows) levels.value = []
   } finally {
-    loading.value = false
+    if (!options.preserveRows) loading.value = false
   }
 }
 
 const refresh = () => {
-  fetchLevels()
+  refreshList(() => fetchLevels({ preserveRows: true }))
 }
 
 const openCreateModal = () => {
@@ -227,7 +229,7 @@ onMounted(() => {
         <Button size="sm" variant="outline" class="w-full sm:w-auto" :disabled="backfilling" @click="handleBackfill">
           {{ backfilling ? t('admin.memberLevels.backfilling') : t('admin.memberLevels.backfill') }}
         </Button>
-        <Button size="sm" class="w-full sm:w-auto" @click="refresh">{{ t('admin.common.refresh') }}</Button>
+        <Button size="sm" class="w-full sm:w-auto" :disabled="refreshing" @click="refresh">{{ t('admin.common.refresh') }}</Button>
       </div>
     </div>
 

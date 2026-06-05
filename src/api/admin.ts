@@ -219,6 +219,15 @@ export interface AdminExportCardSecretsPayload {
   format: 'txt' | 'csv'
 }
 
+export interface AdminExportAvailableCardSecretsPayload {
+  product_id: number
+  sku_id?: number
+  batch_id?: number
+  limit: number
+  format: 'txt' | 'csv'
+  delete_after_export?: boolean
+}
+
 export interface AdminCardSecretQueryPayload {
   product_id?: number
   sku_id?: number
@@ -261,9 +270,27 @@ export interface AdminAffiliateSetting {
   withdraw_channels: string[]
 }
 
+export interface ComplianceStatus {
+  acknowledged: boolean
+  acknowledged_at?: string
+  acknowledged_by_admin_id?: number
+  acknowledged_by_username?: string
+  version?: string
+}
+
+export interface ComplianceAcknowledgePayload {
+  segment1: string
+  segment2: string
+  segment3: string
+}
+
 export const adminAPI = {
   login: (data: AdminLoginRequest) => api.post('/admin/login', data),
   verify2FA: (data: Verify2FAPayload) => api.post('/admin/login/verify-2fa', data),
+  // 合规声明
+  getComplianceStatus: () => api.get('/admin/compliance/status'),
+  acknowledgeCompliance: (data: ComplianceAcknowledgePayload) =>
+    api.post('/admin/compliance/acknowledge', data),
   get2FAStatus: () => api.get('/admin/2fa/status'),
   setup2FA: () => api.post('/admin/2fa/setup', {}),
   enable2FA: (data: { code: string }) => api.post('/admin/2fa/enable', data),
@@ -297,6 +324,7 @@ export const adminAPI = {
   getMedia: (params?: Record<string, unknown>) => api.get('/admin/media', { params }),
   updateMedia: (id: number, data: { name: string }) => api.put(`/admin/media/${id}`, data),
   deleteMedia: (id: number) => api.delete(`/admin/media/${id}`),
+  batchDeleteMedia: (ids: number[]) => api.post('/admin/media/batch-delete', { ids }),
 
   getProducts: (params?: Record<string, unknown>) => api.get('/admin/products', { params }),
   getProduct: (id: number) => api.get(`/admin/products/${id}`),
@@ -435,6 +463,8 @@ export const adminAPI = {
     api.post('/admin/card-secrets/batch-delete', data),
   exportCardSecrets: (data: AdminExportCardSecretsPayload) =>
     api.post('/admin/card-secrets/export', data, { blob: true }),
+  exportAvailableCardSecrets: (data: AdminExportAvailableCardSecretsPayload) =>
+    api.post('/admin/card-secrets/export-available', data, { blob: true }),
   getCardSecretStats: (params?: Record<string, unknown>) => api.get('/admin/card-secrets/stats', { params }),
   getCardSecretBatches: (params?: Record<string, unknown>) => api.get('/admin/card-secrets/batches', { params }),
   getCardSecretTemplate: () => api.get('/admin/card-secrets/template'),

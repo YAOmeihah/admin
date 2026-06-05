@@ -196,6 +196,7 @@ const itemDiscountTotal = (item: AdminOrderItem) => {
   return Number((
     positiveAmountValue(item.promotion_discount_amount)
     + positiveAmountValue(item.member_discount_amount)
+    + positiveAmountValue(item.wholesale_discount_amount)
     + positiveAmountValue(item.coupon_discount_amount)
   ).toFixed(2))
 }
@@ -824,6 +825,12 @@ watch(
                   <div class="text-amber-700 font-mono mt-1">{{ formatDiscountMoney(selectedOrder.member_discount_amount, selectedOrder.currency) }}</div>
                 </CardContent>
               </Card>
+              <Card v-if="hasPositiveAmount(selectedOrder.wholesale_discount_amount)" class="min-w-0 rounded-lg border-emerald-200 bg-emerald-50/50 shadow-none">
+                <CardContent class="p-3">
+                  <div class="text-xs text-emerald-700">{{ t('admin.orders.detailWholesaleDiscount') }}</div>
+                  <div class="text-emerald-700 font-mono mt-1">{{ formatDiscountMoney(selectedOrder.wholesale_discount_amount, selectedOrder.currency) }}</div>
+                </CardContent>
+              </Card>
             </div>
           </div>
 
@@ -899,6 +906,9 @@ watch(
                     </div>
                     <div v-if="hasPositiveAmount(item.promotion_discount_amount)">
                       {{ t('orderDetail.promotionDiscountLabel') }}：{{ formatDiscountMoney(item.promotion_discount_amount, selectedOrder.currency) }}
+                    </div>
+                    <div v-if="hasPositiveAmount(item.wholesale_discount_amount)">
+                      {{ t('orderDetail.wholesaleDiscountLabel') }}：{{ formatDiscountMoney(item.wholesale_discount_amount, selectedOrder.currency) }}
                     </div>
                     <div v-if="hasPositiveAmount(item.member_discount_amount)">
                       {{ t('orderDetail.memberDiscountLabel') }}：{{ formatDiscountMoney(item.member_discount_amount, selectedOrder.currency) }}

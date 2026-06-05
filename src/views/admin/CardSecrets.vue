@@ -14,12 +14,14 @@ import { toggleArrayMember } from '@/lib/utils'
 import ListPagination from '@/components/ListPagination.vue'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
+import { useListRefresh, type ListFetchOptions } from '@/composables/useListRefresh'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { formatDate, getLocalizedText } from '@/utils/format'
 import { confirmAction } from '@/utils/confirm'
 import CardSecretEditModal from './components/CardSecretEditModal.vue'
 
 const { t } = useI18n()
+const { refreshing, refreshList } = useListRefresh()
 const adminPath = import.meta.env.VITE_ADMIN_PATH || ''
 const pageSizeOptions = [10, 20, 50, 100, 200]
 
@@ -404,7 +406,7 @@ const refreshStats = async () => {
   }
 }
 
-const fetchBatches = async (page = 1) => {
+const fetchBatches = async (page = 1, options: ListFetchOptions = {}) => {
   const productId = parseProductId()
   if (!productId) {
     batches.value = []
@@ -416,7 +418,7 @@ const fetchBatches = async (page = 1) => {
     }
     return
   }
-  batchesLoading.value = true
+  if (!options.preserveRows) batchesLoading.value = true
   try {
     const response = await adminAPI.getCardSecretBatches({
       product_id: productId,
@@ -427,14 +429,14 @@ const fetchBatches = async (page = 1) => {
     batches.value = response.data.data || []
     batchPagination.value = response.data.pagination || batchPagination.value
   } catch {
-    batches.value = []
+    if (!options.preserveRows) batches.value = []
   } finally {
-    batchesLoading.value = false
+    if (!options.preserveRows) batchesLoading.value = false
   }
 }
 
-const fetchCardSecrets = async (page = 1) => {
-  cardSecretsLoading.value = true
+const fetchCardSecrets = async (page = 1, options: ListFetchOptions = {}) => {
+  if (!options.preserveRows) cardSecretsLoading.value = true
   try {
     const response = await adminAPI.getCardSecrets({
       ...currentQueryFilter.value,
@@ -444,26 +446,28 @@ const fetchCardSecrets = async (page = 1) => {
     const nextRows = response.data.data || []
     const nextPagination = response.data.pagination || cardSecretPagination.value
     if (page > Number(nextPagination.total_page || 1) && Number(nextPagination.total_page || 1) > 0) {
-      await fetchCardSecrets(Number(nextPagination.total_page || 1))
+      await fetchCardSecrets(Number(nextPagination.total_page || 1), options)
       return
     }
     cardSecrets.value = nextRows
     cardSecretPagination.value = nextPagination
     selectedSecretIds.value = []
   } catch {
-    cardSecrets.value = []
-    selectedSecretIds.value = []
+    if (!options.preserveRows) {
+      cardSecrets.value = []
+      selectedSecretIds.value = []
+    }
   } finally {
-    cardSecretsLoading.value = false
+    if (!options.preserveRows) cardSecretsLoading.value = false
   }
 }
 
-const refreshAll = async () => {
+const refreshAll = async (options: ListFetchOptions = {}) => {
   const productId = parseProductId()
   clearBatchActionMessages()
   if (productId) {
     await loadProductInfo()
-    await Promise.all([refreshStats(), fetchBatches(1), fetchCardSecrets(1)])
+    await Promise.all([refreshStats(), fetchBatches(1, options), fetchCardSecrets(1, options)])
     return
   }
 
@@ -478,7 +482,7 @@ const refreshAll = async () => {
     total_page: 1,
   }
   skuFilterValue.value = '__all__'
-  await fetchCardSecrets(1)
+  await fetchCardSecrets(1, options)
 }
 
 const refreshAfterMutations = async () => {
@@ -507,7 +511,7 @@ const handleSkuSelectionChange = async () => {
 
 const applyListFilters = async () => {
   clearBatchActionMessages()
-  await fetchCardSecrets(1)
+  await fetchCardSecrets(1, { preserveRows: true })
 }
 
 const resetListFilters = async () => {
@@ -516,7 +520,15 @@ const resetListFilters = async () => {
   filters.batchNo = ''
   clearBatchFilter()
   clearBatchActionMessages()
-  await fetchCardSecrets(1)
+  await fetchCardSecrets(1, { preserveRows: true })
+}
+
+const refreshCurrentList = () => {
+  refreshList(() => refreshAll({ preserveRows: true }))
+}
+
+const refreshBatches = () => {
+  refreshList(() => fetchBatches(1, { preserveRows: true }))
 }
 
 const changeBatchPage = (page: number) => {
@@ -809,7 +821,7 @@ onMounted(async () => {
         </div>
 
         <div class="md:col-span-2">
-          <Button class="w-full" variant="outline" @click="refreshAll">{{ t('admin.common.refresh') }}</Button>
+          <Button class="w-full" variant="outline" :disabled="refreshing" @click="refreshCurrentList">{{ t('admin.common.refresh') }}</Button>
         </div>
       </div>
 
@@ -868,7 +880,7 @@ onMounted(async () => {
           <h2 class="text-lg font-semibold text-foreground">{{ t('admin.cardSecrets.batchesTitle') }}</h2>
           <p class="text-xs text-muted-foreground">{{ t('admin.cardSecrets.batch.navigatorHint') }}</p>
         </div>
-        <Button size="sm" variant="outline" @click="fetchBatches(1)">{{ t('admin.common.refresh') }}</Button>
+        <Button size="sm" variant="outline" :disabled="refreshing" @click="refreshBatches">{{ t('admin.common.refresh') }}</Button>
       </div>
 
       <div class="space-y-3">

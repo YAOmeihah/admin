@@ -18,6 +18,7 @@ import { Dialog, DialogHeader, DialogScrollContent, DialogTitle } from '@/compon
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
 import ListPagination from '@/components/ListPagination.vue'
+import { useListRefresh, type ListFetchOptions } from '@/composables/useListRefresh'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { formatDate } from '@/utils/format'
 import { confirmAction } from '@/utils/confirm'
@@ -37,6 +38,7 @@ type GiftCardWithRelations = AdminGiftCard & {
 const { t } = useI18n()
 
 const loading = ref(true)
+const { refreshing, refreshList } = useListRefresh()
 const cards = ref<GiftCardWithRelations[]>([])
 const pagination = ref({
   page: 1,
@@ -186,8 +188,8 @@ const onRowSelectChange = (rawID: number | string, v: boolean | 'indeterminate')
   toggleArrayMember(selectedCardIDs, Math.floor(id), v)
 }
 
-const fetchGiftCards = async (page = 1) => {
-  loading.value = true
+const fetchGiftCards = async (page = 1, options: ListFetchOptions = {}) => {
+  if (!options.preserveRows) loading.value = true
   clearBatchMessages()
   try {
     const params: Record<string, unknown> = {
@@ -207,19 +209,21 @@ const fetchGiftCards = async (page = 1) => {
     pagination.value = response.data.pagination || pagination.value
     selectedCardIDs.value = []
   } catch {
-    cards.value = []
-    selectedCardIDs.value = []
+    if (!options.preserveRows) {
+      cards.value = []
+      selectedCardIDs.value = []
+    }
   } finally {
-    loading.value = false
+    if (!options.preserveRows) loading.value = false
   }
 }
 
 const handleSearch = () => {
-  fetchGiftCards(1)
+  fetchGiftCards(1, { preserveRows: true })
 }
 
 const refresh = () => {
-  fetchGiftCards(pagination.value.page)
+  refreshList(() => fetchGiftCards(pagination.value.page, { preserveRows: true }))
 }
 
 const changePage = (page: number) => {
@@ -597,7 +601,7 @@ onMounted(() => {
         @change-page-size="changePageSize"
       >
         <template #actions>
-          <Button size="sm" variant="outline" class="h-8" @click="refresh">{{ t('admin.common.refresh') }}</Button>
+          <Button size="sm" variant="outline" class="h-8" :disabled="refreshing" @click="refresh">{{ t('admin.common.refresh') }}</Button>
         </template>
       </ListPagination>
     </div>

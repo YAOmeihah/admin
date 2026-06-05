@@ -44,6 +44,11 @@ export interface AdminProductSKU {
   updated_at: string
 }
 
+export interface AdminWholesalePrice {
+  min_quantity: number
+  unit_price: number | string
+}
+
 export interface AdminProduct {
   id: number
   category_id: number
@@ -54,6 +59,7 @@ export interface AdminProduct {
   content: LocalizedText
   price_amount: number
   cost_price_amount: number
+  wholesale_prices?: AdminWholesalePrice[]
   images: string[]
   tags: string[]
   purchase_type: string
@@ -127,6 +133,7 @@ export interface AdminOrderItem {
   coupon_discount_amount?: number
   promotion_discount_amount?: number
   member_discount_amount?: number
+  wholesale_discount_amount?: number
 }
 
 export interface AdminFulfillment {
@@ -155,6 +162,7 @@ export interface AdminOrder {
   original_amount: number
   discount_amount: number
   promotion_discount_amount: number
+  wholesale_discount_amount?: number
   member_discount_amount?: number
   total_amount: number
   wallet_paid_amount: number

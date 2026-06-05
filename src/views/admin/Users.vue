@@ -16,12 +16,14 @@ import { Dialog, DialogHeader, DialogScrollContent, DialogTitle } from '@/compon
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
 import ListPagination from '@/components/ListPagination.vue'
+import { useListRefresh, type ListFetchOptions } from '@/composables/useListRefresh'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { confirmAction } from '@/utils/confirm'
 import { useFormValidation, rules } from '@/composables/useFormValidation'
 
 const { t } = useI18n()
 const loading = ref(true)
+const { refreshing, refreshList } = useListRefresh()
 const users = ref<AdminUser[]>([])
 const selectedIds = ref<number[]>([])
 const adminPath = import.meta.env.VITE_ADMIN_PATH || ''
@@ -62,8 +64,8 @@ const { errors: formErrors, validate, clearErrors } = useFormValidation({
   nickname: [rules.required('This field is required')],
 })
 
-const fetchUsers = async (page = 1) => {
-  loading.value = true
+const fetchUsers = async (page = 1, options: ListFetchOptions = {}) => {
+  if (!options.preserveRows) loading.value = true
   try {
     const response = await adminAPI.getUsers({
       page,
@@ -80,9 +82,9 @@ const fetchUsers = async (page = 1) => {
     pagination.value = response.data.pagination || pagination.value
     selectedIds.value = []
   } catch {
-    users.value = []
+    if (!options.preserveRows) users.value = []
   } finally {
-    loading.value = false
+    if (!options.preserveRows) loading.value = false
   }
 }
 
@@ -126,7 +128,7 @@ const handleSearch = () => {
 const debouncedSearch = useDebounceFn(handleSearch, 300)
 
 const refresh = () => {
-  fetchUsers(pagination.value.page)
+  refreshList(() => fetchUsers(pagination.value.page, { preserveRows: true }))
 }
 
 const resetFilters = () => {
@@ -316,7 +318,7 @@ onMounted(() => {
         <div class="hidden flex-1 sm:block"></div>
         <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           <Button size="sm" variant="outline" class="w-full sm:w-auto" @click="resetFilters">{{ t('admin.common.reset') }}</Button>
-          <Button size="sm" class="w-full sm:w-auto" @click="refresh">{{ t('admin.common.refresh') }}</Button>
+          <Button size="sm" class="w-full sm:w-auto" :disabled="refreshing" @click="refresh">{{ t('admin.common.refresh') }}</Button>
         </div>
       </div>
     </div>
