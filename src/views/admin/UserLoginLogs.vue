@@ -11,10 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
 import ListPagination from '@/components/ListPagination.vue'
+import { useListRefresh, type ListFetchOptions } from '@/composables/useListRefresh'
 import { formatDate, toRFC3339 } from '@/utils/format'
 
 const { t } = useI18n()
 const loading = ref(true)
+const { refreshing, refreshList } = useListRefresh()
 const logs = ref<AdminUserLoginLog[]>([])
 const adminPath = import.meta.env.VITE_ADMIN_PATH || ''
 const pagination = ref({
@@ -48,8 +50,8 @@ const failReasonOptions = [
   'internal_error',
 ]
 
-const fetchLogs = async (page = 1) => {
-  loading.value = true
+const fetchLogs = async (page = 1, options: ListFetchOptions = {}) => {
+  if (!options.preserveRows) loading.value = true
   try {
     const response = await adminAPI.getUserLoginLogs({
       page,
@@ -65,9 +67,9 @@ const fetchLogs = async (page = 1) => {
     logs.value = response.data.data || []
     pagination.value = response.data.pagination || pagination.value
   } catch {
-    logs.value = []
+    if (!options.preserveRows) logs.value = []
   } finally {
-    loading.value = false
+    if (!options.preserveRows) loading.value = false
   }
 }
 
@@ -77,7 +79,7 @@ const handleSearch = () => {
 const debouncedSearch = useDebounceFn(handleSearch, 300)
 
 const refresh = () => {
-  fetchLogs(pagination.value.page)
+  refreshList(() => fetchLogs(pagination.value.page, { preserveRows: true }))
 }
 
 const changePage = (page: number) => {
@@ -190,7 +192,7 @@ onMounted(() => {
           />
         </div>
         <div class="hidden flex-1 sm:block"></div>
-        <Button size="sm" variant="outline" class="w-full sm:w-auto" @click="refresh">{{ t('admin.common.refresh') }}</Button>
+        <Button size="sm" variant="outline" class="w-full sm:w-auto" :disabled="refreshing" @click="refresh">{{ t('admin.common.refresh') }}</Button>
       </div>
     </div>
 

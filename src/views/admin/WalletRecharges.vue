@@ -9,12 +9,15 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
 import ListPagination from '@/components/ListPagination.vue'
+import { useListRefresh, type ListFetchOptions } from '@/composables/useListRefresh'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { paymentStatusClass, paymentStatusLabel } from '@/utils/status'
 import { formatDate, toRFC3339 } from '@/utils/format'
+import ComplianceGuardWrapper from '@/components/ComplianceGuardWrapper.vue'
 
 const { t } = useI18n()
 const loading = ref(true)
+const { refreshing, refreshList } = useListRefresh()
 const recharges = ref<AdminWalletRecharge[]>([])
 const pagination = ref({
   page: 1,
@@ -40,8 +43,8 @@ const filters = reactive({
 
 const normalizeFilterValue = (value: string) => (value === '__all__' ? '' : value)
 
-const fetchRecharges = async (page = 1) => {
-  loading.value = true
+const fetchRecharges = async (page = 1, options: ListFetchOptions = {}) => {
+  if (!options.preserveRows) loading.value = true
   try {
     const response = await adminAPI.getWalletRecharges({
       page,
@@ -61,9 +64,9 @@ const fetchRecharges = async (page = 1) => {
     recharges.value = response.data.data || []
     pagination.value = response.data.pagination || pagination.value
   } catch (error) {
-    recharges.value = []
+    if (!options.preserveRows) recharges.value = []
   } finally {
-    loading.value = false
+    if (!options.preserveRows) loading.value = false
   }
 }
 
@@ -73,7 +76,7 @@ const handleSearch = () => {
 const debouncedSearch = useDebounceFn(handleSearch, 300)
 
 const refresh = () => {
-  fetchRecharges(pagination.value.page)
+  refreshList(() => fetchRecharges(pagination.value.page, { preserveRows: true }))
 }
 
 const changePage = (page: number) => {
@@ -132,6 +135,7 @@ onMounted(() => {
 </script>
 
 <template>
+  <ComplianceGuardWrapper>
   <div class="space-y-6">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('admin.walletRecharges.title') }}</h1>
@@ -221,7 +225,7 @@ onMounted(() => {
           />
         </div>
         <div class="hidden flex-1 sm:block"></div>
-        <Button size="sm" variant="outline" class="w-full sm:w-auto" @click="refresh">{{ t('admin.common.refresh') }}</Button>
+        <Button size="sm" variant="outline" class="w-full sm:w-auto" :disabled="refreshing" @click="refresh">{{ t('admin.common.refresh') }}</Button>
       </div>
     </div>
 
@@ -317,4 +321,5 @@ onMounted(() => {
       />
     </div>
   </div>
+  </ComplianceGuardWrapper>
 </template>

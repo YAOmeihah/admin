@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
 import ListPagination from '@/components/ListPagination.vue'
+import { useListRefresh, type ListFetchOptions } from '@/composables/useListRefresh'
 import { copyText } from '@/utils/clipboard'
 import {
   orderStatusClass,
@@ -24,6 +25,7 @@ import OrderDetailDialog from './components/OrderDetailDialog.vue'
 import OrderFulfillmentModal from './components/OrderFulfillmentModal.vue'
 
 const loading = ref(true)
+const { refreshing, refreshList } = useListRefresh()
 const orders = ref<AdminOrder[]>([])
 const pagination = ref({
   page: 1,
@@ -88,8 +90,8 @@ const toQueryText = (value: unknown) => {
   return String(value).trim()
 }
 
-const fetchOrders = async (page = 1) => {
-  loading.value = true
+const fetchOrders = async (page = 1, options: ListFetchOptions = {}) => {
+  if (!options.preserveRows) loading.value = true
   try {
     const response = await adminAPI.getOrders({
       page,
@@ -110,10 +112,12 @@ const fetchOrders = async (page = 1) => {
       statusEdits[order.id] = order.status
     })
   } catch (error) {
-    orders.value = []
-    pagination.value = { page: 1, page_size: pagination.value.page_size, total: 0, total_page: 0 }
+    if (!options.preserveRows) {
+      orders.value = []
+      pagination.value = { page: 1, page_size: pagination.value.page_size, total: 0, total_page: 0 }
+    }
   } finally {
-    loading.value = false
+    if (!options.preserveRows) loading.value = false
   }
 }
 
@@ -132,7 +136,7 @@ const handleSearch = () => {
 const debouncedSearch = useDebounceFn(handleSearch, 300)
 
 const refresh = () => {
-  fetchOrders(pagination.value.page)
+  refreshList(() => fetchOrders(pagination.value.page, { preserveRows: true }))
 }
 
 const changePage = (page: number) => {
@@ -342,7 +346,7 @@ watch(
           </Select>
         </div>
         <div class="hidden flex-1 sm:block"></div>
-        <Button size="sm" class="w-full sm:w-auto" @click="refresh">{{ t('admin.common.refresh') }}</Button>
+        <Button size="sm" class="w-full sm:w-auto" :disabled="refreshing" @click="refresh">{{ t('admin.common.refresh') }}</Button>
       </div>
     </div>
 

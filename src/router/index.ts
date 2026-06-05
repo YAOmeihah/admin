@@ -48,6 +48,12 @@ const routes = [
         meta: { permission: 'GET:/admin/card-secrets' },
       },
       {
+        path: 'card-secret-exports',
+        name: 'card-secret-exports',
+        component: () => import('@/views/admin/CardSecretExports.vue'),
+        meta: { permission: 'GET:/admin/card-secrets' },
+      },
+      {
         path: 'gift-cards',
         name: 'gift-cards',
         component: () => import('@/views/admin/GiftCards.vue'),
@@ -292,6 +298,11 @@ const routes = [
         component: () => import('@/views/admin/TelegramBotBroadcastDetail.vue'),
         meta: { permission: 'GET:/admin/telegram-bot/broadcasts' },
       },
+      {
+        path: 'compliance-required',
+        name: 'compliance-required',
+        component: () => import('@/views/admin/ComplianceRequired.vue'),
+      },
     ],
   },
 ]
@@ -302,6 +313,16 @@ const router = createRouter({
   ),
   routes,
 })
+
+const PAYMENT_PROTECTED_ROUTE_NAMES = new Set<string>([
+  'payments',
+  'payment-channels',
+  'wallet-config',
+  'wallet-recharges',
+  'reconciliation',
+  'affiliates-withdraws',
+  'affiliates-commissions',
+])
 
 router.beforeEach(async (to) => {
   const authStore = useAdminAuthStore()
@@ -333,6 +354,23 @@ router.beforeEach(async (to) => {
         },
       }
     }
+  }
+
+  // 合规声明拦截：受保护路由 + 非超管 + 未确认 → 跳转提示页
+  if (PAYMENT_PROTECTED_ROUTE_NAMES.has(String(to.name))) {
+    const { useComplianceStore } = await import('@/stores/compliance')
+    const compliance = useComplianceStore()
+    if (!compliance.loaded) {
+      try {
+        await compliance.fetchStatus()
+      } catch {
+        /* 服务异常时不阻塞导航，由页面 wrapper 兜底 */
+      }
+    }
+    if (!compliance.acknowledged && !authStore.isSuper) {
+      return { name: 'compliance-required' }
+    }
+    // 超管未确认：放行，由页面 wrapper 弹窗拦截
   }
 
   return true

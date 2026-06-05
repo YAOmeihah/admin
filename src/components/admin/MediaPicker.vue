@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Dialog, DialogScrollContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { getImageUrl } from '@/utils/image'
 import { notifyError } from '@/utils/notify'
+import { DEFAULT_UPLOAD_MAX_SIZE_BYTES, formatFileSizeLimit, splitFilesBySize } from '@/utils/upload'
 
 const props = withDefaults(defineProps<{
   modelValue?: string | string[]
@@ -54,6 +55,17 @@ const currentImages = computed(() => {
 })
 
 const hasImage = computed(() => currentImages.value.length > 0)
+
+function filterFilesByUploadSize(files: File[]) {
+  const { accepted, rejected } = splitFilesBySize(files)
+  if (rejected.length > 0) {
+    notifyError(t('admin.media.errors.fileTooLarge', {
+      count: rejected.length,
+      max: formatFileSizeLimit(DEFAULT_UPLOAD_MAX_SIZE_BYTES),
+    }))
+  }
+  return accepted
+}
 
 // ── Fetch ──
 async function fetchMedia(page = 1) {
@@ -125,11 +137,16 @@ function handleDialogDrop(e: DragEvent) {
 async function handleDialogUpload(e: Event) {
   const files = (e.target as HTMLInputElement).files
   if (!files || files.length === 0) return
+  const fileList = filterFilesByUploadSize(Array.from(files))
+  if (fileList.length === 0) {
+    if (dialogFileInput.value) dialogFileInput.value.value = ''
+    return
+  }
+
   uploading.value = true
-  const total = files.length
+  const total = fileList.length
   uploadProgress.value = { current: 0, total }
   let failCount = 0
-  const fileList = Array.from(files)
 
   for (let i = 0; i < fileList.length; i += 3) {
     const batch = fileList.slice(i, i + 3)
@@ -187,13 +204,19 @@ async function handleDirectUpload(e: Event) {
 }
 
 async function doDirectUpload(files: File[]) {
+  const fileList = filterFilesByUploadSize(files)
+  if (fileList.length === 0) {
+    if (fileInput.value) fileInput.value.value = ''
+    return
+  }
+
   uploading.value = true
-  uploadProgress.value = { current: 0, total: files.length }
+  uploadProgress.value = { current: 0, total: fileList.length }
   let failCount = 0
   const uploadedUrls: string[] = []
 
-  for (let i = 0; i < files.length; i += 3) {
-    const batch = files.slice(i, i + 3)
+  for (let i = 0; i < fileList.length; i += 3) {
+    const batch = fileList.slice(i, i + 3)
     await Promise.allSettled(batch.map(async (file) => {
       const formData = new FormData()
       formData.append('file', file)
@@ -218,9 +241,9 @@ async function doDirectUpload(files: File[]) {
     }
   }
   if (failCount > 0) {
-    notifyError(failCount === files.length
-      ? t('admin.media.errors.uploadFailed', { message: `${files.length}` })
-      : t('admin.media.errors.uploadPartialFailed', { fail: failCount, total: files.length }))
+    notifyError(failCount === fileList.length
+      ? t('admin.media.errors.uploadFailed', { message: `${fileList.length}` })
+      : t('admin.media.errors.uploadPartialFailed', { fail: failCount, total: fileList.length }))
   }
   uploading.value = false
   if (fileInput.value) fileInput.value.value = ''

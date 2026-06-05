@@ -68,7 +68,25 @@ function getHttpErrorMessage(status: number): string {
 const baseURL = `${API_BASE_URL}${API_PREFIX}`
 const timeout = 10000
 
-async function request(method: string, path: string, bodyOrOptions?: any, options?: RequestOptions): Promise<{ data: any }> {
+function responseHeadersToObject(headers: Headers): Record<string, string> {
+  const result: Record<string, string> = {}
+  headers.forEach((value, key) => {
+    result[key] = value
+  })
+  return result
+}
+
+async function readBlobErrorMessage(blob: Blob, fallbackMessage: string): Promise<string> {
+  try {
+    const text = await blob.text()
+    const payload = JSON.parse(text)
+    return payload?.msg || fallbackMessage
+  } catch {
+    return fallbackMessage
+  }
+}
+
+async function request(method: string, path: string, bodyOrOptions?: any, options?: RequestOptions): Promise<{ data: any; headers?: Record<string, string> }> {
   let body: any = undefined
   let opts: RequestOptions = {}
 
@@ -121,16 +139,26 @@ async function request(method: string, path: string, bodyOrOptions?: any, option
 
   // Blob response
   if (opts.blob) {
+    const contentType = response.headers.get('content-type') || ''
+    const blob = await response.blob()
     if (!response.ok) {
-      const message = getHttpErrorMessage(response.status)
+      const fallbackMessage = getHttpErrorMessage(response.status)
+      const message = contentType.includes('application/json')
+        ? await readBlobErrorMessage(blob, fallbackMessage)
+        : fallbackMessage
       if (response.status === 401 && !isLoginEndpoint(path)) {
         redirectToLogin()
       }
       notifyError(message)
       return Promise.reject(createNotifiedError(message))
     }
-    const blob = await response.blob()
-    return { data: blob }
+    if (contentType.includes('application/json')) {
+      const fallbackMessage = t('common.api.requestFailed')
+      const message = await readBlobErrorMessage(blob, fallbackMessage)
+      notifyError(message)
+      return Promise.reject(createNotifiedError(message))
+    }
+    return { data: blob, headers: responseHeadersToObject(response.headers) }
   }
 
   // Parse JSON
@@ -170,6 +198,10 @@ async function request(method: string, path: string, bodyOrOptions?: any, option
     if (data.status_code === 401 && !isLoginEndpoint(path)) {
       notifyError(message)
       redirectToLogin()
+      return Promise.reject(createNotifiedError(message))
+    }
+    // 合规声明拦截：消息由路由守卫/页面 wrapper 处理，不展示通用 toast
+    if (message === 'compliance_required' || message === 'compliance_required_by_super_admin') {
       return Promise.reject(createNotifiedError(message))
     }
     notifyError(message)

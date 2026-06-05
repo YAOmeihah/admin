@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { adminAPI } from '@/api/admin'
 import type { AdminMedia } from '@/api/types'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import ListPagination from '@/components/ListPagination.vue'
@@ -12,11 +13,15 @@ import { getImageUrl } from '@/utils/image'
 import { notifyError, notifySuccess } from '@/utils/notify'
 import { confirmAction } from '@/utils/confirm'
 import FileInput from '@/components/FileInput.vue'
+import { DEFAULT_UPLOAD_MAX_SIZE_BYTES, formatFileSizeLimit, splitFilesBySize } from '@/utils/upload'
 
 const { t } = useI18n()
 const loading = ref(false)
 const uploading = ref(false)
 const uploadProgress = ref({ current: 0, total: 0 })
+const batchMode = ref(false)
+const batchOperating = ref(false)
+const selectedIds = ref<Set<number>>(new Set())
 
 const items = ref<AdminMedia[]>([])
 const pagination = reactive({
@@ -29,6 +34,8 @@ const filters = reactive({
   search: '',
   scene: '__all__',
 })
+
+const allSelected = computed(() => items.value.length > 0 && items.value.every((item) => selectedIds.value.has(item.id)))
 
 // Inline rename state
 const editingId = ref<number | null>(null)
@@ -58,6 +65,8 @@ async function fetchMedia(page = 1) {
 
     const res = await adminAPI.getMedia(params)
     items.value = (res.data.data as any)?.items || []
+    const visibleIds = new Set(items.value.map((item) => item.id))
+    selectedIds.value = new Set(Array.from(selectedIds.value).filter((id) => visibleIds.has(id)))
     const total = (res.data.data as any)?.total || 0
     pagination.total = total
     pagination.page = page
@@ -67,6 +76,34 @@ async function fetchMedia(page = 1) {
   } finally {
     loading.value = false
   }
+}
+
+function clearSelection() {
+  selectedIds.value = new Set()
+}
+
+function toggleBatchMode() {
+  batchMode.value = !batchMode.value
+  editingId.value = null
+  if (!batchMode.value) {
+    clearSelection()
+  }
+}
+
+function toggleSelect(id: number) {
+  const next = new Set(selectedIds.value)
+  if (next.has(id)) {
+    next.delete(id)
+  } else {
+    next.add(id)
+  }
+  selectedIds.value = next
+}
+
+function toggleSelectAll() {
+  selectedIds.value = allSelected.value
+    ? new Set()
+    : new Set(items.value.map((item) => item.id))
 }
 
 function changePage(page: number) {
@@ -95,12 +132,20 @@ function formatFileSize(bytes: number): string {
 // Upload
 async function handleFileChange(files: FileList | null) {
   if (!files || files.length === 0) return
+  const { accepted: fileList, rejected } = splitFilesBySize(Array.from(files))
+  if (rejected.length > 0) {
+    notifyError(t('admin.media.errors.fileTooLarge', {
+      count: rejected.length,
+      max: formatFileSizeLimit(DEFAULT_UPLOAD_MAX_SIZE_BYTES),
+    }))
+  }
+  if (fileList.length === 0) return
+
   uploading.value = true
-  const total = files.length
+  const total = fileList.length
   uploadProgress.value = { current: 0, total }
   let failCount = 0
 
-  const fileList = Array.from(files)
   for (let i = 0; i < fileList.length; i += 3) {
     const batch = fileList.slice(i, i + 3)
     await Promise.allSettled(batch.map(async (file) => {
@@ -172,6 +217,32 @@ async function handleDelete(item: AdminMedia) {
   }
 }
 
+async function handleBatchDelete() {
+  const ids = Array.from(selectedIds.value)
+  if (ids.length === 0) return
+  const confirmed = await confirmAction({
+    description: t('admin.media.batch.deleteConfirm', { count: ids.length }),
+    confirmText: t('admin.common.delete'),
+    variant: 'destructive',
+  })
+  if (!confirmed) return
+
+  batchOperating.value = true
+  try {
+    const res = await adminAPI.batchDeleteMedia(ids)
+    const data = res.data.data as { success_count?: number } | null
+    const successCount = data?.success_count || 0
+    notifySuccess(t('admin.media.batch.deleteResult', { success: successCount, total: ids.length }))
+    clearSelection()
+    const nextPage = items.value.length <= successCount && pagination.page > 1 ? pagination.page - 1 : pagination.page
+    await fetchMedia(nextPage)
+  } catch (err: any) {
+    notifyError(t('admin.media.errors.deleteFailed', { message: err?.message || '' }))
+  } finally {
+    batchOperating.value = false
+  }
+}
+
 onMounted(() => fetchMedia(1))
 </script>
 
@@ -180,13 +251,18 @@ onMounted(() => fetchMedia(1))
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between gap-4">
       <h1 class="text-2xl font-bold">{{ t('admin.media.title') }}</h1>
-      <FileInput
-        accept="image/*"
-        :multiple="true"
-        :disabled="uploading"
-        :button-text="uploading ? t('admin.media.uploadProgress', uploadProgress) : t('admin.media.uploadNew')"
-        @change="handleFileChange"
-      />
+      <div class="flex flex-wrap items-center gap-2">
+        <Button size="sm" :variant="batchMode ? 'secondary' : 'outline'" :disabled="loading || uploading" @click="toggleBatchMode">
+          {{ batchMode ? t('admin.media.batch.exit') : t('admin.media.batch.mode') }}
+        </Button>
+        <FileInput
+          accept="image/*"
+          :multiple="true"
+          :disabled="uploading"
+          :button-text="uploading ? t('admin.media.uploadProgress', uploadProgress) : t('admin.media.uploadNew')"
+          @change="handleFileChange"
+        />
+      </div>
     </div>
 
     <!-- Filters -->
@@ -208,6 +284,19 @@ onMounted(() => fetchMedia(1))
       </Select>
     </div>
 
+    <div v-if="batchMode" class="flex flex-wrap items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+      <span class="text-sm font-medium">{{ t('admin.media.batch.selected', { count: selectedIds.size }) }}</span>
+      <Button size="sm" variant="outline" :disabled="items.length === 0 || batchOperating" @click="toggleSelectAll">
+        {{ allSelected ? t('admin.media.batch.deselectPage') : t('admin.media.batch.selectPage') }}
+      </Button>
+      <Button size="sm" variant="destructive" :disabled="selectedIds.size === 0 || batchOperating" @click="handleBatchDelete">
+        {{ t('admin.media.batch.delete') }}
+      </Button>
+      <button class="ml-auto text-xs text-muted-foreground hover:text-foreground" :disabled="batchOperating" @click="clearSelection">
+        {{ t('admin.media.batch.clearSelection') }}
+      </button>
+    </div>
+
     <!-- Grid -->
     <div v-if="loading" class="flex items-center justify-center py-20">
       <div class="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
@@ -219,7 +308,8 @@ onMounted(() => fetchMedia(1))
       <div
         v-for="item in items"
         :key="item.id"
-        class="group relative overflow-hidden rounded-lg border border-border bg-card"
+        class="group relative overflow-hidden rounded-lg border bg-card transition-colors"
+        :class="selectedIds.has(item.id) ? 'border-primary ring-2 ring-primary/20' : 'border-border'"
       >
         <!-- Thumbnail -->
         <div class="relative aspect-square overflow-hidden bg-muted">
@@ -229,8 +319,19 @@ onMounted(() => fetchMedia(1))
             class="h-full w-full object-contain"
             loading="lazy"
           />
+          <button
+            v-if="batchMode"
+            type="button"
+            class="absolute inset-0 z-10 cursor-pointer"
+            :aria-label="t('admin.media.batch.toggleItem', { name: item.name })"
+            :aria-pressed="selectedIds.has(item.id)"
+            @click="toggleSelect(item.id)"
+          ></button>
+          <div v-if="batchMode" class="absolute left-2 top-2 z-20 rounded bg-background/90 p-1 shadow-sm">
+            <Checkbox :model-value="selectedIds.has(item.id)" @update:model-value="() => toggleSelect(item.id)" />
+          </div>
           <!-- Hover overlay with delete -->
-          <div class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+          <div v-if="!batchMode" class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
             <Button size="sm" variant="destructive" @click="handleDelete(item)">
               {{ t('admin.common.delete') }}
             </Button>

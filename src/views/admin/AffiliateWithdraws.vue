@@ -15,13 +15,16 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import TableSkeleton from '@/components/TableSkeleton.vue'
 import ListPagination from '@/components/ListPagination.vue'
+import { useListRefresh, type ListFetchOptions } from '@/composables/useListRefresh'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { confirmAction } from '@/utils/confirm'
 import { notifyError, notifySuccess } from '@/utils/notify'
 import { formatDate } from '@/utils/format'
+import ComplianceGuardWrapper from '@/components/ComplianceGuardWrapper.vue'
 
 const { t } = useI18n()
 const loading = ref(true)
+const { refreshing, refreshList } = useListRefresh()
 const operating = ref(false)
 const rows = ref<AdminAffiliateWithdraw[]>([])
 const pagination = ref({
@@ -42,8 +45,8 @@ const normalizeFilterValue = (value: string) => (value === '__all__' ? '' : valu
 const userDetailLink = (userId: number) => `${adminPath}/users/${userId}`
 const resolveAffiliateUserID = (item: AdminAffiliateWithdraw) => Number(item?.affiliate_profile?.user_id || item?.affiliate_profile?.user?.id || 0)
 
-const fetchRows = async (page = 1) => {
-  loading.value = true
+const fetchRows = async (page = 1, options: ListFetchOptions = {}) => {
+  if (!options.preserveRows) loading.value = true
   try {
     const response = await adminAPI.getAffiliateWithdraws({
       page,
@@ -55,19 +58,19 @@ const fetchRows = async (page = 1) => {
     rows.value = response.data.data || []
     pagination.value = response.data.pagination || pagination.value
   } catch {
-    rows.value = []
+    if (!options.preserveRows) rows.value = []
   } finally {
-    loading.value = false
+    if (!options.preserveRows) loading.value = false
   }
 }
 
 const handleSearch = () => {
-  fetchRows(1)
+  fetchRows(1, { preserveRows: true })
 }
 const debouncedSearch = useDebounceFn(handleSearch, 300)
 
 const refreshCurrentPage = () => {
-  fetchRows(pagination.value.page)
+  refreshList(() => fetchRows(pagination.value.page, { preserveRows: true }))
 }
 
 const changePage = (page: number) => {
@@ -138,6 +141,7 @@ onMounted(() => {
 </script>
 
 <template>
+  <ComplianceGuardWrapper>
   <div class="space-y-6">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-semibold">{{ t('admin.affiliatesWithdraws.title') }}</h1>
@@ -165,7 +169,7 @@ onMounted(() => {
           </Select>
         </div>
         <div class="flex-1"></div>
-        <Button size="sm" variant="outline" @click="refreshCurrentPage">{{ t('admin.common.refresh') }}</Button>
+        <Button size="sm" variant="outline" :disabled="refreshing" @click="refreshCurrentPage">{{ t('admin.common.refresh') }}</Button>
       </div>
     </div>
 
@@ -265,4 +269,5 @@ onMounted(() => {
       />
     </div>
   </div>
+  </ComplianceGuardWrapper>
 </template>

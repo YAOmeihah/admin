@@ -1341,6 +1341,7 @@ const closeModal = () => {
             <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.wechatNotifyUrl') }}</label>
               <Input v-model="wechatConfig.notify_url" :placeholder="t('admin.paymentChannels.modal.wechatNotifyUrlPlaceholder')" />
+              <p class="text-xs text-muted-foreground mt-1">{{ t('admin.paymentChannels.modal.wechatNotifyUrlHint') }}</p>
             </div>
             <div class="min-w-0">
               <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.paymentChannels.modal.wechatH5RedirectUrl') }}</label>

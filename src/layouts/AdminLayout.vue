@@ -14,6 +14,7 @@ import {
   FolderTree,
   Boxes,
   KeyRound,
+  Download,
   ListOrdered,
   WalletCards,
   ReceiptText,
@@ -196,6 +197,12 @@ const navGroups = computed<NavGroup[]>(() => {
           permission: 'GET:/admin/products',
         },
         {
+          label: t('admin.navItems.wholesaleProducts'),
+          to: '/products?wholesale=1',
+          icon: BadgePercent,
+          permission: 'GET:/admin/products',
+        },
+        {
           label: t('admin.navItems.cardSecrets'),
           to: '/card-secrets',
           icon: KeyRound,
@@ -205,6 +212,12 @@ const navGroups = computed<NavGroup[]>(() => {
           label: t('admin.navItems.cardSecretImports'),
           to: '/card-secret-imports',
           icon: KeyRound,
+          permission: 'GET:/admin/card-secrets',
+        },
+        {
+          label: t('admin.navItems.cardSecretExports'),
+          to: '/card-secret-exports',
+          icon: Download,
           permission: 'GET:/admin/card-secrets',
         },
       ],
@@ -577,17 +590,48 @@ const toggleGroup = (groupID: string) => {
   expandedGroups.value[groupID] = !isGroupExpanded(groupID)
 }
 
+const splitNavTarget = (to: string) => {
+  const [path, query = ''] = to.split('?')
+  return { path, query }
+}
+
+const navQueryMatches = (query: string) => {
+  if (!query) return true
+  const params = new URLSearchParams(query)
+  for (const [key, value] of params.entries()) {
+    const routeValue = route.query[key]
+    const normalized = Array.isArray(routeValue) ? routeValue[0] : routeValue
+    if (String(normalized ?? '') !== value) return false
+  }
+  return true
+}
+
 const isItemActive = (to: string) => {
-  if (to === '/') {
+  const target = splitNavTarget(to)
+  if (target.path === '/') {
     return route.path === '/'
   }
+  if (target.query) {
+    return route.path === target.path && navQueryMatches(target.query)
+  }
   // 精确匹配优先：如果当前路由被其他更具体的导航项精确匹配，则前缀匹配项不应高亮
-  if (route.path === to) return true
-  if (!route.path.startsWith(`${to}/`)) return false
+  if (route.path === target.path) {
+    for (const group of navGroups.value) {
+      for (const item of group.items) {
+        const other = splitNavTarget(item.to)
+        if (item.to !== to && other.path === route.path && other.query && navQueryMatches(other.query)) {
+          return false
+        }
+      }
+    }
+    return true
+  }
+  if (!route.path.startsWith(`${target.path}/`)) return false
   // 前缀匹配时，检查是否有其他导航项精确匹配当前路由
   for (const group of navGroups.value) {
     for (const item of group.items) {
-      if (item.to !== to && route.path === item.to) return false
+      const other = splitNavTarget(item.to)
+      if (item.to !== to && route.path === other.path && (!other.query || navQueryMatches(other.query))) return false
     }
   }
   return true

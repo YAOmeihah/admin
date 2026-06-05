@@ -8,6 +8,7 @@ import { getLocalizedText, formatMoney, hasPositiveAmount, toRFC3339 } from '@/u
 import { orderStatusLabel } from '@/utils/status'
 import TableSkeleton from '@/components/TableSkeleton.vue'
 import ListPagination from '@/components/ListPagination.vue'
+import { useListRefresh, type ListFetchOptions } from '@/composables/useListRefresh'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogScrollContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -48,6 +49,7 @@ type ProcurementOrderWithRelations = AdminProcurementOrder & {
 
 const { t } = useI18n()
 const loading = ref(true)
+const { refreshing, refreshList } = useListRefresh()
 const orders = ref<ProcurementOrderWithRelations[]>([])
 const connections = ref<AdminSiteConnection[]>([])
 const pagination = reactive({
@@ -151,8 +153,8 @@ const fetchConnections = async () => {
   } catch { /* ignore */ }
 }
 
-const fetchOrders = async (page = 1) => {
-  loading.value = true
+const fetchOrders = async (page = 1, options: ListFetchOptions = {}) => {
+  if (!options.preserveRows) loading.value = true
   try {
     const params: Record<string, unknown> = {
       page,
@@ -177,9 +179,9 @@ const fetchOrders = async (page = 1) => {
       pagination.total_page = p.total_page
     }
   } catch {
-    orders.value = []
+    if (!options.preserveRows) orders.value = []
   } finally {
-    loading.value = false
+    if (!options.preserveRows) loading.value = false
   }
 }
 
@@ -197,7 +199,7 @@ const changePageSize = (size: number) => {
 }
 
 const handleSearch = () => {
-  fetchOrders(1)
+  fetchOrders(1, { preserveRows: true })
   fetchStats()
 }
 const debouncedSearch = useDebounceFn(handleSearch, 300)
@@ -208,7 +210,11 @@ const selectStatusFilter = (status: string) => {
   } else {
     filters.status = status
   }
-  fetchOrders(1)
+  fetchOrders(1, { preserveRows: true })
+}
+
+const refresh = () => {
+  refreshList(() => fetchOrders(pagination.page, { preserveRows: true }))
 }
 
 const openDetail = async (order: ProcurementOrderWithRelations) => {
@@ -422,7 +428,7 @@ onMounted(() => {
         <h1 class="text-2xl font-semibold">{{ t('procurement.title') }}</h1>
         <p class="mt-1 text-sm text-muted-foreground">{{ t('procurement.subtitle') }}</p>
       </div>
-      <Button size="sm" variant="outline" class="w-full sm:w-auto" @click="fetchOrders(pagination.page)">
+      <Button size="sm" variant="outline" class="w-full sm:w-auto" :disabled="refreshing" @click="refresh">
         {{ t('admin.common.refresh') }}
       </Button>
     </div>
