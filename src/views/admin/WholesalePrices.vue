@@ -8,6 +8,7 @@ import type { AdminProduct, AdminWholesalePrice } from '@/api/types'
 import IdCell from '@/components/IdCell.vue'
 import ListPagination from '@/components/ListPagination.vue'
 import TableSkeleton from '@/components/TableSkeleton.vue'
+import type { ListFetchOptions } from '@/composables/useListRefresh'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogHeader, DialogScrollContent, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -130,8 +131,8 @@ const fetchSiteCurrency = async () => {
   }
 }
 
-const fetchProducts = async () => {
-  loading.value = true
+const fetchProducts = async (options: ListFetchOptions = {}) => {
+  if (!options.preserveRows) loading.value = true
   try {
     const response = await adminAPI.getProducts({
       page: pagination.page,
@@ -144,40 +145,44 @@ const fetchProducts = async () => {
       Object.assign(pagination, response.data.pagination)
     }
   } catch {
-    products.value = []
+    if (!options.preserveRows) products.value = []
   } finally {
-    loading.value = false
+    if (!options.preserveRows) loading.value = false
   }
 }
 
 const handleSearch = () => {
   pagination.page = 1
-  void fetchProducts()
+  fetchProducts()
 }
 
 const debouncedSearch = useDebounceFn(handleSearch, 300)
 
 const handleStatusChange = () => {
   pagination.page = 1
-  void fetchProducts()
+  fetchProducts()
 }
 
 const resetFilters = () => {
   searchQuery.value = ''
   wholesaleStatus.value = 'all'
   pagination.page = 1
-  void fetchProducts()
+  fetchProducts({ preserveRows: true })
 }
 
 const changePage = (page: number) => {
+  if (page < 1 || page > pagination.total_page) return
   pagination.page = page
-  void fetchProducts()
+  fetchProducts()
 }
 
+const pageSizeOptions = [10, 20, 50, 100]
+
 const changePageSize = (size: number) => {
+  if (size === pagination.page_size) return
   pagination.page_size = size
   pagination.page = 1
-  void fetchProducts()
+  fetchProducts()
 }
 
 const saveWholesalePrices = async () => {
@@ -332,16 +337,17 @@ onMounted(async () => {
           </TableRow>
         </TableBody>
       </Table>
-    </div>
 
-    <ListPagination
-      :page="pagination.page"
-      :page-size="pagination.page_size"
-      :total="pagination.total"
-      :total-page="pagination.total_page"
-      @change="changePage"
-      @page-size-change="changePageSize"
-    />
+      <ListPagination
+        :page="pagination.page"
+        :total-page="pagination.total_page"
+        :total="pagination.total"
+        :page-size="pagination.page_size"
+        :page-size-options="pageSizeOptions"
+        @change-page="changePage"
+        @change-page-size="changePageSize"
+      />
+    </div>
 
     <Dialog v-model:open="showModal">
       <DialogScrollContent class="max-w-2xl">
