@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
-import { BadgePercent, Search } from 'lucide-vue-next'
+import { BadgePercent, CircleHelp, Search } from 'lucide-vue-next'
 import { adminAPI } from '@/api/admin'
 import type { AdminProduct, AdminWholesalePrice } from '@/api/types'
 import IdCell from '@/components/IdCell.vue'
@@ -18,8 +18,9 @@ import { getLocalizedText, formatMoney } from '@/utils/format'
 import { getFirstImageUrl } from '@/utils/image'
 import { notifyError, notifySuccess } from '@/utils/notify'
 import { confirmAction } from '@/utils/confirm'
+import { buildWholesaleSkuPriceReferences, hasMultipleActiveWholesaleSkus } from '@/utils/wholesalePricing'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const loading = ref(false)
 const searchQuery = ref('')
 const wholesaleStatus = ref('all')
@@ -35,6 +36,11 @@ const showModal = ref(false)
 const submitting = ref(false)
 const editingProduct = ref<AdminProduct | null>(null)
 const tierForm = ref<WholesaleTierFormItem[]>([])
+const wholesaleRuleNoteKeys = [
+  'admin.wholesalePrices.modal.ruleProductLevel',
+  'admin.wholesalePrices.modal.ruleQuantityShared',
+  'admin.wholesalePrices.modal.ruleNoRaise',
+]
 
 const pagination = reactive({
   page: 1,
@@ -52,6 +58,19 @@ const statusQueryValue = computed(() => {
 const formatPrice = (amount: number | string) => formatMoney(amount, siteCurrency.value)
 
 const productName = (product: AdminProduct) => getLocalizedText(product.title || {}) || `#${product.id}`
+
+const skuPriceReferences = computed(() => {
+  if (!editingProduct.value) return []
+  return buildWholesaleSkuPriceReferences(editingProduct.value, {
+    tiers: tierForm.value,
+    locale: String(locale.value || 'zh-CN'),
+    formatPrice: (amount) => formatPrice(amount),
+  })
+})
+
+const showSkuPriceReference = computed(() => {
+  return Boolean(editingProduct.value && hasMultipleActiveWholesaleSkus(editingProduct.value) && skuPriceReferences.value.length > 0)
+})
 
 const sortedWholesaleTiers = (product: AdminProduct): AdminWholesalePrice[] => {
   const tiers = Array.isArray(product.wholesale_prices) ? product.wholesale_prices : []
@@ -362,6 +381,58 @@ onMounted(async () => {
               <div class="font-medium text-foreground">#{{ editingProduct.id }} {{ productName(editingProduct) }}</div>
               <div class="break-all font-mono text-xs text-muted-foreground">{{ editingProduct.slug }}</div>
               <div class="font-mono text-xs text-muted-foreground">{{ formatPrice(editingProduct.price_amount) }}</div>
+            </div>
+          </div>
+
+          <div class="rounded-lg border border-sky-200 bg-sky-50/70 p-4 text-sky-950 dark:border-sky-900/60 dark:bg-sky-950/25 dark:text-sky-100">
+            <div class="flex items-start gap-3">
+              <CircleHelp class="mt-0.5 h-4 w-4 shrink-0 text-sky-600 dark:text-sky-300" />
+              <div class="min-w-0">
+                <div class="text-sm font-medium">{{ t('admin.wholesalePrices.modal.ruleTitle') }}</div>
+                <ul class="mt-2 space-y-1 text-xs leading-5 text-sky-800 dark:text-sky-200/90">
+                  <li v-for="ruleKey in wholesaleRuleNoteKeys" :key="ruleKey">
+                    {{ t(ruleKey) }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="showSkuPriceReference" class="rounded-lg border border-border bg-background p-4">
+            <div class="flex items-start gap-3">
+              <BadgePercent class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-300" />
+              <div class="min-w-0">
+                <div class="text-sm font-medium text-foreground">{{ t('admin.wholesalePrices.modal.skuReferenceTitle') }}</div>
+                <div class="mt-1 text-xs leading-5 text-muted-foreground">{{ t('admin.wholesalePrices.modal.skuReferenceDesc') }}</div>
+              </div>
+            </div>
+
+            <div class="mt-3 grid gap-2">
+              <div
+                v-for="item in skuPriceReferences"
+                :key="item.id"
+                class="grid grid-cols-[minmax(0,1fr)_auto] gap-3 rounded-md border border-border bg-muted/20 px-3 py-2"
+              >
+                <div class="min-w-0">
+                  <div class="truncate text-sm font-medium text-foreground">{{ item.label }}</div>
+                  <div v-if="item.code" class="truncate font-mono text-[11px] text-muted-foreground">{{ item.code }}</div>
+                </div>
+                <div class="text-right">
+                  <div class="font-mono text-sm text-foreground">{{ item.priceText }}</div>
+                  <div
+                    class="text-[11px]"
+                    :class="item.tierApplies === true ? 'text-emerald-600 dark:text-emerald-300' : 'text-muted-foreground'"
+                  >
+                    {{
+                      item.tierApplies === null
+                        ? t('admin.wholesalePrices.modal.skuReferencePending')
+                        : item.tierApplies
+                          ? t('admin.wholesalePrices.modal.skuReferenceApplies')
+                          : t('admin.wholesalePrices.modal.skuReferenceNotApplies')
+                    }}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
