@@ -2612,6 +2612,24 @@ const messages = {
             enabled: '启用下单前实时校验',
             enabledHint: '关闭后下单将完全依赖本地缓存库存，速度最快但可能出现售罄。上游不可达时本功能会自动放行下单（fail-open）。',
           },
+          pageSize: {
+            title: '每页拉取数量',
+            subtitle: '每次向上游请求拉取的商品数量。较小的值减少单次请求压力但增加总请求次数。',
+            label: '每页数量',
+            hint: '最小 10，最大 200，默认 50。上游响应慢时可调小。',
+          },
+          maxPages: {
+            title: '最大翻页数',
+            subtitle: '单个上游连接最多翻多少页。超出后停止拉取，避免无穷循环。',
+            label: '最大页数',
+            hint: '最小 10，最大 500，默认 200。配合每页数量 = 单连接最多拉取 pageSize × maxPages 个商品。',
+          },
+          concurrency: {
+            title: '并发连接数',
+            subtitle: '同时同步几个上游连接。设为 1 表示串行同步（最安全），数值越大对上游压力越大。',
+            label: '并发数',
+            hint: '最小 1，最大 10，默认 3。上游稳定性差时建议调为 1。',
+          },
         },
         callbackRoutes: {
           title: '回调路由配置',
@@ -6633,6 +6651,24 @@ const messages = {
             enabled: '啟用下單前即時校驗',
             enabledHint: '關閉後下單將完全依賴本地快取庫存，速度最快但可能出現售罄。上游不可達時本功能會自動放行下單（fail-open）。',
           },
+          pageSize: {
+            title: '每頁拉取數量',
+            subtitle: '每次向上游請求拉取的商品數量。較小的值減少單次請求壓力但增加總請求次數。',
+            label: '每頁數量',
+            hint: '最小 10，最大 200，預設 50。上游響應慢時可調小。',
+          },
+          maxPages: {
+            title: '最大翻頁數',
+            subtitle: '單個上游連接最多翻多少頁。超出後停止拉取，避免無窮循環。',
+            label: '最大頁數',
+            hint: '最小 10，最大 500，預設 200。配合每頁數量 = 單連接最多拉取 pageSize × maxPages 個商品。',
+          },
+          concurrency: {
+            title: '並發連接數',
+            subtitle: '同時同步幾個上游連接。設為 1 表示串行同步（最安全），數值越大對上游壓力越大。',
+            label: '並發數',
+            hint: '最小 1，最大 10，預設 3。上游穩定性差時建議調為 1。',
+          },
         },
         callbackRoutes: {
           title: '回調路由配置',
@@ -10653,6 +10689,24 @@ const messages = {
             subtitle: 'When local cached stock is low, query upstream in real time during order placement to avoid "paid but out of stock".',
             enabled: 'Enable Pre-Order Verification',
             enabledHint: 'When disabled, orders rely solely on cached stock (fastest but may oversell). If upstream is unreachable, this check fails open so orders still go through.',
+          },
+          pageSize: {
+            title: 'Page Size',
+            subtitle: 'Number of products fetched per upstream request. Smaller values reduce per-request pressure but increase total requests.',
+            label: 'Items per Page',
+            hint: 'Minimum 10, maximum 200, default 50. Lower this if upstream responses are slow.',
+          },
+          maxPages: {
+            title: 'Max Pages',
+            subtitle: 'Maximum pages to fetch per upstream connection. Stops fetching beyond this to prevent infinite loops.',
+            label: 'Max Pages',
+            hint: 'Minimum 10, maximum 500, default 200. Combined with page size = max pageSize × maxPages products per connection.',
+          },
+          concurrency: {
+            title: 'Connection Concurrency',
+            subtitle: 'How many upstream connections to sync simultaneously. Set to 1 for serial syncing (safest).',
+            label: 'Concurrency',
+            hint: 'Minimum 1, maximum 10, default 3. Set to 1 when upstream stability is poor.',
           },
         },
         callbackRoutes: {
