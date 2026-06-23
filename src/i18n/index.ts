@@ -3104,6 +3104,7 @@ const messages = {
         alerts: {
           saveSuccess: '设置已保存',
           saveFailed: '保存失败',
+          loadFailed: '加载失败，请稍后重试',
           passwordRequired: '请填写所有密码字段',
           passwordMismatch: '两次输入的新密码不一致',
           confirmChangePassword: '确定要修改密码吗？修改后需要重新登录。',
@@ -7295,6 +7296,7 @@ const messages = {
         alerts: {
           saveSuccess: '設定已保存',
           saveFailed: '保存失敗',
+          loadFailed: '載入失敗，請稍後重試',
           passwordRequired: '請填寫所有密碼欄位',
           passwordMismatch: '兩次輸入的新密碼不一致',
           confirmChangePassword: '確定要修改密碼嗎？修改後需要重新登入。',
@@ -11486,6 +11488,7 @@ const messages = {
         alerts: {
           saveSuccess: 'Settings saved',
           saveFailed: 'Save failed',
+          loadFailed: 'Failed to load, please try again later',
           passwordRequired: 'Please fill all password fields',
           passwordMismatch: 'Passwords do not match',
           confirmChangePassword: 'Change password now? You will be logged out.',
