@@ -337,7 +337,7 @@ onMounted(() => {
                   {{ pingingId === conn.id ? t('siteConnections.ping.loading') : 'Ping' }}
                 </Button>
                 <Button
-                  v-if="conn.price_markup_percent && Number(conn.price_markup_percent) !== 0"
+                  v-if="(conn.price_markup_percent && Number(conn.price_markup_percent) !== 0) || (conn.exchange_rate != null && Number(conn.exchange_rate) !== 1)"
                   size="sm"
                   variant="outline"
                   :disabled="reapplyingId === conn.id"

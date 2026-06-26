@@ -20,6 +20,7 @@ import { useListRefresh, type ListFetchOptions } from '@/composables/useListRefr
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { confirmAction } from '@/utils/confirm'
 import { useFormValidation, rules } from '@/composables/useFormValidation'
+import { ArrowDown, ArrowUp, ChevronsUpDown } from 'lucide-vue-next'
 
 const { t } = useI18n()
 const loading = ref(true)
@@ -43,6 +44,28 @@ const filters = reactive({
   lastLoginTo: '',
 })
 const normalizeFilterValue = (value: string) => (value === '__all__' ? '' : value)
+
+// 可排序列 + 三态排序状态（by 为空 = 默认 id 倒序）
+type SortColumn = 'wallet_balance' | 'created_at' | 'last_login_at'
+type SortDirection = '' | 'asc' | 'desc'
+const sort = reactive<{ by: SortColumn | ''; order: SortDirection }>({ by: '', order: '' })
+
+// 三态循环：无 → 降序 → 升序 → 无；点击其它列直接切到该列降序
+const nextSortState = (
+  current: { by: SortColumn | ''; order: SortDirection },
+  column: SortColumn,
+): { by: SortColumn | ''; order: SortDirection } => {
+  if (current.by !== column) return { by: column, order: 'desc' }
+  if (current.order === 'desc') return { by: column, order: 'asc' }
+  return { by: '', order: '' }
+}
+
+const toggleSort = (column: SortColumn) => {
+  const next = nextSortState(sort, column)
+  sort.by = next.by
+  sort.order = next.order
+  fetchUsers(1)
+}
 
 const showModal = ref(false)
 const submitting = ref(false)
@@ -77,6 +100,8 @@ const fetchUsers = async (page = 1, options: ListFetchOptions = {}) => {
       created_to: toRFC3339(filters.createdTo),
       last_login_from: toRFC3339(filters.lastLoginFrom),
       last_login_to: toRFC3339(filters.lastLoginTo),
+      sort_by: sort.by || undefined,
+      sort_order: sort.by ? sort.order : undefined,
     })
     users.value = response.data.data || []
     pagination.value = response.data.pagination || pagination.value
@@ -335,10 +360,52 @@ onMounted(() => {
             <TableHead class="px-6 py-3 min-w-[160px]">{{ t('admin.users.table.nickname') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.users.table.status') }}</TableHead>
             <TableHead class="px-6 py-3">{{ t('admin.users.table.locale') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.users.table.walletBalance') }}</TableHead>
+            <TableHead
+              class="px-6 py-3"
+              :aria-sort="sort.by === 'wallet_balance' ? (sort.order === 'asc' ? 'ascending' : 'descending') : 'none'"
+            >
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 uppercase transition-colors hover:text-foreground"
+                @click="toggleSort('wallet_balance')"
+              >
+                {{ t('admin.users.table.walletBalance') }}
+                <ArrowUp v-if="sort.by === 'wallet_balance' && sort.order === 'asc'" class="h-3.5 w-3.5" />
+                <ArrowDown v-else-if="sort.by === 'wallet_balance' && sort.order === 'desc'" class="h-3.5 w-3.5" />
+                <ChevronsUpDown v-else class="h-3.5 w-3.5 opacity-40" />
+              </button>
+            </TableHead>
             <TableHead class="px-6 py-3 min-w-[140px]">{{ t('admin.users.table.memberLevel') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.users.table.createdAt') }}</TableHead>
-            <TableHead class="px-6 py-3">{{ t('admin.users.table.lastLoginAt') }}</TableHead>
+            <TableHead
+              class="px-6 py-3"
+              :aria-sort="sort.by === 'created_at' ? (sort.order === 'asc' ? 'ascending' : 'descending') : 'none'"
+            >
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 uppercase transition-colors hover:text-foreground"
+                @click="toggleSort('created_at')"
+              >
+                {{ t('admin.users.table.createdAt') }}
+                <ArrowUp v-if="sort.by === 'created_at' && sort.order === 'asc'" class="h-3.5 w-3.5" />
+                <ArrowDown v-else-if="sort.by === 'created_at' && sort.order === 'desc'" class="h-3.5 w-3.5" />
+                <ChevronsUpDown v-else class="h-3.5 w-3.5 opacity-40" />
+              </button>
+            </TableHead>
+            <TableHead
+              class="px-6 py-3"
+              :aria-sort="sort.by === 'last_login_at' ? (sort.order === 'asc' ? 'ascending' : 'descending') : 'none'"
+            >
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 uppercase transition-colors hover:text-foreground"
+                @click="toggleSort('last_login_at')"
+              >
+                {{ t('admin.users.table.lastLoginAt') }}
+                <ArrowUp v-if="sort.by === 'last_login_at' && sort.order === 'asc'" class="h-3.5 w-3.5" />
+                <ArrowDown v-else-if="sort.by === 'last_login_at' && sort.order === 'desc'" class="h-3.5 w-3.5" />
+                <ChevronsUpDown v-else class="h-3.5 w-3.5 opacity-40" />
+              </button>
+            </TableHead>
             <TableHead class="px-6 py-3 min-w-[120px]">{{ t('admin.users.table.adminNote') }}</TableHead>
             <TableHead class="px-6 py-3 min-w-[140px] text-right">{{ t('admin.users.table.action') }}</TableHead>
           </TableRow>

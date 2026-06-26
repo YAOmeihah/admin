@@ -8,11 +8,18 @@ import type {
   AdminMemberLevel,
   AdminMemberLevelPrice,
   AdminPromotion,
+  AdminWholesalePrice,
   AdminBanner,
   AdminPost,
   AdminPaymentChannel,
   AdminUser,
   AdminSiteConnection,
+  AdminResellerProfileApprovePayload,
+  AdminResellerProfileUpdatePayload,
+  AdminResellerProductSettingUpdatePayload,
+  AdminResellerReasonPayload,
+  AdminResellerSiteConfigPayload,
+  AdminResellerSystemDomainPayload,
 } from './types'
 
 export interface CaptchaPayload {
@@ -331,6 +338,8 @@ export const adminAPI = {
   createProduct: (data: Partial<AdminProduct>) => api.post('/admin/products', data),
   updateProduct: (id: number, data: Partial<AdminProduct>) => api.put(`/admin/products/${id}`, data),
   patchProduct: (id: number, data: { is_active?: boolean; sort_order?: number; category_id?: number }) => api.patch(`/admin/products/${id}`, data),
+  updateProductWholesalePrices: (id: number, data: { wholesale_prices: AdminWholesalePrice[] }) =>
+    api.patch(`/admin/products/${id}/wholesale-prices`, data),
   deleteProduct: (id: number) => api.delete(`/admin/products/${id}`),
   batchUpdateProductStatus: (ids: number[], isActive: boolean) => api.post('/admin/products/batch-status', { ids, is_active: isActive }),
   batchUpdateProductCategory: (ids: number[], categoryId: number) => api.post('/admin/products/batch-category', { ids, category_id: categoryId }),
@@ -418,6 +427,68 @@ export const adminAPI = {
   getAffiliateWithdraws: (params?: Record<string, unknown>) => api.get('/admin/affiliates/withdraws', { params }),
   rejectAffiliateWithdraw: (id: number, data: { reason?: string }) => api.post(`/admin/affiliates/withdraws/${id}/reject`, data),
   payAffiliateWithdraw: (id: number) => api.post(`/admin/affiliates/withdraws/${id}/pay`, {}),
+  getResellerOperationsOverview: (params?: Record<string, unknown>) =>
+    api.get('/admin/resellers/operations/overview', { params }),
+  getResellerOperationsFinance: (params?: Record<string, unknown>) =>
+    api.get('/admin/resellers/operations/finance', { params }),
+  getResellerLedgerEntries: (params?: Record<string, unknown>) =>
+    api.get('/admin/resellers/ledger-entries', { params }),
+  getResellerBalanceAccounts: (params?: Record<string, unknown>) =>
+    api.get('/admin/resellers/balance-accounts', { params }),
+  getResellerWithdraws: (params?: Record<string, unknown>) =>
+    api.get('/admin/resellers/withdraws', { params }),
+  rejectResellerWithdraw: (id: number, data: { reason?: string }) =>
+    api.post(`/admin/resellers/withdraws/${id}/reject`, data),
+  payResellerWithdraw: (id: number) =>
+    api.post(`/admin/resellers/withdraws/${id}/pay`, {}),
+  getResellerProfiles: (params?: Record<string, unknown>) =>
+    api.get('/admin/resellers/profiles', { params }),
+  getResellerProfile: (id: number) =>
+    api.get(`/admin/resellers/profiles/${id}`),
+  updateResellerProfile: (id: number, data: AdminResellerProfileUpdatePayload) =>
+    api.put(`/admin/resellers/profiles/${id}`, data),
+  assignResellerSystemDomain: (id: number, data: AdminResellerSystemDomainPayload) =>
+    api.put(`/admin/resellers/profiles/${id}/system-domain`, data),
+  approveResellerProfile: (id: number, data: AdminResellerProfileApprovePayload) =>
+    api.post(`/admin/resellers/profiles/${id}/approve`, data),
+  rejectResellerProfile: (id: number, data: AdminResellerReasonPayload) =>
+    api.post(`/admin/resellers/profiles/${id}/reject`, data),
+  disableResellerProfile: (id: number, data: AdminResellerReasonPayload) =>
+    api.post(`/admin/resellers/profiles/${id}/disable`, data),
+  restoreResellerProfile: (id: number) =>
+    api.post(`/admin/resellers/profiles/${id}/restore`, {}),
+  getResellerDomains: (params?: Record<string, unknown>) =>
+    api.get('/admin/resellers/domains', { params }),
+  approveResellerDomain: (id: number) =>
+    api.post(`/admin/resellers/domains/${id}/approve`, {}),
+  disableResellerDomain: (id: number) =>
+    api.post(`/admin/resellers/domains/${id}/disable`, {}),
+  setPrimaryResellerDomain: (id: number) =>
+    api.post(`/admin/resellers/domains/${id}/set-primary`, {}),
+  getResellerSiteConfigs: (params?: Record<string, unknown>) =>
+    api.get('/admin/resellers/site-configs', { params }),
+  getResellerSiteConfig: (resellerId: number) =>
+    api.get(`/admin/resellers/site-configs/${resellerId}`),
+  updateResellerSiteConfig: (resellerId: number, data: AdminResellerSiteConfigPayload) =>
+    api.put(`/admin/resellers/site-configs/${resellerId}`, data),
+  resetResellerSiteConfig: (resellerId: number) =>
+    api.post(`/admin/resellers/site-configs/${resellerId}/reset`, {}),
+  getResellerProductSettings: (params?: Record<string, unknown>) =>
+    api.get('/admin/resellers/product-settings', { params }),
+  getResellerProductSetting: (resellerId: number, productId: number) =>
+    api.get(`/admin/resellers/product-settings/${resellerId}/${productId}`),
+  updateResellerProductSettings: (
+    resellerId: number,
+    productId: number,
+    data: AdminResellerProductSettingUpdatePayload,
+  ) => api.put(`/admin/resellers/product-settings/${resellerId}/${productId}`, data),
+  previewResellerProductSettings: (
+    resellerId: number,
+    productId: number,
+    data: AdminResellerProductSettingUpdatePayload,
+  ) => api.post(`/admin/resellers/product-settings/${resellerId}/${productId}/preview`, data),
+  resetResellerProductSetting: (resellerId: number, productId: number, skuId = 0) =>
+    api.delete(`/admin/resellers/product-settings/${resellerId}/${productId}`, { params: { sku_id: skuId } }),
   refundOrderToWallet: (id: number, data: AdminRefundToWalletPayload) =>
     api.post(`/admin/orders/${id}/refund-to-wallet`, data),
   manualRefundOrder: (id: number, data: AdminManualRefundPayload) =>

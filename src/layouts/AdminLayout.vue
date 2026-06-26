@@ -197,12 +197,6 @@ const navGroups = computed<NavGroup[]>(() => {
           permission: 'GET:/admin/products',
         },
         {
-          label: t('admin.navItems.wholesaleProducts'),
-          to: '/products?wholesale=1',
-          icon: BadgePercent,
-          permission: 'GET:/admin/products',
-        },
-        {
           label: t('admin.navItems.cardSecrets'),
           to: '/card-secrets',
           icon: KeyRound,
@@ -352,6 +346,12 @@ const navGroups = computed<NavGroup[]>(() => {
           permission: 'GET:/admin/promotions',
         },
         {
+          label: t('admin.navItems.wholesalePrices'),
+          to: '/wholesale-prices',
+          icon: BadgePercent,
+          permission: 'GET:/admin/products',
+        },
+        {
           label: t('admin.navItems.giftCards'),
           to: '/gift-cards',
           icon: Gift,
@@ -387,6 +387,61 @@ const navGroups = computed<NavGroup[]>(() => {
           to: '/affiliates/withdraws',
           icon: WalletCards,
           permission: 'GET:/admin/affiliates/withdraws',
+        },
+      ],
+    },
+    {
+      id: 'reseller',
+      label: t('admin.navGroups.resellerManagement'),
+      icon: Users,
+      items: [
+        {
+          label: t('admin.navItems.resellerOperations'),
+          to: '/resellers/operations',
+          icon: LayoutDashboard,
+          permission: 'GET:/admin/resellers/operations/overview',
+        },
+        {
+          label: t('admin.navItems.resellerProfiles'),
+          to: '/resellers/profiles',
+          icon: Users,
+          permission: 'GET:/admin/resellers/profiles',
+        },
+        {
+          label: t('admin.navItems.resellerDomains'),
+          to: '/resellers/domains',
+          icon: Link,
+          permission: 'GET:/admin/resellers/domains',
+        },
+        {
+          label: t('admin.navItems.resellerSiteConfigs'),
+          to: '/resellers/site-configs',
+          icon: Settings,
+          permission: 'GET:/admin/resellers/site-configs',
+        },
+        {
+          label: t('admin.navItems.resellerProductSettings'),
+          to: '/resellers/product-settings',
+          icon: SlidersHorizontal,
+          permission: 'GET:/admin/resellers/product-settings',
+        },
+        {
+          label: t('admin.navItems.resellerLedgerEntries'),
+          to: '/resellers/ledger-entries',
+          icon: ReceiptText,
+          permission: 'GET:/admin/resellers/ledger-entries',
+        },
+        {
+          label: t('admin.navItems.resellerBalanceAccounts'),
+          to: '/resellers/balance-accounts',
+          icon: Wallet,
+          permission: 'GET:/admin/resellers/balance-accounts',
+        },
+        {
+          label: t('admin.navItems.resellerWithdraws'),
+          to: '/resellers/withdraws',
+          icon: WalletCards,
+          permission: 'GET:/admin/resellers/withdraws',
         },
       ],
     },

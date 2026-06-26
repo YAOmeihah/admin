@@ -15,6 +15,9 @@ const submitting = ref(false)
 const form = reactive({
   interval_minutes: 5,
   pre_order_stock_check_enabled: true,
+  sync_page_size: 50,
+  sync_max_pages: 200,
+  sync_conn_concurrency: 3,
 })
 
 const clamp = (value: unknown, min: number, max: number, fallback: number) => {
@@ -33,6 +36,9 @@ const loadConfig = async () => {
     if (data) {
       form.interval_minutes = clamp(data.interval_minutes, 5, 1440, 5)
       form.pre_order_stock_check_enabled = data.pre_order_stock_check_enabled !== false
+      form.sync_page_size = clamp(data.sync_page_size, 10, 200, 50)
+      form.sync_max_pages = clamp(data.sync_max_pages, 10, 500, 200)
+      form.sync_conn_concurrency = clamp(data.sync_conn_concurrency, 1, 10, 3)
     }
   } catch {
     // ignore load error, use defaults
@@ -47,8 +53,14 @@ const save = async () => {
     const normalized = {
       interval_minutes: clamp(form.interval_minutes, 5, 1440, 5),
       pre_order_stock_check_enabled: form.pre_order_stock_check_enabled,
+      sync_page_size: clamp(form.sync_page_size, 10, 200, 50),
+      sync_max_pages: clamp(form.sync_max_pages, 10, 500, 200),
+      sync_conn_concurrency: clamp(form.sync_conn_concurrency, 1, 10, 3),
     }
     form.interval_minutes = normalized.interval_minutes
+    form.sync_page_size = normalized.sync_page_size
+    form.sync_max_pages = normalized.sync_max_pages
+    form.sync_conn_concurrency = normalized.sync_conn_concurrency
     await adminAPI.updateSettings({
       key: 'upstream_sync_config',
       value: normalized,
@@ -103,6 +115,42 @@ onMounted(() => {
         <Label class="text-sm font-medium">{{ t('admin.settings.upstreamSync.preOrderCheck.enabled') }}</Label>
       </div>
       <p class="text-xs text-muted-foreground">{{ t('admin.settings.upstreamSync.preOrderCheck.enabledHint') }}</p>
+    </div>
+
+    <div class="rounded-lg border p-6 space-y-4">
+      <div>
+        <h3 class="text-sm font-semibold">{{ t('admin.settings.upstreamSync.pageSize.title') }}</h3>
+        <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.upstreamSync.pageSize.subtitle') }}</p>
+      </div>
+      <div class="space-y-1">
+        <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.upstreamSync.pageSize.label') }}</label>
+        <Input v-model.number="form.sync_page_size" type="number" min="10" max="200" />
+        <p class="text-xs text-muted-foreground">{{ t('admin.settings.upstreamSync.pageSize.hint') }}</p>
+      </div>
+    </div>
+
+    <div class="rounded-lg border p-6 space-y-4">
+      <div>
+        <h3 class="text-sm font-semibold">{{ t('admin.settings.upstreamSync.maxPages.title') }}</h3>
+        <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.upstreamSync.maxPages.subtitle') }}</p>
+      </div>
+      <div class="space-y-1">
+        <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.upstreamSync.maxPages.label') }}</label>
+        <Input v-model.number="form.sync_max_pages" type="number" min="10" max="500" />
+        <p class="text-xs text-muted-foreground">{{ t('admin.settings.upstreamSync.maxPages.hint') }}</p>
+      </div>
+    </div>
+
+    <div class="rounded-lg border p-6 space-y-4">
+      <div>
+        <h3 class="text-sm font-semibold">{{ t('admin.settings.upstreamSync.concurrency.title') }}</h3>
+        <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.settings.upstreamSync.concurrency.subtitle') }}</p>
+      </div>
+      <div class="space-y-1">
+        <label class="text-xs font-medium text-muted-foreground">{{ t('admin.settings.upstreamSync.concurrency.label') }}</label>
+        <Input v-model.number="form.sync_conn_concurrency" type="number" min="1" max="10" />
+        <p class="text-xs text-muted-foreground">{{ t('admin.settings.upstreamSync.concurrency.hint') }}</p>
+      </div>
     </div>
   </div>
 </template>

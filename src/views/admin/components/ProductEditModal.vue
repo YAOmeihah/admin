@@ -99,11 +99,6 @@ type SKUFormItem = {
   sort_order: number
 }
 
-type WholesalePriceFormItem = {
-  min_quantity: number | ''
-  unit_price: number | ''
-}
-
 type ManualFormField = {
   key: string
   type: string
@@ -143,15 +138,6 @@ const createSKUFormItem = (raw?: Partial<AdminProductSKU>): SKUFormItem => ({
   sort_order: Number(raw?.sort_order || 0),
 })
 
-const createWholesalePriceFormItem = (raw?: Partial<WholesalePriceFormItem>): WholesalePriceFormItem => ({
-  min_quantity: raw?.min_quantity === undefined || raw?.min_quantity === null || raw?.min_quantity === ''
-    ? ''
-    : Math.max(Math.floor(Number(raw.min_quantity) || 0), 0),
-  unit_price: raw?.unit_price === undefined || raw?.unit_price === null || raw?.unit_price === ''
-    ? ''
-    : Number(raw.unit_price || 0),
-})
-
 const form = reactive({
   id: 0,
   title: { 'zh-CN': '', 'zh-TW': '', 'en-US': '' } as LocalizedText,
@@ -162,12 +148,12 @@ const form = reactive({
   instructions: { 'zh-CN': '', 'zh-TW': '', 'en-US': '' } as LocalizedText,
   price_amount: 0,
   cost_price_amount: 0,
-  wholesale_prices: [] as WholesalePriceFormItem[],
   images: [] as string[],
   tags: [] as string[],
   purchase_type: 'member',
   min_purchase_quantity: '' as number | '',
   max_purchase_quantity: '' as number | '',
+  stock_display_mode: 'exact',
   fulfillment_type: 'manual',
   requires_shipping_address: false,
   manual_stock_total: 0,
@@ -296,6 +282,13 @@ const manualFieldTypeOptions = computed(() => [
   { value: 'select', label: t('admin.products.form.manualFormFieldTypes.select') },
   { value: 'radio', label: t('admin.products.form.manualFormFieldTypes.radio') },
   { value: 'checkbox', label: t('admin.products.form.manualFormFieldTypes.checkbox') },
+])
+
+const stockDisplayModeOptions = computed(() => [
+  { value: 'exact', label: t('admin.products.form.stockDisplayModes.exact') },
+  { value: 'status', label: t('admin.products.form.stockDisplayModes.status') },
+  { value: 'range', label: t('admin.products.form.stockDisplayModes.range') },
+  { value: 'hidden', label: t('admin.products.form.stockDisplayModes.hidden') },
 ])
 
 const normalizeLocaleText = (value: unknown) => {
@@ -438,35 +431,6 @@ const removeSKU = (index: number) => {
   form.skus.splice(index, 1)
 }
 
-const addWholesalePrice = () => {
-  form.wholesale_prices.push(createWholesalePriceFormItem())
-}
-
-const removeWholesalePrice = (index: number) => {
-  form.wholesale_prices.splice(index, 1)
-}
-
-const normalizeWholesalePricesForSubmit = () => {
-  const seen = new Set<number>()
-  return form.wholesale_prices
-    .map((item, index) => {
-      const minQuantity = Math.floor(Number(item.min_quantity))
-      const unitPrice = Number(item.unit_price)
-      if (!Number.isFinite(minQuantity) || minQuantity <= 0 || !Number.isFinite(unitPrice) || unitPrice <= 0) {
-        throw new Error(t('admin.products.errors.wholesalePriceInvalid', { index: index + 1 }))
-      }
-      if (seen.has(minQuantity)) {
-        throw new Error(t('admin.products.errors.wholesaleQuantityDuplicate', { quantity: minQuantity }))
-      }
-      seen.add(minQuantity)
-      return {
-        min_quantity: minQuantity,
-        unit_price: unitPrice,
-      }
-    })
-    .sort((a, b) => a.min_quantity - b.min_quantity)
-}
-
 const normalizeSKUsForSubmit = () => {
   if (!form.skus.length) {
     return [] as Array<Record<string, unknown>>
@@ -527,12 +491,12 @@ const resetForm = () => {
     instructions: { 'zh-CN': '', 'zh-TW': '', 'en-US': '' },
     price_amount: 0,
     cost_price_amount: 0,
-    wholesale_prices: [],
     images: [],
     tags: [],
     purchase_type: 'member',
     min_purchase_quantity: '',
     max_purchase_quantity: '',
+    stock_display_mode: 'exact',
     fulfillment_type: 'manual',
     requires_shipping_address: false,
     manual_stock_total: 0,
@@ -576,17 +540,12 @@ const populateForm = (product: AdminProduct) => {
     instructions: (product as AdminProduct & { instructions?: LocalizedText }).instructions || { 'zh-CN': '', 'zh-TW': '', 'en-US': '' },
     price_amount: Number(product.price_amount || 0),
     cost_price_amount: Number(product.cost_price_amount || 0),
-    wholesale_prices: Array.isArray(product.wholesale_prices)
-      ? product.wholesale_prices.map((item: any) => createWholesalePriceFormItem({
-          min_quantity: Number(item?.min_quantity || 0),
-          unit_price: Number(item?.unit_price || 0),
-        }))
-      : [],
     images: imagesList,
     tags: tagsList,
     purchase_type: product.purchase_type || 'member',
     min_purchase_quantity: Number(product.min_purchase_quantity || 0) > 0 ? Math.floor(Number(product.min_purchase_quantity || 0)) : '',
     max_purchase_quantity: Number(product.max_purchase_quantity || 0) > 0 ? Math.floor(Number(product.max_purchase_quantity || 0)) : '',
+    stock_display_mode: product.stock_display_mode || 'exact',
     fulfillment_type: product.fulfillment_type || 'manual',
     requires_shipping_address: Boolean(product.requires_shipping_address),
     manual_stock_total: resolveManualStockMetrics(product).total,
@@ -616,7 +575,6 @@ const handleSubmit = async () => {
     }
 
     const normalizedSKUs = normalizeSKUsForSubmit()
-    const normalizedWholesalePrices = normalizeWholesalePricesForSubmit()
     const activeSKU = normalizedSKUs.find((item) => item.is_active)
     let effectivePrice = Number(form.price_amount)
     let effectiveCostPrice = Number(form.cost_price_amount)
@@ -656,12 +614,12 @@ const handleSubmit = async () => {
       instructions: form.instructions,
       price_amount: effectivePrice,
       cost_price_amount: effectiveCostPrice,
-      wholesale_prices: normalizedWholesalePrices,
       images: form.images,
       tags: form.tags,
       purchase_type: form.purchase_type,
       min_purchase_quantity: minPurchaseQuantityValue,
       max_purchase_quantity: maxPurchaseQuantityValue,
+      stock_display_mode: form.stock_display_mode,
       fulfillment_type: form.fulfillment_type,
       requires_shipping_address: form.requires_shipping_address,
       manual_stock_total: effectiveManualStockTotal,
@@ -863,6 +821,21 @@ watch(
           </div>
 
           <div class="col-span-1">
+            <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.products.form.stockDisplayMode') }}</label>
+            <Select v-model="form.stock_display_mode">
+              <SelectTrigger class="h-9 w-full">
+                <SelectValue :placeholder="t('admin.products.form.stockDisplayModes.exact')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="item in stockDisplayModeOptions" :key="item.value" :value="item.value">
+                  {{ item.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.products.form.stockDisplayModeTip') }}</p>
+          </div>
+
+          <div class="col-span-1">
             <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.products.form.fulfillmentType') }}</label>
             <Select v-model="form.fulfillment_type" :disabled="editingIsMapped">
               <SelectTrigger class="h-9 w-full">
@@ -988,36 +961,6 @@ watch(
                 <Textarea v-model="field.options_text" rows="4" :placeholder="t('admin.products.form.manualFormFieldOptionsPlaceholder')" :disabled="editingIsMapped" />
                 <p class="mt-1 text-xs text-muted-foreground">{{ t('admin.products.form.manualFormFieldOptionsTip') }}</p>
               </div>
-            </div>
-          </div>
-
-          <div class="col-span-1 md:col-span-2 rounded-xl border border-border bg-muted/20 p-4 space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="text-sm font-semibold text-foreground">{{ t('admin.products.form.wholesaleTitle') }}</h3>
-                <p class="text-xs text-muted-foreground mt-1">{{ t('admin.products.form.wholesaleTip') }}</p>
-              </div>
-              <Button type="button" size="sm" variant="outline" @click="addWholesalePrice">
-                {{ t('admin.products.form.wholesaleAdd') }}
-              </Button>
-            </div>
-
-            <div v-if="!form.wholesale_prices.length" class="rounded-lg border border-dashed border-border p-4 text-xs text-muted-foreground">
-              {{ t('admin.products.form.wholesaleEmpty') }}
-            </div>
-
-            <div v-for="(tier, index) in form.wholesale_prices" :key="`wholesale-${index}`" class="grid grid-cols-1 gap-3 rounded-lg border border-border bg-background p-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
-              <div>
-                <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.products.form.wholesaleMinQuantity') }}</label>
-                <Input v-model.number="tier.min_quantity" type="number" min="1" step="1" :placeholder="t('admin.products.form.wholesaleMinQuantityPlaceholder')" />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-muted-foreground mb-1.5">{{ t('admin.products.form.wholesaleUnitPrice') }}</label>
-                <Input v-model.number="tier.unit_price" type="number" step="0.01" min="0" :placeholder="t('admin.products.form.wholesaleUnitPricePlaceholder')" />
-              </div>
-              <Button type="button" size="sm" variant="destructive" @click="removeWholesalePrice(index)">
-                {{ t('admin.products.form.wholesaleRemove') }}
-              </Button>
             </div>
           </div>
 

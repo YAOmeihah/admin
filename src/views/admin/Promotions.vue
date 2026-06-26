@@ -30,6 +30,7 @@ const pagination = ref({
 })
 const filters = reactive({
   id: '',
+  name: '',
   scopeRefId: '__all__',
   isActive: '__all__',
 })
@@ -272,6 +273,7 @@ const fetchPromotions = async (page = 1, options: ListFetchOptions = {}) => {
       page,
       page_size: pagination.value.page_size,
       id: filters.id || undefined,
+      name: filters.name.trim() || undefined,
       scope_ref_id: normalizedScope || undefined,
       is_active: isActiveValue,
     })
@@ -447,6 +449,13 @@ watch(
 
     <div class="rounded-xl border border-border bg-card p-4 shadow-sm">
       <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <div class="w-full md:w-60">
+          <Input
+            v-model="filters.name"
+            :placeholder="t('admin.promotions.filterNamePlaceholder')"
+            @keyup.enter="handleSearch"
+          />
+        </div>
         <div class="flex w-full flex-col gap-2 md:w-72 sm:flex-row sm:items-center">
           <Input
             v-model="productKeyword"
